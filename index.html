@@ -357,6 +357,23 @@ table{border-collapse:collapse}
 <div class="rule-tooltip" id="rule-tooltip"></div>
 <div class="toast-wrap" id="toasts"></div>
 
+<!-- MODAL：自訂 confirm / prompt（取代醜陋的瀏覽器原生彈窗） -->
+<div class="modal-ov" id="ui-modal">
+  <div class="modal" style="max-width:420px;width:min(420px,92vw)">
+    <div class="modal-hd" style="margin-bottom:.8rem">
+      <div class="modal-title" id="ui-modal-title">提示</div>
+    </div>
+    <div id="ui-modal-msg" style="font-size:14px;line-height:1.75;color:var(--text);white-space:pre-wrap;margin-bottom:1rem"></div>
+    <div id="ui-modal-input-wrap" style="display:none;margin-bottom:1rem">
+      <input id="ui-modal-input" class="fc" type="text" autocomplete="off">
+    </div>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end">
+      <button class="btn btn-secondary" id="ui-modal-cancel">取消</button>
+      <button class="btn btn-primary" id="ui-modal-ok">確定</button>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -529,6 +546,53 @@ function fmtDt(iso){if(!iso)return'';const d=new Date(iso);return `${d.getFullYe
 // ── TOAST ──
 function toast(msg,type=''){const el=document.createElement('div');el.className='toast'+(type?' '+type:'');el.textContent=msg;document.getElementById('toasts').appendChild(el);setTimeout(()=>el.remove(),3800);}
 
+// ── 自訂彈窗（取代瀏覽器原生 confirm / prompt） ──
+function uiConfirm(msg,opts={}){
+  return new Promise(resolve=>{
+    const ov=document.getElementById('ui-modal');
+    document.getElementById('ui-modal-title').textContent=opts.title||'確認';
+    document.getElementById('ui-modal-msg').textContent=msg;
+    document.getElementById('ui-modal-input-wrap').style.display='none';
+    const okBtn=document.getElementById('ui-modal-ok');
+    const cancelBtn=document.getElementById('ui-modal-cancel');
+    okBtn.textContent=opts.okText||'確定';
+    cancelBtn.textContent=opts.cancelText||'取消';
+    cancelBtn.style.display='inline-flex';
+    okBtn.className='btn '+(opts.danger?'btn-danger':'btn-primary');
+    ov.classList.add('open');
+    const cleanup=()=>{ov.classList.remove('open');okBtn.onclick=null;cancelBtn.onclick=null;document.onkeydown=null;};
+    okBtn.onclick=()=>{cleanup();resolve(true);};
+    cancelBtn.onclick=()=>{cleanup();resolve(false);};
+    document.onkeydown=e=>{if(e.key==='Escape'){cancelBtn.onclick();}else if(e.key==='Enter'){okBtn.onclick();}};
+  });
+}
+function uiPrompt(msg,opts={}){
+  return new Promise(resolve=>{
+    const ov=document.getElementById('ui-modal');
+    document.getElementById('ui-modal-title').textContent=opts.title||'請輸入';
+    document.getElementById('ui-modal-msg').textContent=msg;
+    const wrap=document.getElementById('ui-modal-input-wrap');
+    const inp=document.getElementById('ui-modal-input');
+    wrap.style.display='block';
+    inp.type=opts.password?'password':'text';
+    inp.value=opts.default||'';
+    inp.placeholder=opts.placeholder||'';
+    const okBtn=document.getElementById('ui-modal-ok');
+    const cancelBtn=document.getElementById('ui-modal-cancel');
+    okBtn.textContent='確定';
+    cancelBtn.textContent='取消';
+    cancelBtn.style.display='inline-flex';
+    okBtn.className='btn btn-primary';
+    ov.classList.add('open');
+    setTimeout(()=>inp.focus(),60);
+    const cleanup=()=>{ov.classList.remove('open');okBtn.onclick=null;cancelBtn.onclick=null;inp.onkeydown=null;document.onkeydown=null;};
+    okBtn.onclick=()=>{const v=inp.value;cleanup();resolve(v);};
+    cancelBtn.onclick=()=>{cleanup();resolve(null);};
+    inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();okBtn.onclick();}else if(e.key==='Escape'){cancelBtn.onclick();}};
+  });
+}
+document.getElementById('ui-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('ui-modal-cancel').click();});
+
 // ── NAV ──
 const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,oplog:renderOpLog};
 document.getElementById('navTabs').querySelectorAll('.nav-tab').forEach(tab=>{
@@ -643,20 +707,20 @@ function cellClick(unit,name,day,year,month){
   processLeave(unit,name,selectedLeaveType,year,month,[parseInt(day)]);
 }
 
-function clearMonthLeave(){
+async function clearMonthLeave(){
   const unit=document.getElementById('ov-unit').value,month=parseInt(document.getElementById('ov-month').value),label=unit==='all'?'全部部門':unit;
-  const pwd=prompt('請輸入密碼（清空後無法復原）：');
+  const pwd=await uiPrompt('請輸入密碼（清空後無法復原）：',{password:true,title:'密碼驗證'});
   if(pwd===null)return;
   if(pwd!=='0000'){toast('密碼錯誤，無法清空','err');return;}
-  if(!confirm(`確定清空【${label}】${month}月的全部請假紀錄？`))return;
+  if(!await uiConfirm(`確定清空【${label}】${month}月的全部請假紀錄？`,{danger:true,okText:'確定清空',title:'清空確認'}))return;
   const hist=getHistory(),mems=getMembers(),units=unit==='all'?getDepts():[unit];
   units.forEach(u=>(mems[u]||[]).forEach(n=>{delete hist[histKey(u,n,month)];}));
   setHistory(hist);logOp(`清空 ${label} ${month}月請假紀錄`);toast(`已清空 ${label} ${month}月請假紀錄`,'ok');renderOverview();
 }
 
 // ── TAB 2：排班表 ──
-function confirmRegen(){
-  if(!confirm('確定重新產生【當前部門】本月排班？其他部門不受影響。'))return;
+async function confirmRegen(){
+  if(!await uiConfirm('確定重新產生【當前部門】本月排班？\n其他部門不受影響。',{okText:'重新產生',title:'重新排班'}))return;
   const unit=document.getElementById('sc-unit').value;
   const year=parseInt(document.getElementById('sc-year').value);
   const month=parseInt(document.getElementById('sc-month').value);
@@ -781,7 +845,7 @@ function submitPreLeave(){
   toast(`✔ 已新增 ${name} ${year}/${month} 共${days.length}天預假`,'ok');closePreLeaveForm();
   renderPreLeave();renderOverview();  // sync to 幼幼班假表
 }
-function removePreLeaveEntry(id){if(!confirm('確定刪除此預假記錄？'))return;setPreLeave(getPreLeave().filter(e=>String(e.id)!==String(id)));logOp('刪除預假記錄');toast('已刪除','ok');renderPreLeave();renderOverview();}
+async function removePreLeaveEntry(id){if(!await uiConfirm('確定刪除此預假記錄？',{danger:true,okText:'刪除',title:'刪除確認'}))return;setPreLeave(getPreLeave().filter(e=>String(e.id)!==String(id)));logOp('刪除預假記錄');toast('已刪除','ok');renderPreLeave();renderOverview();}
 function renderPreLeave(){
   renderPreLeaveRules();
   const year=parseInt(document.getElementById('pl-year').value)||new Date().getFullYear(),unit=document.getElementById('pl-unit').value,empF=document.getElementById('pl-emp').value;
@@ -807,7 +871,7 @@ function renderMembers(){
   });
 }
 function addMember(unit){const inp=document.getElementById('nm-'+unit),name=inp.value.trim();if(!name){toast('請輸入姓名','err');return;}const mems=getMembers();if(!mems[unit])mems[unit]=[];if(mems[unit].includes(name)){toast('此員工已存在','err');return;}mems[unit].push(name);setMembers(mems);inp.value='';logOp(`新增員工：${unit} - ${name}`);renderMembers();toast(`已新增 ${name} 至 ${unit}`,'ok');}
-function removeMember(unit,name){if(!confirm(`確定移除「${name}」？`))return;const mems=getMembers();mems[unit]=(mems[unit]||[]).filter(n=>n!==name);setMembers(mems);logOp(`移除員工：${unit} - ${name}`);renderMembers();toast(`已移除 ${name}`,'ok');}
+async function removeMember(unit,name){if(!await uiConfirm(`確定移除「${name}」？`,{danger:true,okText:'移除',title:'移除員工'}))return;const mems=getMembers();mems[unit]=(mems[unit]||[]).filter(n=>n!==name);setMembers(mems);logOp(`移除員工：${unit} - ${name}`);renderMembers();toast(`已移除 ${name}`,'ok');}
 
 // ── TAB 5：TASK CONFIG ──
 function renderTaskConfig(){
@@ -821,10 +885,10 @@ function renderTaskConfig(){
   document.getElementById('tc-area').innerHTML=h;
 }
 function saveTaskCfg(){const cfg=getTaskCfg();document.querySelectorAll('#tc-area textarea[data-unit]').forEach(ta=>{const hit=cfg.find(c=>c.unit===ta.dataset.unit&&parseInt(c.count)===parseInt(ta.dataset.count));if(hit)hit.tasks=ta.value;});setTaskCfg(cfg);logOp('儲存工作配置');toast('工作配置已儲存','ok');}
-function delTaskRow(unit,count){if(!confirm(`確定刪除 ${unit} ${count}人的配置？`))return;setTaskCfg(getTaskCfg().filter(c=>!(c.unit===unit&&parseInt(c.count)===count)));renderTaskConfig();toast('已刪除','ok');}
+async function delTaskRow(unit,count){if(!await uiConfirm(`確定刪除 ${unit} ${count}人的配置？`,{danger:true,okText:'刪除',title:'刪除配置'}))return;setTaskCfg(getTaskCfg().filter(c=>!(c.unit===unit&&parseInt(c.count)===count)));renderTaskConfig();toast('已刪除','ok');}
 function addTaskRow(unit){const count=parseInt(document.getElementById('nc-'+unit).value);if(!count||count<1){toast('請輸入有效人數','err');return;}const cfg=getTaskCfg();if(cfg.find(c=>c.unit===unit&&parseInt(c.count)===count)){toast(`${unit} ${count}人配置已存在`,'err');return;}cfg.push({unit,count,tasks:''});setTaskCfg(cfg);renderTaskConfig();}
-function promptAddDept(){const name=(prompt('請輸入新部門名稱：')||'').trim();if(!name)return;const depts=getDepts();if(depts.includes(name)){toast(`部門「${name}」已存在`,'err');return;}depts.push(name);setDepts(depts);const mems=getMembers();if(!mems[name])mems[name]=[];setMembers(mems);logOp(`新增部門：${name}`);toast(`已新增部門：${name}`,'ok');syncAll();}
-function promptDelDept(unit){const mems=getMembers(),count=(mems[unit]||[]).length;if(!confirm(count>0?`確定刪除部門「${unit}」？（共 ${count} 位員工，刪除後無法復原）`:`確定刪除部門「${unit}」？`))return;setDepts(getDepts().filter(d=>d!==unit));setTaskCfg(getTaskCfg().filter(c=>c.unit!==unit));logOp(`刪除部門：${unit}`);toast(`已刪除部門：${unit}`,'ok');syncAll();}
+async function promptAddDept(){const raw=await uiPrompt('請輸入新部門名稱：',{title:'新增部門',placeholder:'例：行政'});if(raw===null)return;const name=raw.trim();if(!name)return;const depts=getDepts();if(depts.includes(name)){toast(`部門「${name}」已存在`,'err');return;}depts.push(name);setDepts(depts);const mems=getMembers();if(!mems[name])mems[name]=[];setMembers(mems);logOp(`新增部門：${name}`);toast(`已新增部門：${name}`,'ok');syncAll();}
+async function promptDelDept(unit){const mems=getMembers(),count=(mems[unit]||[]).length;if(!await uiConfirm(count>0?`確定刪除部門「${unit}」？\n（共 ${count} 位員工，刪除後無法復原）`:`確定刪除部門「${unit}」？`,{danger:true,okText:'刪除部門',title:'刪除部門'}))return;setDepts(getDepts().filter(d=>d!==unit));setTaskCfg(getTaskCfg().filter(c=>c.unit!==unit));logOp(`刪除部門：${unit}`);toast(`已刪除部門：${unit}`,'ok');syncAll();}
 function syncAll(){refreshUnitDropdowns();renderOverview();renderSchedule();renderMembers();renderTaskConfig();renderPreLeave();renderPreLeaveRules();}
 
 // ── TAB 6：生死抽籤 ──
@@ -848,7 +912,7 @@ function renderLotteryRecords(){
   recs.forEach(r=>{const dt=new Date(r.drawnAt),t=`${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;h+=`<tr><td style="font-weight:600;white-space:nowrap">${r.date}</td><td style="color:#1E8449;font-weight:700">${r.winners.join('、')}</td><td style="color:var(--text-light)">${r.working.join('、')||'—'}</td><td style="white-space:nowrap;font-size:12px">${dt.toLocaleDateString('zh-TW')} ${t}</td></tr>`;});
   area.innerHTML=h+'</tbody></table>';
 }
-function clearLotteryRecords(){if(!confirm('確定清除所有抽籤記錄？'))return;setLotteryRecords([]);renderLotteryRecords();toast('已清除抽籤記錄','ok');}
+async function clearLotteryRecords(){if(!await uiConfirm('確定清除所有抽籤記錄？',{danger:true,okText:'清除',title:'清除記錄'}))return;setLotteryRecords([]);renderLotteryRecords();toast('已清除抽籤記錄','ok');}
 
 function renderLotteryMemberBtns(){
   const unit=document.getElementById('lottery-add-unit')?.value;if(!unit)return;
@@ -869,7 +933,7 @@ function addToPool(name,unit){
 }
 function addCustomToPool(){const inp=document.getElementById('lottery-custom-name'),name=(inp.value||'').trim();if(!name){toast('請輸入姓名','err');return;}addToPool(name,'');inp.value='';}
 function removeFromPool(idx){const pool=getLotteryPool(),removed=pool[idx];pool.splice(idx,1);setLotteryPool(pool);lotSession.pool=lotSession.pool.filter(p=>p.name!==removed.name);renderLottery();toast(`已移除 ${removed.name}`);}
-function clearPool(){if(!confirm('確定清空抽籤名單？'))return;setLotteryPool([]);lotSession={pool:[],winners:[]};renderLottery();toast('已清空名單','ok');}
+async function clearPool(){if(!await uiConfirm('確定清空抽籤名單？',{danger:true,okText:'清空',title:'清空名單'}))return;setLotteryPool([]);lotSession={pool:[],winners:[]};renderLottery();toast('已清空名單','ok');}
 function resetSession(){lotSession={pool:[...getLotteryPool()],winners:[]};document.getElementById('lottery-result-area').innerHTML='';drawWheelFrame(getLotteryPool(),wheelAngle=0);renderLotteryRecords();}
 
 function drawWheelFrame(pool,angle){
@@ -1038,8 +1102,8 @@ function uploadCalImg(e){
   };
   reader.readAsDataURL(file);
 }
-function deleteCalImg(){
-  if(!confirm(`確定刪除 ${calCurrentYear} 年行事曆圖片？`))return;
+async function deleteCalImg(){
+  if(!await uiConfirm(`確定刪除 ${calCurrentYear} 年行事曆圖片？`,{danger:true,okText:'刪除',title:'刪除圖片'}))return;
   const imgs=getCalImages();delete imgs[calCurrentYear];setCalImages(imgs);
   logOp(`刪除 ${calCurrentYear} 年行事曆圖片`);
   toast('已刪除','ok');
@@ -1061,7 +1125,7 @@ function renderOpLog(){
   else log.forEach(e=>{h+=`<tr><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.time)}</td><td>${e.action}</td></tr>`;});
   document.getElementById('oplog-table').innerHTML=h+'</tbody>';
 }
-function clearOpLog(){if(!confirm('確定清除所有操作記錄？'))return;setOpLog([]);renderOpLog();toast('已清除','ok');}
+async function clearOpLog(){if(!await uiConfirm('確定清除所有操作記錄？',{danger:true,okText:'清除',title:'清除記錄'}))return;setOpLog([]);renderOpLog();toast('已清除','ok');}
 
 // ── FIREBASE 即時同步 ──
 // ┌─────────────────────────────────────────────────────┐
