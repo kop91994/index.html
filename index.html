@@ -1107,7 +1107,7 @@ function fbWrite(key,rawVal){
 }
 
 // 攔截所有 localStorage.setItem，同步寫入 Firebase
-localStorage._rawSet=localStorage.setItem.bind(localStorage);
+const _rawSet=Storage.prototype.setItem.bind(localStorage);
 (function(){
   const _orig=Storage.prototype.setItem;
   Storage.prototype.setItem=function(k,v){_orig.call(this,k,v);if(this===localStorage)fbWrite(k,v);};
@@ -1141,7 +1141,7 @@ function _fbReady(){
       const cloudVal=snap.val();
       if(cloudVal!==null){
         // 雲端有資料 → 直接覆蓋本機（不觸發 fbWrite，避免回寫）
-        localStorage._rawSet(k,JSON.stringify(cloudVal));
+        _rawSet(k,JSON.stringify(cloudVal));
       }else{
         // 雲端沒資料 → 把本機現有的推上雲端（只在首次部署時會發生）
         const localVal=localStorage.getItem(k);
@@ -1161,7 +1161,7 @@ function _fbReady(){
         _db.ref('sched/'+k).on('value',snap=>{
           if(Date.now()-(_lastWrite[k]||0)<SYNC_COOLDOWN)return; // 自己剛寫的，跳過
           const val=snap.val();if(val===null)return;
-          localStorage._rawSet(k,JSON.stringify(val)); // 直接寫入，不再觸發 fbWrite
+          _rawSet(k,JSON.stringify(val)); // 直接寫入，不再觸發 fbWrite
           const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
           if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
         });
