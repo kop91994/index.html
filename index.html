@@ -1230,8 +1230,8 @@ async function saveCurSched(){
   // Two animation frames = browser has finished laying out the clone at full width
   await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
   try{
-    const canvas=await html2canvas(tmp.firstChild,{scale:1.5,useCORS:true,allowTaint:true,backgroundColor:'#fff'});
-    const img=canvas.toDataURL('image/jpeg',0.92);
+    const canvas=await html2canvas(tmp.firstChild,{scale:2,useCORS:true,allowTaint:true,backgroundColor:'#fff'});
+    const img=canvas.toDataURL('image/jpeg',0.95);
     const ns=getSavedScheds();ns[k]=img;
     try{setSavedScheds(ns);}catch(e){toast('儲存失敗（空間不足，請先刪除舊班表圖片）','err');return;}
     logOp(`儲存班表圖片：${unit} ${year}/${month}`);toast(`已儲存 ${unit} ${year}年${month}月 班表`,'ok');
