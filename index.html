@@ -1220,20 +1220,24 @@ async function saveCurSched(){
   const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);
   if(saved[k]&&!await uiConfirm('已有儲存的班表，確定覆蓋？',{okText:'覆蓋',title:'覆蓋確認'}))return;
   if(!window.html2canvas){toast('截圖功能尚未載入，請稍後再試','err');return;}
-  const table=document.getElementById('sc-table'),wrap=table.closest('.scroll-x');
-  const fullW=table.scrollWidth,fullH=table.scrollHeight;
-  const prevOX=wrap?wrap.style.overflowX:'',prevW=wrap?wrap.style.width:'';
-  if(wrap){wrap.style.overflowX='visible';wrap.style.width=fullW+'px';}
-  toast('截圖中…');
+  toast('截圖中…請稍候');
+  const table=document.getElementById('sc-table');
+  // Clone into an off-screen unconstrained container so getBoundingClientRect() returns full table width
+  const tmp=document.createElement('div');
+  tmp.style.cssText='position:absolute;top:100000px;left:0;background:#fff;width:max-content;pointer-events:none;';
+  tmp.appendChild(table.cloneNode(true));
+  document.body.appendChild(tmp);
+  // Two animation frames = browser has finished laying out the clone at full width
+  await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
   try{
-    const canvas=await html2canvas(table,{scale:1.5,useCORS:true,allowTaint:true,backgroundColor:'#fff',width:fullW,height:fullH});
+    const canvas=await html2canvas(tmp.firstChild,{scale:1.5,useCORS:true,allowTaint:true,backgroundColor:'#fff'});
     const img=canvas.toDataURL('image/jpeg',0.92);
     const ns=getSavedScheds();ns[k]=img;
     try{setSavedScheds(ns);}catch(e){toast('儲存失敗（空間不足，請先刪除舊班表圖片）','err');return;}
-    logOp(`儲存班表圖片：${unit} ${year}/${month}`);toast(`已儲存 ${unit} ${year}年${month}月 班表，點按鈕可放大查看`,'ok');
+    logOp(`儲存班表圖片：${unit} ${year}/${month}`);toast(`已儲存 ${unit} ${year}年${month}月 班表`,'ok');
     updateSaveBtn(unit,year,month);
   }catch(e){toast('截圖失敗：'+e.message,'err');}
-  finally{if(wrap){wrap.style.overflowX=prevOX;wrap.style.width=prevW;}}
+  finally{if(document.body.contains(tmp))document.body.removeChild(tmp);}
 }
 function openSchedImgModal(){
   hideSchedImgTip();
