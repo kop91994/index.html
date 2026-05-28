@@ -1134,24 +1134,46 @@ function _fbReady(){
     if(!window.firebase?.apps?.length)firebase.initializeApp(FIREBASE_CONFIG);
     _db=firebase.database();
 
-    // 第一次連線：將本機資料推上雲端（以本機為主）
-    SYNC_KEYS.forEach(k=>{
-      const v=localStorage.getItem(k);
-      if(v)try{_db.ref('sched/'+k).set(JSON.parse(v));}catch(e){}
-    });
+    // ★ 雲端為主：第一次連線先讀雲端，覆蓋本機 ★
+    // 對每個 KEY：雲端有資料 → 寫入本機；雲端沒資料 → 把本機推上去（首次部署初始化）
+    setSyncStatus('connecting','正在從雲端載入資料…');
+    const tasks=SYNC_KEYS.map(k=>_db.ref('sched/'+k).once('value').then(snap=>{
+      const cloudVal=snap.val();
+      if(cloudVal!==null){
+        // 雲端有資料 → 直接覆蓋本機（不觸發 fbWrite，避免回寫）
+        localStorage._rawSet(k,JSON.stringify(cloudVal));
+      }else{
+        // 雲端沒資料 → 把本機現有的推上雲端（只在首次部署時會發生）
+        const localVal=localStorage.getItem(k);
+        if(localVal){try{_db.ref('sched/'+k).set(JSON.parse(localVal));}catch(e){}}
+      }
+    }));
 
-    // 監聽雲端變更 → 更新本機 → 重繪目前分頁
-    SYNC_KEYS.forEach(k=>{
-      _db.ref('sched/'+k).on('value',snap=>{
-        if(Date.now()-(_lastWrite[k]||0)<SYNC_COOLDOWN)return; // 自己剛寫的，跳過
-        const val=snap.val();if(val===null)return;
-        localStorage._rawSet(k,JSON.stringify(val)); // 直接寫入，不再觸發 fbWrite
-        const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
-        if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+    Promise.all(tasks).then(()=>{
+      // 雲端資料已載入本機 → 重繪目前分頁
+      const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
+      if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+      // 重新整理下拉選單（部門可能變）
+      refreshUnitDropdowns();
+
+      // 載入完成後才掛上即時監聽，避免初始化時誤觸發
+      SYNC_KEYS.forEach(k=>{
+        _db.ref('sched/'+k).on('value',snap=>{
+          if(Date.now()-(_lastWrite[k]||0)<SYNC_COOLDOWN)return; // 自己剛寫的，跳過
+          const val=snap.val();if(val===null)return;
+          localStorage._rawSet(k,JSON.stringify(val)); // 直接寫入，不再觸發 fbWrite
+          const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
+          if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+        });
       });
+
+      setSyncStatus('connected');
+      toast('☁️ 已從雲端載入最新資料','ok');
+    }).catch(e=>{
+      console.error('Cloud load error:',e);
+      setSyncStatus('error','讀取雲端失敗：'+e.message);
     });
 
-    setSyncStatus('connected');
     // 斷線偵測
     _db.ref('.info/connected').on('value',s=>{
       if(!s.val())setSyncStatus('error','網路斷線，等待重連…');
