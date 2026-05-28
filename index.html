@@ -85,7 +85,9 @@ table{border-collapse:collapse}
 .mem-list{list-style:none}
 .mem-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .65rem;border-radius:6px;margin-bottom:3px;background:#FAFCFD;border:1px solid var(--border)}
 .mem-idx{font-size:11px;color:var(--text-light);width:20px;text-align:right;flex-shrink:0}
-.mem-name{flex:1;font-size:13px;font-weight:500}
+.mem-name{flex:1;font-size:13px;font-weight:500;cursor:text;padding:3px 7px;border-radius:4px;transition:.15s}
+.mem-name:hover{background:#EBF5FB;outline:1px dashed var(--accent)}
+.mem-edit-input{flex:1;border:1.5px solid var(--accent);border-radius:4px;padding:3px 7px;font-size:13px;font-family:inherit;font-weight:500;outline:none;background:#fff;color:var(--text);box-shadow:0 0 0 3px rgba(41,128,185,.15)}
 .divider{height:1px;background:var(--border);margin:.75rem 0}
 .pl-entries{font-size:13px;width:100%;border-collapse:collapse}
 .pl-entries th{background:var(--primary);color:#fff;padding:7px 9px;text-align:center;border:1px solid #3D4F5A}
@@ -477,20 +479,30 @@ function migrateData(){
   const h=getHistory();let hc=false;for(const k of Object.keys(h)){if(k.startsWith('前台_')){h['四方_'+k.slice(3)]=h[k];delete h[k];hc=true;}}if(hc)setHistory(h);
   const d=getDepts();const fi=d.indexOf('前台');if(fi!==-1){d[fi]='四方';setDepts(d);}
   const c=getTaskCfg();let cc=false;c.forEach(r=>{if(r.unit==='前台'){r.unit='四方';cc=true;}});if(cc)setTaskCfg(c);
+  // Migrate leave_history: old key "unit_name_month" → new "unit_name_year_month" (assume current year)
+  const lh=getHistory();const newLh={};let lhc=false;const cy=new Date().getFullYear();
+  for(const[k,v]of Object.entries(lh)){
+    const p=k.split('_');const sndLast=p[p.length-2];
+    if(p.length>=3&&!/^\d{4}$/.test(sndLast||'')){
+      const mm=p[p.length-1],uu=p[0],nn=p.slice(1,-1).join('_');
+      newLh[uu+'_'+nn+'_'+cy+'_'+mm]=v;lhc=true;
+    }else newLh[k]=v;
+  }
+  if(lhc){setHistory(newLh);logOp(`遷移舊請假紀錄至 ${cy} 年（請假紀錄已分年儲存）`);}
 }
 
 // ── HELPERS ──
 function maxRestOff(m){return HOLIDAY_MONTHS.includes(parseInt(m))?8:7;}
 function daysInMonth(y,m){return new Date(y,m,0).getDate();}
-function loadMonthLeave(month){
+function loadMonthLeave(year,month){
   const hist=getHistory(),map={};
-  for(const[k,pack]of Object.entries(hist)){const p=k.split('_');if(p.length<3)continue;if(parseInt(p[p.length-1])!==parseInt(month))continue;const u=p[0],n=p.slice(1,-1).join('_');for(const[d,v]of Object.entries(pack))map[u+'_'+n+'_'+d]=v;}
+  for(const[k,pack]of Object.entries(hist)){const p=k.split('_');if(p.length<4)continue;if(parseInt(p[p.length-1])!==parseInt(month))continue;if(parseInt(p[p.length-2])!==parseInt(year))continue;const u=p[0],n=p.slice(1,-2).join('_');for(const[d,v]of Object.entries(pack))map[u+'_'+n+'_'+d]=v;}
   return map;
 }
 function loadMonthPreLeave(year,month){
   const map={};getPreLeave().forEach(e=>{if(parseInt(e.year)===year&&parseInt(e.month)===month)map[e.unit+'_'+e.name+'_'+e.day]=e;});return map;
 }
-function histKey(u,n,m){return u+'_'+n+'_'+m;}
+function histKey(u,n,y,m){return u+'_'+n+'_'+y+'_'+m;}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
 function tasksForCount(u,n){const h=getTaskCfg().find(c=>c.unit===u&&parseInt(c.count)===n);if(h){const a=h.tasks.split(',').map(s=>s.trim()).filter(Boolean);while(a.length<n)a.push('備崗');return a.slice(0,n);}return Array.from({length:n},()=>'待命');}
 function distributeTasks(g,days,count,u){
@@ -655,7 +667,7 @@ function pfSelectLeaveType(type){
 // ── TAB 1：幼幼班假表 ──
 function renderOverview(){
   const unit=document.getElementById('ov-unit').value,year=parseInt(document.getElementById('ov-year').value),month=parseInt(document.getElementById('ov-month').value);
-  const days=daysInMonth(year,month),mems=getMembers(),map=loadMonthLeave(month),depts=getDepts();
+  const days=daysInMonth(year,month),mems=getMembers(),map=loadMonthLeave(year,month),depts=getDepts();
   const preMap=loadMonthPreLeave(year,month);
   const units=unit==='all'?depts:[unit];
   let totalPeople=0,totalLeaves=0;const dayOff=new Array(days+1).fill(0);
@@ -701,21 +713,21 @@ function cellClick(unit,name,day,year,month){
   if(!selectedLeaveType)return;
   const preMap=loadMonthPreLeave(year,month);
   if(preMap[unit+'_'+name+'_'+day]){toast(`${name} ${month}/${day} 當天已有預假！\n只能到年度預假刪除後才能點選`,'err');return;}
-  const hist=getHistory(),key=histKey(unit,name,month),pack=hist[key]||{};
+  const hist=getHistory(),key=histKey(unit,name,year,month),pack=hist[key]||{};
   if(pack[day]===selectedLeaveType){delete pack[day];if(Object.keys(pack).length)hist[key]=pack;else delete hist[key];setHistory(hist);logOp(`移除 ${unit} ${name} ${month}/${day} 假期`);toast(`已移除 ${name} ${month}/${day} 假期`);renderOverview();return;}
   if(pack[day]){delete pack[day];if(Object.keys(pack).length)hist[key]=pack;else delete hist[key];setHistory(hist);}
   processLeave(unit,name,selectedLeaveType,year,month,[parseInt(day)]);
 }
 
 async function clearMonthLeave(){
-  const unit=document.getElementById('ov-unit').value,month=parseInt(document.getElementById('ov-month').value),label=unit==='all'?'全部部門':unit;
+  const unit=document.getElementById('ov-unit').value,year=parseInt(document.getElementById('ov-year').value),month=parseInt(document.getElementById('ov-month').value),label=unit==='all'?'全部部門':unit;
   const pwd=await uiPrompt('請輸入密碼（清空後無法復原）：',{password:true,title:'密碼驗證'});
   if(pwd===null)return;
   if(pwd!=='0000'){toast('密碼錯誤，無法清空','err');return;}
-  if(!await uiConfirm(`確定清空【${label}】${month}月的全部請假紀錄？`,{danger:true,okText:'確定清空',title:'清空確認'}))return;
+  if(!await uiConfirm(`確定清空【${label}】${year}年${month}月的全部請假紀錄？`,{danger:true,okText:'確定清空',title:'清空確認'}))return;
   const hist=getHistory(),mems=getMembers(),units=unit==='all'?getDepts():[unit];
-  units.forEach(u=>(mems[u]||[]).forEach(n=>{delete hist[histKey(u,n,month)];}));
-  setHistory(hist);logOp(`清空 ${label} ${month}月請假紀錄`);toast(`已清空 ${label} ${month}月請假紀錄`,'ok');renderOverview();
+  units.forEach(u=>(mems[u]||[]).forEach(n=>{delete hist[histKey(u,n,year,month)];}));
+  setHistory(hist);logOp(`清空 ${label} ${year}年${month}月請假紀錄`);toast(`已清空 ${label} ${year}年${month}月請假紀錄`,'ok');renderOverview();
 }
 
 // ── TAB 2：排班表 ──
@@ -730,7 +742,7 @@ async function confirmRegen(){
 function renderSchedule(){
   const unit=document.getElementById('sc-unit').value;if(!unit){document.getElementById('sc-table').innerHTML='';document.getElementById('sc-stats').innerHTML='';return;}
   const year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value),days=daysInMonth(year,month);
-  const mems=getMembers(),list=mems[unit]||[],count=list.length,map=loadMonthLeave(month),mo=maxRestOff(month),uc=getDeptColor(unit);
+  const mems=getMembers(),list=mems[unit]||[],count=list.length,map=loadMonthLeave(year,month),mo=maxRestOff(month),uc=getDeptColor(unit);
   const scPreMap=loadMonthPreLeave(year,month);
   const grid=list.map(name=>{const r=[name];for(let d=1;d<=days;d++){const v=map[unit+'_'+name+'_'+d]||'';if(isLeave(v))r.push(v);else{const pr=scPreMap[unit+'_'+name+'_'+d];r.push(pr?'~'+(pr.leaveType||''):'');}}r.push('');return r;});
   // Restore from cache: apply saved task assignments to present (empty) slots
@@ -821,7 +833,7 @@ document.getElementById('modal-leave').addEventListener('click',e=>{if(e.target=
 
 // ── PROCESS LEAVE ──
 function processLeave(unit,empName,typeKey,year,month,selDays){
-  const hist=getHistory(),key=histKey(unit,empName,month),pack=hist[key]||{};
+  const hist=getHistory(),key=histKey(unit,empName,year,month),pack=hist[key]||{};
   const EXEMPT_LV=new Set(['喪','婚']);
   if(!EXEMPT_LV.has(typeKey)){const already=Object.values(pack).filter(v=>!EXEMPT_LV.has(v)).length,total=already+selDays.length;if(total>MAX_REST_ABS){toast(`超出每月請假上限！最多 ${MAX_REST_ABS} 天（喪假、婚假除外，已請 ${already} 天）`,'err');return;}}
   selDays.forEach(d=>{pack[d]=typeKey;});hist[key]=pack;setHistory(hist);
@@ -866,12 +878,53 @@ function renderMembers(){
   depts.forEach(u=>{const div=document.createElement('div');div.className='card';div.id='memCard-'+u;grid.appendChild(div);});
   depts.forEach(u=>{const members=mems[u]||[],uc=getDeptColor(u),card=document.getElementById('memCard-'+u);if(!card)return;
     card.innerHTML=`<div class="card-head"><span class="card-title"><span class="unit-badge" style="background:${uc.bg};color:${uc.fg}">${u}</span></span><span class="info">${members.length} 人</span></div>
-    <ul class="mem-list">${members.map((n,i)=>`<li class="mem-item"><span class="mem-idx">${i+1}.</span><span class="mem-name">${n}</span><button class="btn btn-danger btn-sm" onclick="removeMember('${u}','${n.replace(/'/g,"\\'")}')">移除</button></li>`).join('')}</ul>
+    <ul class="mem-list">${members.map((n,i)=>`<li class="mem-item"><span class="mem-idx">${i+1}.</span><span class="mem-name" onclick="editMember('${u.replace(/'/g,"\\'")}','${n.replace(/'/g,"\\'")}',this)" title="點擊可修改姓名">${n}</span><button class="btn btn-danger btn-sm" onclick="removeMember('${u}','${n.replace(/'/g,"\\'")}')">移除</button></li>`).join('')}</ul>
     <div class="divider"></div><div style="display:flex;gap:.4rem"><input type="text" id="nm-${u}" placeholder="輸入姓名" class="fc" style="flex:1" onkeydown="if(event.key==='Enter')addMember('${u}')"><button class="btn btn-success" onclick="addMember('${u}')">新增</button></div>`;
   });
 }
 function addMember(unit){const inp=document.getElementById('nm-'+unit),name=inp.value.trim();if(!name){toast('請輸入姓名','err');return;}const mems=getMembers();if(!mems[unit])mems[unit]=[];if(mems[unit].includes(name)){toast('此員工已存在','err');return;}mems[unit].push(name);setMembers(mems);inp.value='';logOp(`新增員工：${unit} - ${name}`);renderMembers();toast(`已新增 ${name} 至 ${unit}`,'ok');}
 async function removeMember(unit,name){if(!await uiConfirm(`確定移除「${name}」？`,{danger:true,okText:'移除',title:'移除員工'}))return;const mems=getMembers();mems[unit]=(mems[unit]||[]).filter(n=>n!==name);setMembers(mems);logOp(`移除員工：${unit} - ${name}`);renderMembers();toast(`已移除 ${name}`,'ok');}
+function editMember(unit,oldName,el){
+  if(el.querySelector('input'))return;
+  const safe=oldName.replace(/"/g,'&quot;'),safeUnit=unit.replace(/"/g,'&quot;');
+  el.innerHTML=`<input type="text" class="mem-edit-input" value="${safe}" data-unit="${safeUnit}" data-old="${safe}" onblur="finishMemberEdit(this)" onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur();}else if(event.key==='Escape'){this.dataset.cancel='1';this.blur();}">`;
+  const inp=el.querySelector('input');inp.focus();inp.select();
+}
+function finishMemberEdit(inp){
+  if(inp.dataset.cancel==='1'){renderMembers();return;}
+  const unit=inp.dataset.unit,oldName=inp.dataset.old,newName=(inp.value||'').trim();
+  if(!newName||newName===oldName){renderMembers();return;}
+  const mems=getMembers();
+  if((mems[unit]||[]).includes(newName)){toast(`部門「${unit}」已有員工「${newName}」`,'err');renderMembers();return;}
+  mems[unit]=mems[unit].map(n=>n===oldName?newName:n);setMembers(mems);
+  // leave_history：rename key (unit_name_year_month)
+  const hist=getHistory(),newHist={};
+  for(const[k,v]of Object.entries(hist)){
+    const p=k.split('_');
+    if(p.length>=4){
+      const u=p[0],m=p[p.length-1],y=p[p.length-2],n=p.slice(1,-2).join('_');
+      if(u===unit&&n===oldName){newHist[u+'_'+newName+'_'+y+'_'+m]=v;continue;}
+    }
+    newHist[k]=v;
+  }
+  setHistory(newHist);
+  // pre_leave
+  const pl=getPreLeave();pl.forEach(e=>{if(e.unit===unit&&e.name===oldName)e.name=newName;});setPreLeave(pl);
+  // lottery_pool
+  const pool=getLotteryPool();pool.forEach(p=>{if(p.unit===unit&&p.name===oldName)p.name=newName;});setLotteryPool(pool);
+  // sched_cache: cache[unit][year][month] = {name: {day:task}}
+  const cache=getSchedCache();
+  if(cache[unit]){
+    for(const y of Object.keys(cache[unit])){
+      for(const mm of Object.keys(cache[unit][y])){
+        const md=cache[unit][y][mm];
+        if(md&&md[oldName]!==undefined){md[newName]=md[oldName];delete md[oldName];}
+      }
+    }
+    setSchedCache(cache);
+  }
+  logOp(`重新命名員工：${unit} ${oldName} → ${newName}`);toast(`✔ 已更名為 ${newName}`,'ok');renderMembers();
+}
 
 // ── TAB 5：TASK CONFIG ──
 function renderTaskConfig(){
