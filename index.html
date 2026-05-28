@@ -174,7 +174,7 @@ table{border-collapse:collapse}
         <label>年份</label><select id="sc-year" onchange="renderSchedule()"></select>
         <label>月份</label><select id="sc-month" onchange="renderSchedule()"></select>
         <button class="btn btn-warning btn-sm" onclick="confirmRegen()">🔀 重新產生</button>
-        <button id="btn-save-sched" class="btn btn-outline btn-sm" onclick="saveCurSched()" onmouseenter="showSchedImgTip(this)" onmouseleave="hideSchedImgTip()">💾 儲存班表</button>
+        <button id="btn-save-sched" class="btn btn-primary btn-sm" onclick="handleSaveBtn()" onmouseenter="showSchedImgTip(this)" onmouseleave="hideSchedImgTip()">💾 儲存班表</button>
       </div>
     </div>
     <p class="info" style="margin-bottom:.6rem">依請假紀錄自動分配每日工作，公平輪流。</p>
@@ -359,7 +359,19 @@ table{border-collapse:collapse}
 </div>
 
 <div class="rule-tooltip" id="rule-tooltip"></div>
-<div id="sched-img-tip" onmouseenter="clearTimeout(_schedTipTimer)" onmouseleave="hideSchedImgTip()" style="position:fixed;z-index:900;background:#fff;border-radius:12px;padding:.8rem 1rem;box-shadow:0 8px 32px rgba(0,0,0,.28);display:none;max-width:540px;pointer-events:auto;border:1px solid var(--border)"><img id="sched-img-preview" style="max-width:100%;border-radius:6px;display:block;max-height:480px;object-fit:contain"><div style="text-align:right;margin-top:.5rem"><button class="btn btn-danger btn-sm" onclick="deleteSavedSched()">🗑 刪除班表圖片</button></div></div>
+<div id="sched-img-tip" onmouseenter="clearTimeout(_schedTipTimer)" onmouseleave="hideSchedImgTip()" style="position:fixed;z-index:900;background:#fff;border-radius:12px;padding:.65rem .8rem;box-shadow:0 8px 32px rgba(0,0,0,.28);display:none;max-width:300px;pointer-events:auto;border:1px solid var(--border)"><div id="sched-tip-label" style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:.35rem"></div><img id="sched-img-preview" onclick="openSchedImgModal()" style="max-width:100%;border-radius:5px;display:block;max-height:150px;object-fit:contain;cursor:zoom-in"><div style="display:flex;gap:.35rem;margin-top:.4rem"><button class="btn btn-primary btn-sm" onclick="openSchedImgModal()" style="flex:1;font-size:11px">🔍 點擊放大</button><button class="btn btn-danger btn-sm" onclick="deleteSavedSched(false)" style="font-size:11px">🗑 刪除</button></div></div>
+<div class="modal-ov" id="sched-img-modal" onclick="if(event.target===this)closeSchedImgModal()">
+  <div style="background:#fff;border-radius:14px;padding:1rem 1.2rem;max-width:min(1500px,96vw);max-height:93vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.38);display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;position:sticky;top:0;background:#fff;z-index:1;padding-bottom:.5rem;border-bottom:1px solid var(--border);flex-shrink:0">
+      <span id="sched-img-modal-title" style="font-size:15px;font-weight:700;color:var(--primary)"></span>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn btn-danger btn-sm" onclick="deleteSavedSched(true)">🗑 刪除</button>
+        <button class="btn btn-secondary btn-sm" onclick="closeSchedImgModal()">✕ 關閉</button>
+      </div>
+    </div>
+    <div style="overflow:auto;flex:1"><img id="sched-img-full" style="display:block;max-width:100%;border-radius:6px;height:auto"></div>
+  </div>
+</div>
 <div class="toast-wrap" id="toasts"></div>
 
 <!-- MODAL：自訂 confirm / prompt（取代醜陋的瀏覽器原生彈窗） -->
@@ -1194,8 +1206,13 @@ function savedSchedKey(u,y,m){return u+'_'+y+'_'+m;}
 function updateSaveBtn(u,y,m){
   const btn=document.getElementById('btn-save-sched');if(!btn)return;
   const saved=getSavedScheds(),k=savedSchedKey(u,y,m);
-  if(saved[k]){btn.innerHTML='📋 已儲存班表';btn.className='btn btn-success btn-sm';}
-  else{btn.innerHTML='💾 儲存班表';btn.className='btn btn-outline btn-sm';}
+  if(saved[k]){btn.innerHTML='📷 查看班表';btn.className='btn btn-success btn-sm';}
+  else{btn.innerHTML='💾 儲存班表';btn.className='btn btn-primary btn-sm';}
+}
+function handleSaveBtn(){
+  const unit=document.getElementById('sc-unit').value,year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
+  if(getSavedScheds()[savedSchedKey(unit,year,month)])openSchedImgModal();
+  else saveCurSched();
 }
 let _schedTipTimer=null;
 async function saveCurSched(){
@@ -1203,38 +1220,54 @@ async function saveCurSched(){
   const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);
   if(saved[k]&&!await uiConfirm('已有儲存的班表，確定覆蓋？',{okText:'覆蓋',title:'覆蓋確認'}))return;
   if(!window.html2canvas){toast('截圖功能尚未載入，請稍後再試','err');return;}
-  const tableWrap=document.getElementById('sc-table').closest('.scroll-x')||document.getElementById('sc-table');
+  const table=document.getElementById('sc-table'),wrap=table.closest('.scroll-x');
+  const fullW=table.scrollWidth,fullH=table.scrollHeight;
+  const prevOX=wrap?wrap.style.overflowX:'',prevW=wrap?wrap.style.width:'';
+  if(wrap){wrap.style.overflowX='visible';wrap.style.width=fullW+'px';}
   toast('截圖中…');
   try{
-    const canvas=await html2canvas(tableWrap,{scale:1,useCORS:true,allowTaint:true,backgroundColor:'#fff'});
-    const img=canvas.toDataURL('image/jpeg',0.82);
+    const canvas=await html2canvas(table,{scale:1.5,useCORS:true,allowTaint:true,backgroundColor:'#fff',width:fullW,height:fullH});
+    const img=canvas.toDataURL('image/jpeg',0.92);
     const ns=getSavedScheds();ns[k]=img;
     try{setSavedScheds(ns);}catch(e){toast('儲存失敗（空間不足，請先刪除舊班表圖片）','err');return;}
-    logOp(`儲存班表圖片：${unit} ${year}/${month}`);toast(`已儲存 ${unit} ${year}年${month}月 班表`,'ok');
+    logOp(`儲存班表圖片：${unit} ${year}/${month}`);toast(`已儲存 ${unit} ${year}年${month}月 班表，點按鈕可放大查看`,'ok');
     updateSaveBtn(unit,year,month);
   }catch(e){toast('截圖失敗：'+e.message,'err');}
+  finally{if(wrap){wrap.style.overflowX=prevOX;wrap.style.width=prevW;}}
 }
+function openSchedImgModal(){
+  hideSchedImgTip();
+  const unit=document.getElementById('sc-unit').value,year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
+  const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);
+  if(!saved[k])return;
+  document.getElementById('sched-img-full').src=saved[k];
+  document.getElementById('sched-img-modal-title').textContent=`📷 ${unit} ${year}年${month}月 班表`;
+  document.getElementById('sched-img-modal').classList.add('open');
+}
+function closeSchedImgModal(){document.getElementById('sched-img-modal').classList.remove('open');}
 function showSchedImgTip(btn){
   clearTimeout(_schedTipTimer);
   const unit=document.getElementById('sc-unit').value,year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
   const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);
   if(!saved[k])return;
   const tip=document.getElementById('sched-img-tip'),img=document.getElementById('sched-img-preview');
+  const lbl=document.getElementById('sched-tip-label');if(lbl)lbl.textContent=`${unit} ${year}年${month}月 班表`;
   img.src=saved[k];tip.style.display='block';
   const r=btn.getBoundingClientRect();
   let left=r.left,top=r.bottom+8;
-  if(left+545>window.innerWidth-10)left=Math.max(8,window.innerWidth-550);
-  if(top+500>window.innerHeight)top=Math.max(8,r.top-290);
+  if(left+305>window.innerWidth-10)left=Math.max(8,window.innerWidth-310);
+  if(top+250>window.innerHeight)top=Math.max(8,r.top-260);
   tip.style.left=left+'px';tip.style.top=top+'px';
 }
 function hideSchedImgTip(){_schedTipTimer=setTimeout(()=>{const tip=document.getElementById('sched-img-tip');if(tip)tip.style.display='none';},150);}
-async function deleteSavedSched(){
+async function deleteSavedSched(fromModal){
   const unit=document.getElementById('sc-unit').value,year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
   if(!await uiConfirm(`確定刪除 ${unit} ${year}年${month}月 班表圖片？`,{danger:true,okText:'刪除',title:'刪除班表圖片'}))return;
   const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);
   delete saved[k];setSavedScheds(saved);
   logOp(`刪除班表圖片：${unit} ${year}/${month}`);toast('已刪除班表圖片','ok');
-  hideSchedImgTip();updateSaveBtn(unit,year,month);
+  hideSchedImgTip();if(fromModal)closeSchedImgModal();
+  updateSaveBtn(unit,year,month);
 }
 
 // ── LOTTERY DATE CHANGE ──
