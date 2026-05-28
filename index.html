@@ -1075,17 +1075,16 @@ function clearOpLog(){if(!confirm('確定清除所有操作記錄？'))return;se
 // │  5. 將下方 FIREBASE_CONFIG 的 null 替換為複製的設定   │
 // │  6. 上傳此 HTML 至 GitHub Pages                       │
 // └─────────────────────────────────────────────────────┘
-const FIREBASE_CONFIG = null;
-// 填入後範例（移除這行，取消下方註解並填入真實值）：
-// const FIREBASE_CONFIG = {
-//   apiKey: "AIzaSy…",
-//   authDomain: "your-project.firebaseapp.com",
-//   databaseURL: "https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app",
-//   projectId: "your-project",
-//   storageBucket: "your-project.appspot.com",
-//   messagingSenderId: "123456789",
-//   appId: "1:123456789:web:abc…"
-// };
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDpcXIpfSAdL8oiU_XH6upq-kzadcj0YW0",
+  authDomain: "joe1688-83f8a.firebaseapp.com",
+  databaseURL: "https://joe1688-83f8a-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "joe1688-83f8a",
+  storageBucket: "joe1688-83f8a.firebasestorage.app",
+  messagingSenderId: "111383003631",
+  appId: "1:111383003631:web:74763501bf274f6c09b61a",
+  measurementId: "G-KH94JFM0SJ"
+};
 
 const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log'];
 let _db=null;
