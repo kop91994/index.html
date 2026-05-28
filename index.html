@@ -121,6 +121,7 @@ table{border-collapse:collapse}
 .rule-tooltip{position:fixed;background:#2C3E50;color:#fff;border-radius:10px;padding:.9rem 1.2rem;font-size:12px;line-height:1.85;max-width:480px;white-space:pre-wrap;z-index:600;box-shadow:0 8px 28px rgba(0,0,0,.35);display:none;pointer-events:none;border-left:4px solid #5DADE2}
 @media(max-width:700px){.main{padding:.75rem}}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 <body>
 
@@ -173,6 +174,7 @@ table{border-collapse:collapse}
         <label>年份</label><select id="sc-year" onchange="renderSchedule()"></select>
         <label>月份</label><select id="sc-month" onchange="renderSchedule()"></select>
         <button class="btn btn-warning btn-sm" onclick="confirmRegen()">🔀 重新產生</button>
+        <button id="btn-save-sched" class="btn btn-outline btn-sm" onclick="saveCurSched()" onmouseenter="showSchedImgTip(this)" onmouseleave="hideSchedImgTip()">💾 儲存班表</button>
       </div>
     </div>
     <p class="info" style="margin-bottom:.6rem">依請假紀錄自動分配每日工作，公平輪流。</p>
@@ -357,6 +359,7 @@ table{border-collapse:collapse}
 </div>
 
 <div class="rule-tooltip" id="rule-tooltip"></div>
+<div id="sched-img-tip" onmouseenter="clearTimeout(_schedTipTimer)" onmouseleave="hideSchedImgTip()" style="position:fixed;z-index:900;background:#fff;border-radius:12px;padding:.8rem 1rem;box-shadow:0 8px 32px rgba(0,0,0,.28);display:none;max-width:540px;pointer-events:auto;border:1px solid var(--border)"><img id="sched-img-preview" style="max-width:100%;border-radius:6px;display:block;max-height:480px;object-fit:contain"><div style="text-align:right;margin-top:.5rem"><button class="btn btn-danger btn-sm" onclick="deleteSavedSched()">🗑 刪除班表圖片</button></div></div>
 <div class="toast-wrap" id="toasts"></div>
 
 <!-- MODAL：自訂 confirm / prompt（取代醜陋的瀏覽器原生彈窗） -->
@@ -549,6 +552,25 @@ function distributeTasks(g,days,count,u){
       const best=pool[Math.floor(Math.random()*pool.length)];
       g[best][d]=task;st[best][task]=(st[best][task]||0)+1;
       avail.splice(avail.indexOf(best),1);
+    }
+  }
+  // ── Post-processing equalization: reduce task max-min diff to ≤ 1 ──
+  const _EQ_SKIP=new Set(['待命','備崗']);
+  let _eqOk=true,_eqP=0;
+  while(_eqOk&&_eqP<40){
+    _eqOk=false;_eqP++;
+    const _tm={};
+    for(let i=0;i<count;i++){for(let d=1;d<=days;d++){const v=g[i][d];if(!v||isLeave(v)||v[0]==='~'||_EQ_SKIP.has(v))continue;if(!_tm[v])_tm[v]=new Array(count).fill(0);_tm[v][i]++;}}
+    for(const[_t,_cs]of Object.entries(_tm)){
+      const _mx=Math.max(..._cs),_mn=Math.min(..._cs);if(_mx-_mn<=1)continue;
+      const _hi=_cs.indexOf(_mx),_lo=_cs.lastIndexOf(_mn);
+      for(let d=1;d<=days;d++){
+        if(g[_hi][d]!==_t)continue;
+        const _lv=g[_lo][d];
+        if(!_lv||isLeave(_lv)||_lv[0]==='~'||_EQ_SKIP.has(_lv)||_lv===_t)continue;
+        g[_hi][d]=_lv;g[_lo][d]=_t;_eqOk=true;break;
+      }
+      if(_eqOk)break;
     }
   }
 }
@@ -768,6 +790,7 @@ function renderSchedule(){
    {label:'請假人數',bg:'#FDF5F5',fn:d=>{let o=0;for(let i=0;i<count;i++){const v=grid[i][d];if(isLeave(v)||(v&&v[0]==='~'))o++;}return{val:o||'',style:'color:#B87A7A;font-weight:600'};}}
   ].forEach(sr=>{h+=`<tr style="background:${sr.bg}"><td class="s-name" style="font-size:11px">${sr.label}</td>`;for(let d=1;d<=days;d++){const{val,style}=sr.fn(d);h+=`<td style="${style}">${val}</td>`;}h+=`<td></td></tr>`;});
   document.getElementById('sc-table').innerHTML=h+'</tbody>';
+  updateSaveBtn(unit,year,month);
   // ── 工作次數統計表 ──
   const SKIP_TASK=new Set(['待命','備崗']);
   const tmap={};const wtot=new Array(count).fill(0);
@@ -1164,6 +1187,56 @@ async function deleteCalImg(){
   refreshCalModal();
 }
 
+// ── SAVED SCHEDULES (monthly snapshots) ──
+function getSavedScheds(){try{return JSON.parse(localStorage.getItem('saved_schedules'))||{};}catch(e){return{};}}
+function setSavedScheds(d){localStorage.setItem('saved_schedules',JSON.stringify(d));}
+function savedSchedKey(u,y,m){return u+'_'+y+'_'+m;}
+function updateSaveBtn(u,y,m){
+  const btn=document.getElementById('btn-save-sched');if(!btn)return;
+  const saved=getSavedScheds(),k=savedSchedKey(u,y,m);
+  if(saved[k]){btn.innerHTML='📋 已儲存班表';btn.className='btn btn-success btn-sm';}
+  else{btn.innerHTML='💾 儲存班表';btn.className='btn btn-outline btn-sm';}
+}
+let _schedTipTimer=null;
+async function saveCurSched(){
+  const unit=document.getElementById('sc-unit').value,year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
+  const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);
+  if(saved[k]&&!await uiConfirm('已有儲存的班表，確定覆蓋？',{okText:'覆蓋',title:'覆蓋確認'}))return;
+  if(!window.html2canvas){toast('截圖功能尚未載入，請稍後再試','err');return;}
+  const tableWrap=document.getElementById('sc-table').closest('.scroll-x')||document.getElementById('sc-table');
+  toast('截圖中…');
+  try{
+    const canvas=await html2canvas(tableWrap,{scale:1,useCORS:true,allowTaint:true,backgroundColor:'#fff'});
+    const img=canvas.toDataURL('image/jpeg',0.82);
+    const ns=getSavedScheds();ns[k]=img;
+    try{setSavedScheds(ns);}catch(e){toast('儲存失敗（空間不足，請先刪除舊班表圖片）','err');return;}
+    logOp(`儲存班表圖片：${unit} ${year}/${month}`);toast(`已儲存 ${unit} ${year}年${month}月 班表`,'ok');
+    updateSaveBtn(unit,year,month);
+  }catch(e){toast('截圖失敗：'+e.message,'err');}
+}
+function showSchedImgTip(btn){
+  clearTimeout(_schedTipTimer);
+  const unit=document.getElementById('sc-unit').value,year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
+  const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);
+  if(!saved[k])return;
+  const tip=document.getElementById('sched-img-tip'),img=document.getElementById('sched-img-preview');
+  img.src=saved[k];tip.style.display='block';
+  const r=btn.getBoundingClientRect();
+  let left=r.left,top=r.bottom+8;
+  if(left+545>window.innerWidth-10)left=Math.max(8,window.innerWidth-550);
+  if(top+500>window.innerHeight)top=Math.max(8,r.top-290);
+  tip.style.left=left+'px';tip.style.top=top+'px';
+}
+function hideSchedImgTip(){_schedTipTimer=setTimeout(()=>{const tip=document.getElementById('sched-img-tip');if(tip)tip.style.display='none';},150);}
+async function deleteSavedSched(){
+  const unit=document.getElementById('sc-unit').value,year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
+  if(!await uiConfirm(`確定刪除 ${unit} ${year}年${month}月 班表圖片？`,{danger:true,okText:'刪除',title:'刪除班表圖片'}))return;
+  const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);
+  delete saved[k];setSavedScheds(saved);
+  logOp(`刪除班表圖片：${unit} ${year}/${month}`);toast('已刪除班表圖片','ok');
+  hideSchedImgTip();updateSaveBtn(unit,year,month);
+}
+
 // ── LOTTERY DATE CHANGE ──
 function onLotteryDateChange(){
   if(!lotSession.winners.length)return;
@@ -1204,7 +1277,7 @@ const FIREBASE_CONFIG = {
   measurementId: "G-KH94JFM0SJ"
 };
 
-const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log'];
+const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log','calendar_images','saved_schedules'];
 let _db=null;
 const _lastWrite={};
 const SYNC_COOLDOWN=2500;
