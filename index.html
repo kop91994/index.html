@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>排假管理系統</title>
+<style>
+:root{--primary:#2C3E50;--accent:#2980B9;--success:#27AE60;--warning:#E67E22;--danger:#E74C3C;--bg:#EEF2F7;--border:#D5DDE8;--text:#2C3E50;--text-light:#6B7A8A}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Microsoft JhengHei','PingFang TC',sans-serif;background:var(--bg);color:var(--text);font-size:14px}
+.nav{background:var(--primary);display:flex;align-items:center;padding:0 1rem;height:50px;box-shadow:0 2px 8px rgba(0,0,0,.25);position:sticky;top:0;z-index:100}
+.nav-brand{color:#fff;font-size:14px;font-weight:700;margin-right:1rem;white-space:nowrap}
+.nav-tabs{display:flex;height:100%;overflow-x:auto}
+.nav-tab{color:rgba(255,255,255,.65);padding:0 .85rem;cursor:pointer;display:flex;align-items:center;font-size:12px;border-bottom:3px solid transparent;white-space:nowrap;transition:.18s;user-select:none}
+.nav-tab:hover{color:#fff;background:rgba(255,255,255,.08)}
+.nav-tab.active{color:#fff;border-bottom-color:#5DADE2}
+.main{padding:1.25rem;max-width:1680px;margin:0 auto}
+.section{display:none}.section.active{display:block}
+.card{background:#fff;border-radius:10px;box-shadow:0 1px 5px rgba(0,0,0,.08);padding:1.2rem;margin-bottom:1rem}
+.card-head{display:flex;align-items:center;gap:.75rem;margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.card-title{font-size:14px;font-weight:700;color:var(--primary)}
+.fbar{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;flex:1}
+.fbar label{font-size:12px;color:var(--text-light);font-weight:600}
+select,input[type=text],input[type=number],input[type=date],textarea{border:1px solid var(--border);border-radius:6px;padding:.32rem .65rem;font-size:13px;outline:none;background:#fff;color:var(--text);font-family:inherit}
+select:focus,input:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(41,128,185,.15)}
+.btn{padding:.35rem .85rem;border-radius:6px;border:none;cursor:pointer;font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:.3rem;transition:.15s;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:#2471A3}
+.btn-success{background:var(--success);color:#fff}.btn-success:hover{background:#1E8449}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:#C0392B}
+.btn-secondary{background:#ECF0F1;color:var(--text)}.btn-secondary:hover{background:#D5DBDB}
+.btn-warning{background:var(--warning);color:#fff}.btn-warning:hover{background:#CA6F1E}
+.btn-outline{background:transparent;border:1.5px solid var(--accent);color:var(--accent)}.btn-outline:hover{background:rgba(41,128,185,.08)}
+.btn-sm{padding:.22rem .55rem;font-size:12px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.legend{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.6rem}
+.leg-item{font-size:11px;font-weight:700;padding:2px 6px;border-radius:4px;cursor:default}
+.lv-selector{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.5rem}
+.lv-chip{display:inline-flex;align-items:center;gap:.35rem;padding:4px 9px 4px 6px;border-radius:20px;cursor:pointer;font-size:12px;font-weight:700;user-select:none;transition:all .15s;border:2px solid transparent}
+.lv-chip:hover{filter:brightness(.88);transform:scale(1.04)}
+.lv-chip.selected{border-color:rgba(0,0,0,.45)!important;box-shadow:0 2px 10px rgba(0,0,0,.2);transform:scale(1.08)}
+.lv-radio{width:15px;height:15px;border-radius:50%;border:2px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lv-chip.selected .lv-radio::after{content:'';display:block;width:7px;height:7px;border-radius:50%;background:currentColor}
+.edit-mode-bar{padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;margin-bottom:.5rem;display:none}
+.stats-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.85rem}
+.stat-card{flex:1;min-width:100px;padding:.6rem .85rem;background:#F8FAFC;border:1px solid var(--border);border-radius:8px;text-align:center}
+.stat-val{font-size:20px;font-weight:700;color:var(--accent)}
+.stat-lbl{font-size:11px;color:var(--text-light);margin-top:2px}
+.scroll-x{overflow-x:auto}
+table{border-collapse:collapse}
+.mtx{font-size:13px;width:100%}
+.mtx th{background:var(--primary);color:#fff;padding:6px 5px;text-align:center;position:sticky;top:0;white-space:nowrap;border:1px solid #3D4F5A}
+.mtx td{border:1px solid var(--border);padding:5px 4px;text-align:center;white-space:nowrap}
+.mtx .c-name{font-weight:600;text-align:left;padding:5px 8px;min-width:80px;position:sticky;left:0;z-index:2;border-right:2px solid var(--border)}
+.mtx .c-unit{font-weight:700;font-size:12px}
+.mtx .wkend{background:#4A5A61!important;color:#fff!important}
+.mtx .lv{font-weight:700}
+.mtx tr:hover td{filter:brightness(.96)}
+.mtx .day-off{background:#FFF0F0;font-weight:700;font-size:12px}
+.cell-editable{cursor:pointer!important}.cell-editable:hover{opacity:.82;outline:2px solid rgba(0,0,0,.25)}
+.sched{font-size:14px}
+.sched th{background:#2A323D;color:#fff;padding:8px 6px;text-align:center;position:sticky;top:0;border:1px solid #3D4F5A;white-space:nowrap;letter-spacing:.3px}
+.sched td{border:1px solid #E4EAF0;padding:7px 5px;text-align:center;white-space:pre-wrap}
+.sched .s-name{font-weight:700;text-align:left;padding:7px 11px;position:sticky;left:0;z-index:2;min-width:88px;border-right:2px solid #D0D9E3;font-size:14px}
+.sched .task-cell{font-size:12px;font-weight:700;line-height:1.5;min-width:60px;max-width:105px;background:#EBF5FB;color:#1A4A6E;word-break:break-word}
+.sched tr:hover td{filter:brightness(.97)}
+.date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:.35rem}
+.dc{aspect-ratio:1;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:5px;font-size:13px;border:1px solid var(--border);transition:.12s;user-select:none}
+.dc:hover:not(.dc-dis):not(.dc-hdr){border-color:var(--accent);background:rgba(41,128,185,.1)}
+.dc.dc-sel{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:700}
+.dc.dc-wk{background:#F5F5F5;color:#aaa}
+.dc.dc-dis{opacity:.4;cursor:default}
+.dc.dc-hdr{cursor:default;font-weight:700;font-size:12px;color:var(--text-light);background:none;border:none}
+.date-sel-info{font-size:12px;color:var(--text-light);margin-top:.35rem}
+.fg{margin-bottom:.85rem}
+.flabel{font-size:14px;font-weight:600;color:var(--text);margin-bottom:.3rem;display:block}
+.fc{width:100%;border:1px solid var(--border);border-radius:6px;padding:.5rem .8rem;font-size:14px;outline:none;font-family:inherit}
+.fc:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(41,128,185,.15)}
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center}
+.modal-ov.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:1.4rem;width:min(500px,92vw);max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem}
+.modal-title{font-size:15px;font-weight:700}
+.modal-x{background:none;border:none;cursor:pointer;font-size:21px;color:var(--text-light);line-height:1;padding:0 2px}
+.modal-x:hover{color:var(--danger)}
+.mem-list{list-style:none}
+.mem-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .65rem;border-radius:6px;margin-bottom:3px;background:#FAFCFD;border:1px solid var(--border)}
+.mem-idx{font-size:11px;color:var(--text-light);width:20px;text-align:right;flex-shrink:0}
+.mem-name{flex:1;font-size:13px;font-weight:500}
+.divider{height:1px;background:var(--border);margin:.75rem 0}
+.pl-entries{font-size:13px;width:100%;border-collapse:collapse}
+.pl-entries th{background:var(--primary);color:#fff;padding:7px 9px;text-align:center;border:1px solid #3D4F5A}
+.pl-entries td{border:1px solid var(--border);padding:6px 9px;text-align:center}
+.pl-form-box{background:#F0F7FF;border:1px solid var(--accent);border-radius:8px;padding:.9rem;margin-bottom:.9rem}
+.tct{font-size:13px;width:100%;border-collapse:collapse}
+.tct th{background:var(--primary);color:#fff;padding:7px 11px;text-align:left;border:1px solid #3D4F5A}
+.tct td{border:1px solid var(--border);padding:6px 9px;vertical-align:top}
+.tct textarea{width:100%;border:1px solid var(--border);border-radius:5px;padding:4px 7px;font-size:12px;resize:vertical;font-family:monospace}
+.tct textarea:focus{border-color:var(--accent);outline:none}
+.unit-section{margin-bottom:1.1rem;background:#fff;border:1px solid var(--border);border-radius:8px;padding:.9rem}
+.unit-badge{display:inline-block;padding:3px 11px;border-radius:12px;font-size:12px;font-weight:700}
+.lottery-grid{display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:start}
+@media(max-width:900px){.lottery-grid{grid-template-columns:1fr}}
+.wheel-wrap{display:flex;flex-direction:column;align-items:center;gap:.75rem}
+#wheel-canvas{display:block;border-radius:50%;box-shadow:0 4px 20px rgba(0,0,0,.15)}
+.pool-person{display:flex;align-items:center;gap:.4rem;padding:.32rem .6rem;border-radius:6px;margin-bottom:3px;background:#FAFCFD;border:1px solid var(--border)}
+.lot-rec-tbl{font-size:12px;width:100%;border-collapse:collapse}
+.lot-rec-tbl th{background:#3D4F5A;color:#fff;padding:6px 10px;text-align:left;border:1px solid #2C3E50}
+.lot-rec-tbl td{border:1px solid var(--border);padding:5px 10px}
+.lot-rec-tbl tr:nth-child(even) td{background:#F8FAFC}
+.oplog{font-size:13px;width:100%;border-collapse:collapse}
+.oplog th{background:var(--primary);color:#fff;padding:7px 11px;text-align:left;border:1px solid #3D4F5A}
+.oplog td{border:1px solid var(--border);padding:5px 11px}
+.oplog tr:nth-child(even) td{background:#F8FAFC}
+.toast-wrap{position:fixed;bottom:1.3rem;right:1.3rem;z-index:2000;display:flex;flex-direction:column;gap:.35rem;pointer-events:none}
+.toast{background:#2C3E50;color:#fff;padding:.6rem 1rem;border-radius:8px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.22);animation:tIn .25s ease;max-width:280px;pointer-events:auto}
+.toast.ok{background:var(--success)}.toast.err{background:var(--danger)}
+@keyframes tIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.info{font-size:12px;color:var(--text-light)}
+.rule-tooltip{position:fixed;background:#2C3E50;color:#fff;border-radius:10px;padding:.9rem 1.2rem;font-size:12px;line-height:1.85;max-width:480px;white-space:pre-wrap;z-index:600;box-shadow:0 8px 28px rgba(0,0,0,.35);display:none;pointer-events:none;border-left:4px solid #5DADE2}
+@media(max-width:700px){.main{padding:.75rem}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">📅 排假系統</div>
+  <div class="nav-tabs" id="navTabs">
+    <div class="nav-tab active" data-tab="overview">📊 幼幼班假表</div>
+    <div class="nav-tab" data-tab="schedule">🗓 排班表</div>
+    <div class="nav-tab" data-tab="preleave">📆 年度預假</div>
+    <div class="nav-tab" data-tab="members">👥 員工設定</div>
+    <div class="nav-tab" data-tab="tasks">⚙️ 工作配置</div>
+    <div class="nav-tab" data-tab="lottery">🎰 生死抽籤</div>
+    <div class="nav-tab" data-tab="oplog">📋 操作記錄</div>
+  </div>
+  <span id="sync-status" style="color:rgba(255,255,255,.7);font-size:11px;margin-left:auto;padding:0 .8rem;white-space:nowrap;flex-shrink:0" title=""></span>
+</nav>
+
+<div class="main">
+
+<!-- TAB 1：幼幼班假表 -->
+<div class="section active" id="tab-overview">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">📊 幼幼班假表</span>
+      <div class="fbar">
+        <label>部門</label><select id="ov-unit" onchange="renderOverview()"><option value="all">（全部）</option></select>
+        <label>年份</label><select id="ov-year" onchange="renderOverview()"></select>
+        <label>月份</label><select id="ov-month" onchange="renderOverview()"></select>
+        <button class="btn btn-secondary btn-sm" onclick="clearMonthLeave()">清空本月</button>
+        <button class="btn btn-outline btn-sm" onclick="openCalModal()" style="margin-left:auto">📅 行事曆</button>
+      </div>
+    </div>
+    <div style="margin-bottom:.6rem">
+      <div style="font-size:12px;font-weight:600;color:var(--text-light);margin-bottom:.28rem">假別 <span style="font-weight:400">（選取後直接點格子套用）</span></div>
+      <div class="lv-selector" id="lv-selector"></div>
+      <div class="edit-mode-bar" id="edit-mode-bar">✏️ 點格子套用假別，再點同格移除，點假別圓圈取消選取</div>
+    </div>
+    <div class="stats-row" id="ov-stats"></div>
+    <div class="scroll-x"><table class="mtx" id="ov-table"></table></div>
+  </div>
+</div>
+
+<!-- TAB 2：排班表 -->
+<div class="section" id="tab-schedule">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">🗓 排班表（自動分配）</span>
+      <div class="fbar">
+        <label>部門</label><select id="sc-unit" onchange="renderSchedule()"></select>
+        <label>年份</label><select id="sc-year" onchange="renderSchedule()"></select>
+        <label>月份</label><select id="sc-month" onchange="renderSchedule()"></select>
+        <button class="btn btn-warning btn-sm" onclick="confirmRegen()">🔀 重新產生</button>
+      </div>
+    </div>
+    <p class="info" style="margin-bottom:.6rem">依請假紀錄自動分配每日工作，公平輪流。</p>
+    <div class="scroll-x"><table class="sched" id="sc-table"></table></div>
+  </div>
+  <div id="sc-stats"></div>
+</div>
+
+<!-- TAB 3：年度預假 -->
+<div class="section" id="tab-preleave">
+  <div id="pl-rules-area"></div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">📆 年度預假規劃</span>
+      <div class="fbar">
+        <label>年份</label><select id="pl-year" onchange="renderPreLeave()"></select>
+        <label>部門</label><select id="pl-unit" onchange="renderPreLeave()"><option value="all">（全部）</option></select>
+        <label>員工</label><select id="pl-emp" onchange="renderPreLeave()"><option value="all">（全部）</option></select>
+        <button class="btn btn-primary btn-sm" onclick="openPreLeaveForm()">+ 新增預假</button>
+      </div>
+    </div>
+    <div class="pl-form-box" id="pl-form-area" style="display:none">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.65rem;margin-bottom:.65rem">
+        <div><label class="flabel" style="font-size:12px">部門</label><select class="fc" id="pf-unit" onchange="pfUpdateMembers()" style="font-size:12px"></select></div>
+        <div><label class="flabel" style="font-size:12px">員工</label><select class="fc" id="pf-emp" style="font-size:12px"></select></div>
+        <div><label class="flabel" style="font-size:12px">年份</label><select class="fc" id="pf-year" onchange="pfRenderCal()" style="font-size:12px"></select></div>
+        <div><label class="flabel" style="font-size:12px">月份</label><select class="fc" id="pf-month" onchange="pfRenderCal()" style="font-size:12px"></select></div>
+      </div>
+      <div style="margin-bottom:.65rem">
+        <label class="flabel" style="font-size:12px;margin-bottom:.3rem">假別（選填）</label>
+        <div id="pf-lv-selector" class="lv-selector"></div>
+      </div>
+      <div style="display:flex;gap:1rem;flex-wrap:wrap">
+        <div style="min-width:200px;max-width:290px">
+          <label class="flabel" style="font-size:12px">選擇日期（可多選）</label>
+          <div id="pf-dategrid" class="date-grid"></div>
+          <div class="date-sel-info" id="pf-info">尚未選擇日期</div>
+        </div>
+        <div style="flex:1;min-width:180px">
+          <label class="flabel" style="font-size:12px">預假原因</label>
+          <textarea class="fc" id="pf-reason" rows="4" placeholder="旅遊、探親、個人事務…" style="font-size:12px;resize:vertical"></textarea>
+          <div style="display:flex;gap:.4rem;margin-top:.6rem;justify-content:flex-end">
+            <button class="btn btn-secondary btn-sm" onclick="closePreLeaveForm()">取消</button>
+            <button class="btn btn-primary btn-sm" onclick="submitPreLeave()">✔ 確認新增</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll-x"><table class="pl-entries" id="pl-table"></table></div>
+  </div>
+</div>
+
+<!-- TAB 4：員工設定 -->
+<div class="section" id="tab-members">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem" id="mem-grid"></div>
+</div>
+
+<!-- TAB 5：工作配置 -->
+<div class="section" id="tab-tasks">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">⚙️ 工作配置設定</span>
+      <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+        <button class="btn btn-success btn-sm" onclick="promptAddDept()">+ 新增部門</button>
+        <button class="btn btn-primary btn-sm" onclick="saveTaskCfg()">💾 儲存配置</button>
+      </div>
+    </div>
+    <p class="info" style="margin-bottom:.9rem">各部門在不同出勤人數時的工作任務，逗號分隔。新增／刪除部門同步所有分頁。</p>
+    <div id="tc-area"></div>
+  </div>
+</div>
+
+<!-- TAB 6：生死抽籤 -->
+<div class="section" id="tab-lottery">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">🎰 生死抽籤</span>
+      <button class="btn btn-secondary btn-sm" onclick="clearPool()">🗑 清空名單</button>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.75rem">
+      <div>
+        <label class="flabel" style="font-size:12px">從員工快速加入</label>
+        <div style="margin-bottom:.4rem"><select id="lottery-add-unit" onchange="renderLotteryMemberBtns()" style="font-size:12px;width:100%"></select></div>
+        <div id="lottery-member-btns" style="display:flex;flex-wrap:wrap;gap:.3rem"></div>
+      </div>
+      <div>
+        <label class="flabel" style="font-size:12px">自訂名稱加入</label>
+        <div style="display:flex;gap:.4rem">
+          <input type="text" id="lottery-custom-name" placeholder="輸入姓名" class="fc" style="flex:1;font-size:12px" onkeydown="if(event.key==='Enter')addCustomToPool()">
+          <button class="btn btn-success btn-sm" onclick="addCustomToPool()">加入</button>
+        </div>
+      </div>
+    </div>
+    <div>
+      <label class="flabel" style="font-size:12px">目前抽籤名單 <span id="pool-count" style="font-weight:400;color:var(--text-light)"></span></label>
+      <div id="lottery-pool-list" style="display:flex;flex-wrap:wrap;gap:.3rem"></div>
+    </div>
+  </div>
+  <div class="lottery-grid">
+    <div class="card">
+      <div class="flabel" style="font-size:12px;margin-bottom:.5rem">放假日期（選填）</div>
+      <input type="date" id="lottery-date" class="fc" style="font-size:12px;margin-bottom:1rem" onchange="onLotteryDateChange()">
+      <div id="lottery-result-area"></div>
+    </div>
+    <div class="card wheel-wrap">
+      <canvas id="wheel-canvas" width="360" height="360"></canvas>
+      <button class="btn btn-danger" id="btn-spin" onclick="startSpin()" style="padding:.55rem 2.2rem;font-size:15px;margin-top:.3rem">🎰 開始抽籤</button>
+    </div>
+    <div class="card">
+      <div class="flabel" style="font-size:12px;margin-bottom:.5rem">抽籤說明</div>
+      <p class="info" style="line-height:1.8">1. 加入參與抽籤人員<br>2. 選填放假日期<br>3. 按「開始抽籤」轉動輪盤<br>4. 停止時指針所指即中籤（放假）<br>5. 按「繼續抽」可再抽一人<br>6. 每個日期的抽籤結果獨立儲存<br>7. 抽完記錄保存於下方表格</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">📜 抽籤記錄</span>
+      <button class="btn btn-danger btn-sm" onclick="clearLotteryRecords()">🗑 清除記錄</button>
+    </div>
+    <div class="scroll-x"><div id="lottery-records-area"><p class="info" style="padding:.5rem">暫無抽籤記錄</p></div></div>
+  </div>
+</div>
+
+<!-- TAB 7：操作記錄 -->
+<div class="section" id="tab-oplog">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">📋 操作記錄</span>
+      <span class="info" style="font-size:11px">保存 2 個月，自動清除</span>
+    </div>
+    <div class="scroll-x"><table class="oplog" id="oplog-table"></table></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<!-- MODAL：申請假期 -->
+<div class="modal-ov" id="modal-leave">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title">📝 申請假期</div><button class="modal-x" onclick="closeLeaveModal()">×</button></div>
+    <div class="fg"><label class="flabel">部門</label><select class="fc" id="ml-unit" onchange="mlUpdateMembers()"></select></div>
+    <div class="fg"><label class="flabel">員工</label><select class="fc" id="ml-emp"></select></div>
+    <div class="fg"><label class="flabel">假別</label><select class="fc" id="ml-type"></select></div>
+    <div class="fg" style="display:flex;gap:.5rem">
+      <div style="flex:1"><label class="flabel">年份</label><select class="fc" id="ml-year" onchange="renderModalDatePicker()"></select></div>
+      <div style="flex:1"><label class="flabel">月份</label><select class="fc" id="ml-month" onchange="renderModalDatePicker()"></select></div>
+    </div>
+    <div class="fg">
+      <label class="flabel">選擇日期（可多選）</label>
+      <div id="ml-dategrid" class="date-grid"></div>
+      <div class="date-sel-info" id="ml-info">尚未選擇日期</div>
+    </div>
+    <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1rem">
+      <button class="btn btn-secondary" onclick="closeLeaveModal()">取消</button>
+      <button class="btn btn-primary" onclick="mlSubmit()">✔ 確認送出</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL：行事曆圖片 -->
+<div class="modal-ov" id="modal-cal" onclick="if(event.target===this)closeCalModal()">
+  <div class="modal" style="max-width:min(1120px,96vw);width:min(1120px,96vw)">
+    <div class="modal-hd">
+      <div class="modal-title">📅 <span id="cal-modal-year"></span>年 行事曆</div>
+      <button class="modal-x" onclick="closeCalModal()">×</button>
+    </div>
+    <div style="display:flex;gap:.35rem;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap">
+      <button class="btn btn-sm btn-secondary" id="cal-yr-2026" onclick="switchCalYear(2026)">2026年</button>
+      <button class="btn btn-sm btn-secondary" id="cal-yr-2027" onclick="switchCalYear(2027)">2027年</button>
+      <button class="btn btn-sm btn-secondary" id="cal-yr-2028" onclick="switchCalYear(2028)">2028年</button>
+      <button class="btn btn-sm btn-secondary" id="cal-yr-2029" onclick="switchCalYear(2029)">2029年</button>
+      <button class="btn btn-sm btn-secondary" id="cal-yr-2030" onclick="switchCalYear(2030)">2030年</button>
+    </div>
+    <div id="cal-img-area" style="min-height:180px;display:flex;align-items:center;justify-content:center;overflow:auto;border-radius:8px"></div>
+    <div style="display:flex;gap:.6rem;justify-content:center;margin-top:.9rem;flex-wrap:wrap">
+      <label class="btn btn-primary" style="cursor:pointer">
+        📁 上傳圖片<input type="file" id="cal-file-input" accept="image/*" style="display:none" onchange="uploadCalImg(event)">
+      </label>
+      <button class="btn btn-danger" id="cal-del-btn" onclick="deleteCalImg()">🗑 刪除圖片</button>
+    </div>
+    <p class="info" style="text-align:center;margin-top:.5rem;font-size:11px">支援 JPG、PNG、WebP · 圖片儲存於瀏覽器 localStorage（建議 8MB 以內）</p>
+  </div>
+</div>
+
+<div class="rule-tooltip" id="rule-tooltip"></div>
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+'use strict';
+
+const LCM={
+  '休':{bg:'#E8F5E9',fg:'#2E7D32',full:'休假'},'事':{bg:'#FFF3E0',fg:'#E65100',full:'事假'},
+  '病':{bg:'#FFEBEE',fg:'#C62828',full:'病假'},'特':{bg:'#E1F5FE',fg:'#0288D1',full:'特休'},
+  '年':{bg:'#EDE7F6',fg:'#673AB7',full:'年假'},'公':{bg:'#E0F2F1',fg:'#004D40',full:'公假'},
+  '產':{bg:'#FCE4EC',fg:'#C2185B',full:'產假'},'檢':{bg:'#E0F7FA',fg:'#006064',full:'檢假'},
+  '貸':{bg:'#FFF9C4',fg:'#F57F17',full:'貸假'},'婚':{bg:'#FFE0B2',fg:'#E65100',full:'婚假'},
+  '喪':{bg:'#E0E0E0',fg:'#212121',full:'喪假'},'調':{bg:'#F1F8E9',fg:'#33691E',full:'調假'},
+  '福':{bg:'#F3E5F5',fg:'#4A148C',full:'福假'},'訓':{bg:'#FFCCBC',fg:'#D84315',full:'訓假'},
+  '家':{bg:'#FFF3E0',fg:'#5D4037',full:'家假'},
+};
+const HIDDEN_LV=new Set(['檢','貸','調','訓','家']);
+const DEFAULT_MEMBERS={'BBP':['小依','盈盈','CC','容容','EVIE','澄','欣'],'四方':['TT','佩佩','妮妮','PATTY','77','YUE'],'財務':['奶茶','JOE','RJ','妮妮','JC','小萌','MARS','小晶']};
+const DEFAULT_DEPTS=['BBP','四方','財務'];
+const PALETTE=[{bg:'#EAF0F6',fg:'#2A3A42'},{bg:'#E8F5E9',fg:'#2E7D32'},{bg:'#FFF3E0',fg:'#E65100'},{bg:'#EDE7F6',fg:'#673AB7'},{bg:'#E0F2F1',fg:'#004D40'},{bg:'#FCE4EC',fg:'#C2185B'},{bg:'#FFF9C4',fg:'#F57F17'},{bg:'#E0F7FA',fg:'#006064'}];
+const WHEEL_COLORS=['#FF6B6B','#4ECDC4','#45B7D1','#96CEB4','#FFEAA7','#DDA0DD','#98D8C8','#F7DC6F','#BB8FCE','#85C1E9','#82E0AA','#F0B27A','#AEB6BF','#F1948A','#A9CCE3','#F0E6FF'];
+const DOW=['日','一','二','三','四','五','六'];
+const HOLIDAY_MONTHS=[4,5,6,9,10,12];
+const MAX_REST_ABS=10;
+
+// ROC National Holidays 2025-2030 (key = 'M/D' within each year object)
+const HOLIDAY_MAP={
+  2025:{
+    '1/27':'過年連假','1/28':'除夕','1/29':'春節（初一）','1/30':'春節（初二）','1/31':'春節（初三）','2/1':'春節','2/2':'春節',
+    '4/4':'掃墓節（清明）','5/1':'勞動節','5/31':'端午節','10/6':'中秋節','10/10':'國慶日','12/25':'行憲紀念日'
+  },
+  2026:{
+    '2/15':'過年連假','2/16':'除夕','2/17':'春節（初一）','2/18':'春節（初二）','2/19':'春節（初三）','2/20':'春節','2/21':'春節',
+    '4/5':'掃墓節（清明）','5/1':'勞動節','6/19':'端午節','9/25':'中秋節','10/10':'國慶日','12/25':'行憲紀念日'
+  },
+  2027:{
+    '2/4':'過年連假','2/5':'除夕','2/6':'春節（初一）','2/7':'春節（初二）','2/8':'春節（初三）','2/9':'春節','2/10':'春節',
+    '4/5':'掃墓節（清明）','5/1':'勞動節','6/9':'端午節','10/15':'中秋節','10/10':'國慶日','12/25':'行憲紀念日'
+  },
+  2028:{
+    '1/24':'過年連假','1/25':'除夕','1/26':'春節（初一）','1/27':'春節（初二）','1/28':'春節（初三）','1/29':'春節','1/30':'春節',
+    '4/4':'掃墓節（清明）','5/1':'勞動節','5/28':'端午節','10/3':'中秋節','10/10':'國慶日','12/25':'行憲紀念日'
+  },
+  2029:{
+    '2/11':'過年連假','2/12':'除夕','2/13':'春節（初一）','2/14':'春節（初二）','2/15':'春節（初三）','2/16':'春節','2/17':'春節',
+    '4/4':'掃墓節（清明）','5/1':'勞動節','6/16':'端午節','10/22':'中秋節','10/10':'國慶日','12/25':'行憲紀念日'
+  },
+  2030:{
+    '2/1':'過年連假','2/2':'除夕','2/3':'春節（初一）','2/4':'春節（初二）','2/5':'春節（初三）','2/6':'春節','2/7':'春節',
+    '4/5':'掃墓節（清明）','5/1':'勞動節','6/5':'端午節','10/12':'中秋節','10/10':'國慶日','12/25':'行憲紀念日'
+  }
+};
+function getHolidayName(y,m,d){return(HOLIDAY_MAP[y]||{})[m+'/'+d]||null;}
+
+function getDeptColor(u){const d=getDepts();const i=d.indexOf(u);return PALETTE[i>=0?i%PALETTE.length:0];}
+
+// ── STORAGE ──
+function getDepts(){try{const d=JSON.parse(localStorage.getItem('departments'));if(d&&d.length)return d;}catch(e){}return[...DEFAULT_DEPTS];}
+function setDepts(d){localStorage.setItem('departments',JSON.stringify(d));}
+function getMembers(){try{const d=JSON.parse(localStorage.getItem('members'));if(d)return d;}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_MEMBERS));}
+function setMembers(d){localStorage.setItem('members',JSON.stringify(d));}
+function getHistory(){try{return JSON.parse(localStorage.getItem('leave_history'))||{};}catch(e){return{};}}
+function setHistory(d){localStorage.setItem('leave_history',JSON.stringify(d));}
+function getPreLeave(){try{const d=JSON.parse(localStorage.getItem('pre_leave'));if(Array.isArray(d))return d;}catch(e){}return[];}
+function setPreLeave(d){localStorage.setItem('pre_leave',JSON.stringify(d));}
+function getTaskCfg(){
+  try{const d=localStorage.getItem('task_config');if(d)return JSON.parse(d);}catch(e){}
+  return[{unit:'財務',count:7,tasks:'LS+XY+XH, OL+DL乙類卡+SY, HS+JD+FB, MT+YD, XO+YS+JY, ND+SH, RF+LY'},{unit:'財務',count:6,tasks:'LS+OL+XY+XH+DL乙類卡, HS+JD+FB, MT+YD, XO+YS+JY, ND+SH+SY, RF+LY'},{unit:'四方',count:5,tasks:'外部主交易, 外部餘額, 內餐A組合, 內餐B組合, 內餐C組合'},{unit:'四方',count:4,tasks:'外部主交易, 外部餐飲, 內餐A組合, 內餐B組合'},{unit:'BBP',count:6,tasks:'ND XO JY XH, OL HS XY SY, MT YD FB / JD 2card, LS SH YS / LY 代付, (假日外部) 主審, (假日外部) 異常+GPAY'},{unit:'BBP',count:5,tasks:'ND SH JD, XY SY / LS MT JY, YD LY FB / OL XO XH, YS HS / (假日外部) 主審, (假日外部) 異常+GPAY+代付+2card'},{unit:'BBP',count:4,tasks:'ND SH JD XY SY 2card, LS MT JY YD LY FB+代付, OL XO XH YS HS GPAY, (假日外部) 主審+異常'}];
+}
+function setTaskCfg(d){localStorage.setItem('task_config',JSON.stringify(d));}
+function getLotteryPool(){try{return JSON.parse(localStorage.getItem('lottery_pool'))||[];}catch(e){return[];}}
+function setLotteryPool(d){localStorage.setItem('lottery_pool',JSON.stringify(d));}
+// Lottery records: [{date, winners:[], working:[], drawnAt}]
+function getLotteryRecords(){try{return JSON.parse(localStorage.getItem('lottery_records'))||[];}catch(e){return[];}}
+function setLotteryRecords(d){localStorage.setItem('lottery_records',JSON.stringify(d));}
+// Internal: monthly winners for probability adjustment (not shown in UI)
+function _getLotMW(){try{return JSON.parse(localStorage.getItem('_lot_mw'))||{};}catch(e){return{};}}
+function _setLotMW(d){localStorage.setItem('_lot_mw',JSON.stringify(d));}
+function getOpLog(){try{return JSON.parse(localStorage.getItem('op_log'))||[];}catch(e){return[];}}
+function setOpLog(d){localStorage.setItem('op_log',JSON.stringify(d));}
+function cleanOpLog(){
+  const l=getOpLog(),cutoff=new Date();cutoff.setMonth(cutoff.getMonth()-2);
+  const cleaned=l.filter(e=>new Date(e.time)>=cutoff);
+  if(cleaned.length!==l.length)setOpLog(cleaned);
+}
+function logOp(a){
+  const l=getOpLog();l.unshift({time:new Date().toISOString(),action:a});
+  const cutoff=new Date();cutoff.setMonth(cutoff.getMonth()-2);
+  const cleaned=l.filter(e=>new Date(e.time)>=cutoff);
+  if(cleaned.length>500)cleaned.length=500;
+  setOpLog(cleaned);
+}
+
+// ── SCHEDULE CACHE (persists task assignments per unit/year/month) ──
+function getSchedCache(){try{return JSON.parse(localStorage.getItem('sched_cache'))||{};}catch(e){return{};}}
+function setSchedCache(d){localStorage.setItem('sched_cache',JSON.stringify(d));}
+function loadSchedUnit(unit,year,month){const c=getSchedCache();return(c[unit]&&c[unit][year]&&c[unit][year][month])||null;}
+function saveSchedUnit(unit,year,month,data){const c=getSchedCache();if(!c[unit])c[unit]={};if(!c[unit][year])c[unit][year]={};c[unit][year][month]=data;setSchedCache(c);}
+function clearSchedUnit(unit,year,month){const c=getSchedCache();if(c[unit]&&c[unit][year]){delete c[unit][year][month];setSchedCache(c);}}
+
+// ── MIGRATION ──
+function migrateData(){
+  const m=getMembers();if(m['前台']&&!m['四方']){m['四方']=m['前台'];delete m['前台'];setMembers(m);}
+  const h=getHistory();let hc=false;for(const k of Object.keys(h)){if(k.startsWith('前台_')){h['四方_'+k.slice(3)]=h[k];delete h[k];hc=true;}}if(hc)setHistory(h);
+  const d=getDepts();const fi=d.indexOf('前台');if(fi!==-1){d[fi]='四方';setDepts(d);}
+  const c=getTaskCfg();let cc=false;c.forEach(r=>{if(r.unit==='前台'){r.unit='四方';cc=true;}});if(cc)setTaskCfg(c);
+}
+
+// ── HELPERS ──
+function maxRestOff(m){return HOLIDAY_MONTHS.includes(parseInt(m))?8:7;}
+function daysInMonth(y,m){return new Date(y,m,0).getDate();}
+function loadMonthLeave(month){
+  const hist=getHistory(),map={};
+  for(const[k,pack]of Object.entries(hist)){const p=k.split('_');if(p.length<3)continue;if(parseInt(p[p.length-1])!==parseInt(month))continue;const u=p[0],n=p.slice(1,-1).join('_');for(const[d,v]of Object.entries(pack))map[u+'_'+n+'_'+d]=v;}
+  return map;
+}
+function loadMonthPreLeave(year,month){
+  const map={};getPreLeave().forEach(e=>{if(parseInt(e.year)===year&&parseInt(e.month)===month)map[e.unit+'_'+e.name+'_'+e.day]=e;});return map;
+}
+function histKey(u,n,m){return u+'_'+n+'_'+m;}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
+function tasksForCount(u,n){const h=getTaskCfg().find(c=>c.unit===u&&parseInt(c.count)===n);if(h){const a=h.tasks.split(',').map(s=>s.trim()).filter(Boolean);while(a.length<n)a.push('備崗');return a.slice(0,n);}return Array.from({length:n},()=>'待命');}
+function distributeTasks(g,days,count,u){
+  const st={};for(let i=0;i<count;i++)st[i]={};
+  // Pre-init st from already-filled slots (e.g. restored from cache)
+  for(let i=0;i<count;i++){for(let d=1;d<=days;d++){const v=g[i][d];if(v&&!isLeave(v)&&!(v&&v[0]==='~'))st[i][v]=(st[i][v]||0)+1;}}
+  function tot(i){return Object.values(st[i]).reduce((s,v)=>s+v,0);}
+  function lastWorkTask(i,d){
+    for(let dd=d-1;dd>=1;dd--){const v=g[i][dd];if(isLeave(v)||(v&&v[0]==='~'))continue;return v||null;}
+    return null;
+  }
+  for(let d=1;d<=days;d++){
+    const w=[];for(let i=0;i<count;i++)if(g[i][d]==='')w.push(i);if(!w.length)continue;
+    const tasks=tasksForCount(u,w.length);if(!tasks.length)continue;
+    const pending=[...tasks];shuffle(pending);
+    const avail=[...w];
+    while(pending.length&&avail.length){
+      // Pick task by: 1st = most imbalanced spread among avail (DESC), 2nd = fewest eligible/MRV (ASC)
+      let bestTi=0,bestSpread=-1,bestMrv=Infinity;
+      for(let ti=0;ti<pending.length;ti++){
+        const t=pending[ti];
+        const cnts=avail.map(i=>st[i][t]||0);
+        const spread=Math.max(...cnts)-Math.min(...cnts);
+        const mrv=avail.filter(i=>lastWorkTask(i,d)!==t).length||avail.length;
+        if(spread>bestSpread||(spread===bestSpread&&mrv<bestMrv)){bestSpread=spread;bestMrv=mrv;bestTi=ti;}
+      }
+      const task=pending.splice(bestTi,1)[0];
+      let pool=[...avail];
+      // ① PRIMARY (hard): pick workers with minimum count of THIS task → max diff ≤ 1
+      const mn=Math.min(...pool.map(i=>st[i][task]||0));
+      pool=pool.filter(i=>(st[i][task]||0)===mn);
+      // ② SECONDARY (soft, within min-count only): prefer no same task as last work day (skip leave days)
+      const notLast=pool.filter(i=>lastWorkTask(i,d)!==task);
+      if(notLast.length)pool=notLast;
+      // ③ BBP only (soft, within remaining): prefer no 外部 if last work task was 外部
+      if(u==='BBP'&&task.includes('外部')){
+        const notExt=pool.filter(i=>{const lt=lastWorkTask(i,d);return!lt||!lt.includes('外部');});
+        if(notExt.length)pool=notExt;
+      }
+      // ④ Tie-break: fewest total assignments
+      const mnT=Math.min(...pool.map(tot));
+      pool=pool.filter(i=>tot(i)===mnT);
+      // ⑤ Random final
+      const best=pool[Math.floor(Math.random()*pool.length)];
+      g[best][d]=task;st[best][task]=(st[best][task]||0)+1;
+      avail.splice(avail.indexOf(best),1);
+    }
+  }
+}
+function isLeave(v){return v&&LCM[v];}
+function fmtDt(iso){if(!iso)return'';const d=new Date(iso);return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
+
+// ── TOAST ──
+function toast(msg,type=''){const el=document.createElement('div');el.className='toast'+(type?' '+type:'');el.textContent=msg;document.getElementById('toasts').appendChild(el);setTimeout(()=>el.remove(),3800);}
+
+// ── NAV ──
+const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,oplog:renderOpLog};
+document.getElementById('navTabs').querySelectorAll('.nav-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+    tab.classList.add('active');document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+    TAB_REFRESH[tab.dataset.tab]?.();
+  });
+});
+
+// ── DROPDOWNS ──
+function initDropdowns(){
+  const now=new Date(),cy=now.getFullYear(),cm=now.getMonth()+1;
+  ['ov-year','sc-year','pl-year','pf-year','ml-year'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='';for(let y=2026;y<=2030;y++)el.innerHTML+=`<option value="${y}"${y===cy?' selected':''}>${y}年</option>`;});
+  ['ov-month','sc-month','pf-month','ml-month'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='';for(let m=1;m<=12;m++)el.innerHTML+=`<option value="${m}"${m===cm?' selected':''}>${m}月</option>`;});
+  const to=Object.entries(LCM).filter(([k])=>!HIDDEN_LV.has(k)).map(([k,v])=>`<option value="${k}">${v.full}（${k}）</option>`).join('');
+  const mlT=document.getElementById('ml-type');if(mlT)mlT.innerHTML=to;
+  refreshUnitDropdowns();
+}
+function refreshUnitDropdowns(){
+  const depts=getDepts(),all='<option value="all">（全部）</option>'+depts.map(u=>`<option value="${u}">${u}</option>`).join(''),only=depts.map(u=>`<option value="${u}">${u}</option>`).join('');
+  function pres(el,opts,fb){if(!el)return;const v=el.value;el.innerHTML=opts;if(depts.includes(v))el.value=v;else if(fb!==undefined)el.value=fb;}
+  pres(document.getElementById('ov-unit'),all,'all');pres(document.getElementById('sc-unit'),only,null);pres(document.getElementById('pl-unit'),all,'all');
+  const pfU=document.getElementById('pf-unit');if(pfU){pres(pfU,only,null);pfUpdateMembers();}
+  const mlU=document.getElementById('ml-unit');if(mlU){pres(mlU,only,null);mlUpdateMembers();}
+  const laU=document.getElementById('lottery-add-unit');if(laU){pres(laU,only,null);}
+  renderLotteryMemberBtns();
+}
+
+// ── LEGEND ──
+function initLegend(){document.getElementById('legend').innerHTML=Object.entries(LCM).filter(([k])=>!HIDDEN_LV.has(k)).map(([,v])=>`<div class="leg-item" style="background:${v.bg};color:${v.fg}">${v.full}</div>`).join('');}
+
+// ── LEAVE TYPE SELECTOR ──
+let selectedLeaveType=null;
+function initLeaveSelector(){
+  document.getElementById('lv-selector').innerHTML=Object.entries(LCM).filter(([k])=>!HIDDEN_LV.has(k)).map(([k,v])=>
+    `<div class="lv-chip" data-type="${k}" onclick="selectLeaveType('${k}')" style="background:${v.bg};color:${v.fg}"><span class="lv-radio"></span><span>${v.full}</span></div>`).join('');
+}
+function selectLeaveType(type){
+  selectedLeaveType=selectedLeaveType===type?null:type;
+  document.querySelectorAll('.lv-chip').forEach(el=>el.classList.toggle('selected',el.dataset.type===selectedLeaveType));
+  const bar=document.getElementById('edit-mode-bar');
+  if(selectedLeaveType){const lc=LCM[selectedLeaveType];bar.style.display='block';bar.style.background=lc.bg;bar.style.color=lc.fg;bar.style.border='1px solid '+lc.fg+'55';}
+  else bar.style.display='none';
+  renderOverview();
+}
+
+// ── PRE-LEAVE TYPE SELECTOR ──
+let pfSelectedLeaveType=null;
+function pfInitLeaveSelector(){
+  document.getElementById('pf-lv-selector').innerHTML=Object.entries(LCM).filter(([k])=>!HIDDEN_LV.has(k)).map(([k,v])=>
+    `<div class="lv-chip pf-lv-chip" data-type="${k}" onclick="pfSelectLeaveType('${k}')" style="background:${v.bg};color:${v.fg}"><span class="lv-radio"></span><span>${v.full}</span></div>`).join('');
+}
+function pfSelectLeaveType(type){
+  pfSelectedLeaveType=pfSelectedLeaveType===type?null:type;
+  document.querySelectorAll('.pf-lv-chip').forEach(el=>el.classList.toggle('selected',el.dataset.type===pfSelectedLeaveType));
+}
+
+// ── TAB 1：幼幼班假表 ──
+function renderOverview(){
+  const unit=document.getElementById('ov-unit').value,year=parseInt(document.getElementById('ov-year').value),month=parseInt(document.getElementById('ov-month').value);
+  const days=daysInMonth(year,month),mems=getMembers(),map=loadMonthLeave(month),depts=getDepts();
+  const preMap=loadMonthPreLeave(year,month);
+  const units=unit==='all'?depts:[unit];
+  let totalPeople=0,totalLeaves=0;const dayOff=new Array(days+1).fill(0);
+  const workDays=Array.from({length:days},(_,i)=>i+1).filter(d=>{const dw=new Date(year,month-1,d).getDay();return dw!==0&&dw!==6;}).length;
+  const ed=!!selectedLeaveType;
+  let h='<thead><tr>';
+  h+=`<th style="min-width:50px">部門</th><th style="min-width:75px">員工</th>`;
+  for(let d=1;d<=days;d++){const hn=getHolidayName(year,month,d);h+=hn?`<th style="color:#FF6B6B" title="${hn}">${d}</th>`:`<th>${d}</th>`;}
+  h+=`<th style="color:#FFCDD2">本月<br>休假次數</th></tr>`;
+  h+=`<tr><th style="background:#3D4F5A;font-size:10px"></th><th style="background:#3D4F5A;font-size:10px">星期</th>`;
+  for(let d=1;d<=days;d++){const dw=new Date(year,month-1,d).getDay();const hn=getHolidayName(year,month,d);h+=`<th class="${dw===0||dw===6?'wkend':''}" style="font-size:10px${hn?';color:#FF6B6B':''}" title="${hn||''}">${DOW[dw]}</th>`;}
+  h+=`<th style="background:#3D4F5A"></th></tr></thead><tbody>`;
+  units.forEach(u=>{
+    const list=mems[u]||[];totalPeople+=list.length;const uc=getDeptColor(u);
+    list.forEach((name,idx)=>{
+      h+=`<tr>`;if(idx===0)h+=`<td rowspan="${list.length}" class="c-unit" style="background:${uc.bg};color:${uc.fg}">${u}</td>`;
+      h+=`<td class="c-name" style="background:${uc.bg};color:${uc.fg}">${name}</td>`;
+      let cnt=0;const eu=u.replace(/'/g,"\\'"),en=name.replace(/'/g,"\\'");
+      for(let d=1;d<=days;d++){
+        const val=map[u+'_'+name+'_'+d]||'',dw=new Date(year,month-1,d).getDay(),wk=dw===0||dw===6;
+        const oc=ed?` onclick="cellClick('${eu}','${en}',${d},${year},${month})" class="cell-editable"`:'';
+        if(isLeave(val)){const lc=LCM[val];h+=`<td${oc} style="background:${lc.bg};color:${lc.fg};font-weight:700" title="${lc.full}">${val}</td>`;cnt++;totalLeaves++;dayOff[d]++;}
+        else{
+          const pr=preMap[u+'_'+name+'_'+d];
+          if(pr){cnt++;dayOff[d]++;const at=fmtDt(pr.addedAt);const tipType=pr.leaveType&&LCM[pr.leaveType]?LCM[pr.leaveType].full:'';const tip=`預假${tipType?' ('+tipType+')':''}｜原因：${pr.reason}｜新增：${at}`;if(pr.leaveType&&LCM[pr.leaveType]){const lc=LCM[pr.leaveType];h+=`<td${oc} style="background:${lc.bg};color:${lc.fg};font-size:10px;font-weight:700;outline:2px dashed ${lc.fg}66;outline-offset:-2px" title="${tip}">預${pr.leaveType}</td>`;}else h+=`<td${oc} style="background:#F3E5F5;color:#7B1FA2;font-size:10px;font-weight:700" title="${tip}">預</td>`;}
+          else h+=`<td${oc} style="${wk?'background:#F0F0F0;color:#aaa':''}"></td>`;
+        }
+      }
+      h+=`<td style="color:#E74C3C;font-weight:700">${cnt||''}</td></tr>`;
+    });
+  });
+  h+=`<tr class="day-off"><td colspan="2" style="color:#E74C3C;font-weight:700">當日請假人數</td>`;
+  for(let d=1;d<=days;d++){const c=dayOff[d];h+=`<td style="color:#E74C3C;font-weight:700">${c||''}</td>`;}
+  h+=`<td></td></tr><tr style="background:#E8F8F0;font-weight:700;font-size:12px"><td colspan="2" style="color:#1A6A4A;padding:5px 8px">當日上班人數</td>`;
+  for(let d=1;d<=days;d++)h+=`<td style="color:#1A6A4A;font-weight:700">${totalPeople-dayOff[d]}</td>`;
+  h+=`<td></td></tr></tbody>`;
+  document.getElementById('ov-table').innerHTML=h;
+  const mo=maxRestOff(month);
+  document.getElementById('ov-stats').innerHTML=`<div class="stat-card"><div class="stat-val">${totalPeople}</div><div class="stat-lbl">總人數</div></div><div class="stat-card"><div class="stat-val">${workDays}</div><div class="stat-lbl">工作日數</div></div><div class="stat-card"><div class="stat-val">${MAX_REST_ABS}</div><div class="stat-lbl">請假上限/人<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">喪假婚假不限</span></div></div>`;
+}
+
+function cellClick(unit,name,day,year,month){
+  if(!selectedLeaveType)return;
+  const preMap=loadMonthPreLeave(year,month);
+  if(preMap[unit+'_'+name+'_'+day]){toast(`${name} ${month}/${day} 當天已有預假！\n只能到年度預假刪除後才能點選`,'err');return;}
+  const hist=getHistory(),key=histKey(unit,name,month),pack=hist[key]||{};
+  if(pack[day]===selectedLeaveType){delete pack[day];if(Object.keys(pack).length)hist[key]=pack;else delete hist[key];setHistory(hist);logOp(`移除 ${unit} ${name} ${month}/${day} 假期`);toast(`已移除 ${name} ${month}/${day} 假期`);renderOverview();return;}
+  if(pack[day]){delete pack[day];if(Object.keys(pack).length)hist[key]=pack;else delete hist[key];setHistory(hist);}
+  processLeave(unit,name,selectedLeaveType,year,month,[parseInt(day)]);
+}
+
+function clearMonthLeave(){
+  const unit=document.getElementById('ov-unit').value,month=parseInt(document.getElementById('ov-month').value),label=unit==='all'?'全部部門':unit;
+  const pwd=prompt('請輸入密碼（清空後無法復原）：');
+  if(pwd===null)return;
+  if(pwd!=='0000'){toast('密碼錯誤，無法清空','err');return;}
+  if(!confirm(`確定清空【${label}】${month}月的全部請假紀錄？`))return;
+  const hist=getHistory(),mems=getMembers(),units=unit==='all'?getDepts():[unit];
+  units.forEach(u=>(mems[u]||[]).forEach(n=>{delete hist[histKey(u,n,month)];}));
+  setHistory(hist);logOp(`清空 ${label} ${month}月請假紀錄`);toast(`已清空 ${label} ${month}月請假紀錄`,'ok');renderOverview();
+}
+
+// ── TAB 2：排班表 ──
+function confirmRegen(){
+  if(!confirm('確定重新產生【當前部門】本月排班？其他部門不受影響。'))return;
+  const unit=document.getElementById('sc-unit').value;
+  const year=parseInt(document.getElementById('sc-year').value);
+  const month=parseInt(document.getElementById('sc-month').value);
+  clearSchedUnit(unit,year,month);
+  renderSchedule();
+}
+function renderSchedule(){
+  const unit=document.getElementById('sc-unit').value;if(!unit){document.getElementById('sc-table').innerHTML='';document.getElementById('sc-stats').innerHTML='';return;}
+  const year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value),days=daysInMonth(year,month);
+  const mems=getMembers(),list=mems[unit]||[],count=list.length,map=loadMonthLeave(month),mo=maxRestOff(month),uc=getDeptColor(unit);
+  const scPreMap=loadMonthPreLeave(year,month);
+  const grid=list.map(name=>{const r=[name];for(let d=1;d<=days;d++){const v=map[unit+'_'+name+'_'+d]||'';if(isLeave(v))r.push(v);else{const pr=scPreMap[unit+'_'+name+'_'+d];r.push(pr?'~'+(pr.leaveType||''):'');}}r.push('');return r;});
+  // Restore from cache: apply saved task assignments to present (empty) slots
+  const _cached=loadSchedUnit(unit,year,month);
+  if(_cached){list.forEach((name,i)=>{const cd=_cached[name];if(!cd)return;for(let d=1;d<=days;d++){if(grid[i][d]===''&&cd[d])grid[i][d]=cd[d];}});}
+  distributeTasks(grid,days,count,unit);
+  // Persist: save final assignments back to cache
+  const _save={};list.forEach((name,i)=>{_save[name]={};for(let d=1;d<=days;d++){const v=grid[i][d];if(v&&!isLeave(v)&&!(v&&v[0]==='~'))_save[name][d]=v;}});
+  saveSchedUnit(unit,year,month,_save);
+  let h=`<thead><tr><th colspan="${days+3}" style="background:#1A252F;font-size:14px;padding:11px 16px;text-align:left;letter-spacing:.5px">　${unit}　${year}年${month}月　<span style="font-size:11px;font-weight:400;opacity:.72">休假上限 ${mo}天／人</span></th></tr>`;
+  h+=`<tr><th class="s-name" style="background:${uc.bg};color:${uc.fg}">員工╲日期</th>`;
+  for(let d=1;d<=days;d++)h+=`<th>${d}</th>`;
+  h+=`<th>已請假</th></tr><tr><th style="background:#3D4F5A;font-size:10px">星期</th>`;
+  for(let d=1;d<=days;d++){const dw=new Date(year,month-1,d).getDay();h+=`<th class="${dw===0||dw===6?'wkend':''}" style="font-size:10px">${DOW[dw]}</th>`;}
+  h+=`<th></th></tr></thead><tbody>`;
+  list.forEach((name,i)=>{
+    h+=`<tr><td class="s-name" style="background:${uc.bg};color:${uc.fg}">${name}</td>`;let lv=0;
+    for(let d=1;d<=days;d++){const val=grid[i][d],dw=new Date(year,month-1,d).getDay(),wk=dw===0||dw===6;if(isLeave(val)){const lc=LCM[val];h+=`<td style="background:${lc.bg};color:${lc.fg};font-weight:700">${val}</td>`;lv++;}else if(val&&val[0]==='~'){const lt=val.slice(1);if(lt&&LCM[lt]){const lc=LCM[lt];h+=`<td style="background:${lc.bg};color:${lc.fg};font-size:12px;font-weight:700;outline:2px dashed ${lc.fg}55;outline-offset:-2px" title="預假 (${LCM[lt].full})">預${lt}</td>`;}else h+=`<td style="background:#F3E5F5;color:#7B1FA2;font-size:12px;font-weight:700" title="預假">預</td>`;lv++;}else if(val)h+=`<td class="task-cell" style="${wk?'background:#EEEEEE;':''}">${val==='待命'?'':val}</td>`;else h+=`<td style="${wk?'background:#F0F0F0;color:#bbb':'color:#ccc'}">─</td>`;}
+    h+=`<td style="font-weight:700;color:${lv>mo?'#E74C3C':'#5A6B73'}">${lv}天</td></tr>`;
+  });
+  [{label:'出勤人數',bg:'#F2F6F8',fn:d=>{let o=0;for(let i=0;i<count;i++){const v=grid[i][d];if(isLeave(v)||(v&&v[0]==='~'))o++;}return{val:count-o,style:'color:#2A3A42;font-weight:700'};}},
+   {label:'請假人數',bg:'#FDF5F5',fn:d=>{let o=0;for(let i=0;i<count;i++){const v=grid[i][d];if(isLeave(v)||(v&&v[0]==='~'))o++;}return{val:o||'',style:'color:#B87A7A;font-weight:600'};}}
+  ].forEach(sr=>{h+=`<tr style="background:${sr.bg}"><td class="s-name" style="font-size:11px">${sr.label}</td>`;for(let d=1;d<=days;d++){const{val,style}=sr.fn(d);h+=`<td style="${style}">${val}</td>`;}h+=`<td></td></tr>`;});
+  document.getElementById('sc-table').innerHTML=h+'</tbody>';
+  // ── 工作次數統計表 ──
+  const SKIP_TASK=new Set(['待命','備崗']);
+  const tmap={};const wtot=new Array(count).fill(0);
+  for(let i=0;i<count;i++){for(let d=1;d<=days;d++){const v=grid[i][d];if(!v||isLeave(v)||(v&&v[0]==='~')||SKIP_TASK.has(v))continue;if(!tmap[v])tmap[v]={};tmap[v][i]=(tmap[v][i]||0)+1;wtot[i]++;}}
+  const tNames=Object.keys(tmap).sort();
+  const statsEl=document.getElementById('sc-stats');
+  if(!tNames.length){statsEl.innerHTML='';return;}
+  const thStyle='background:var(--primary);color:#fff;padding:5px 7px;border:1px solid #3D4F5A;text-align:center;font-size:11px;white-space:pre-wrap;word-break:break-all;max-width:88px';
+  let sh=`<div class="card" style="margin-top:.75rem"><div class="card-head" style="margin-bottom:.5rem;padding-bottom:.5rem"><span class="card-title">📊 工作次數統計</span><span class="info" style="margin-left:.6rem;font-size:11px">🟢 差距0（完美） 🟡 差距1（合格） 🔴 差距&gt;1（超出）</span></div><div class="scroll-x"><table style="border-collapse:collapse;font-size:12px;width:100%"><thead><tr><th style="${thStyle};text-align:left;position:sticky;left:0;z-index:3;min-width:68px">員工</th>`;
+  tNames.forEach(t=>{sh+=`<th style="${thStyle}">${t}</th>`;});
+  sh+=`<th style="${thStyle}">工作<br>合計</th></tr></thead><tbody>`;
+  list.forEach((name,i)=>{
+    sh+=`<tr><td style="font-weight:700;padding:4px 9px;border:1px solid var(--border);background:${uc.bg};color:${uc.fg};white-space:nowrap;position:sticky;left:0;z-index:2">${name}</td>`;
+    tNames.forEach(t=>{
+      const c=tmap[t][i]||0;
+      const cnts=list.map((_,j)=>tmap[t][j]||0);
+      const mx=Math.max(...cnts),mn2=Math.min(...cnts),sp=mx-mn2;
+      let bg,fg;
+      if(c===0){bg='#F5F5F5';fg='#BDBDBD';}
+      else if(sp>1&&c===mx){bg='#FFEBEE';fg='#C62828';}
+      else if(sp>1&&c<mx){bg='#FFF3E0';fg='#E65100';}
+      else if(sp===1){bg='#FFFDE7';fg='#E65100';}
+      else{bg='#E8F5E9';fg='#2E7D32';}
+      sh+=`<td style="padding:4px 6px;border:1px solid var(--border);text-align:center;background:${bg};color:${fg};font-weight:700">${c||'—'}</td>`;
+    });
+    sh+=`<td style="padding:4px 9px;border:1px solid var(--border);text-align:center;font-weight:700;color:#1A4A6E;background:#EBF5FB">${wtot[i]}</td></tr>`;
+  });
+  sh+=`<tr style="background:#EBF5FB"><td style="font-weight:700;padding:4px 9px;border:1px solid var(--border);color:var(--accent);white-space:nowrap;position:sticky;left:0;z-index:2;background:#EBF5FB">差距(最大-最小)</td>`;
+  tNames.forEach(t=>{
+    const cnts=list.map((_,i)=>tmap[t][i]||0);
+    const sp=Math.max(...cnts)-Math.min(...cnts);
+    const bg=sp>1?'#FFEBEE':sp===1?'#FFFDE7':'#E8F5E9';
+    const fg=sp>1?'#C62828':sp===1?'#E65100':'#2E7D32';
+    sh+=`<td style="padding:4px 6px;border:1px solid var(--border);text-align:center;background:${bg};color:${fg};font-weight:900;font-size:13px">${sp}</td>`;
+  });
+  sh+=`<td style="border:1px solid var(--border);background:#EBF5FB"></td></tr></tbody></table></div></div>`;
+  statsEl.innerHTML=sh;
+}
+
+// ── DATE GRID ──
+let mlSel=new Set(),pfSel=new Set();
+function renderDateGrid(cid,year,month,selSet,infoId,toggleFn){
+  const days=daysInMonth(year,month),fd=new Date(year,month-1,1).getDay();let h='';
+  DOW.forEach(d=>h+=`<div class="dc dc-hdr">${d}</div>`);for(let i=0;i<fd;i++)h+=`<div class="dc dc-dis"></div>`;
+  for(let d=1;d<=days;d++){const dw=new Date(year,month-1,d).getDay(),wk=dw===0||dw===6,sel=selSet.has(d);h+=`<div class="dc ${wk&&!sel?'dc-wk':''} ${sel?'dc-sel':''}" onclick="${toggleFn}(${d},${year},${month})">${d}</div>`;}
+  document.getElementById(cid).innerHTML=h;
+  const el=document.getElementById(infoId);if(!el)return;
+  if(!selSet.size){el.textContent='尚未選擇日期';return;}
+  el.textContent=`已選 ${selSet.size} 天：${[...selSet].sort((a,b)=>a-b).map(d=>month+'/'+d).join('、')}`;
+}
+
+// ── MODAL ──
+function mlUpdateMembers(){const u=document.getElementById('ml-unit').value;document.getElementById('ml-emp').innerHTML=(getMembers()[u]||[]).map(m=>`<option>${m}</option>`).join('');}
+function renderModalDatePicker(){const y=parseInt(document.getElementById('ml-year').value)||new Date().getFullYear(),m=parseInt(document.getElementById('ml-month').value);mlSel=new Set([...mlSel].filter(d=>d<=daysInMonth(y,m)));renderDateGrid('ml-dategrid',y,m,mlSel,'ml-info','mlToggle');}
+function mlToggle(d,y,m){mlSel.has(d)?mlSel.delete(d):mlSel.add(d);renderDateGrid('ml-dategrid',y,m,mlSel,'ml-info','mlToggle');}
+function mlSubmit(){
+  const unit=document.getElementById('ml-unit').value,emp=document.getElementById('ml-emp').value,type=document.getElementById('ml-type').value;
+  const year=parseInt(document.getElementById('ml-year').value)||new Date().getFullYear(),month=parseInt(document.getElementById('ml-month').value);
+  if(!mlSel.size){toast('請先選擇日期','err');return;}processLeave(unit,emp,type,year,month,[...mlSel]);closeLeaveModal();
+}
+function openLeaveModal(){document.getElementById('modal-leave').classList.add('open');refreshUnitDropdowns();mlUpdateMembers();renderModalDatePicker();}
+function closeLeaveModal(){document.getElementById('modal-leave').classList.remove('open');mlSel.clear();}
+document.getElementById('modal-leave').addEventListener('click',e=>{if(e.target===e.currentTarget)closeLeaveModal();});
+
+// ── PROCESS LEAVE ──
+function processLeave(unit,empName,typeKey,year,month,selDays){
+  const hist=getHistory(),key=histKey(unit,empName,month),pack=hist[key]||{};
+  const EXEMPT_LV=new Set(['喪','婚']);
+  if(!EXEMPT_LV.has(typeKey)){const already=Object.values(pack).filter(v=>!EXEMPT_LV.has(v)).length,total=already+selDays.length;if(total>MAX_REST_ABS){toast(`超出每月請假上限！最多 ${MAX_REST_ABS} 天（喪假、婚假除外，已請 ${already} 天）`,'err');return;}}
+  selDays.forEach(d=>{pack[d]=typeKey;});hist[key]=pack;setHistory(hist);
+  logOp(`申請假期：${unit} ${empName} ${LCM[typeKey]?.full||typeKey} ${month}月 ${selDays.join('、')}日`);
+  toast(`✔ ${empName}｜${LCM[typeKey]?.full||typeKey}｜${month}月 共${selDays.length}天`,'ok');renderOverview();
+}
+
+// ── TAB 3：年度預假 ──
+function pfUpdateMembers(){const u=document.getElementById('pf-unit').value;document.getElementById('pf-emp').innerHTML=(getMembers()[u]||[]).map(m=>`<option>${m}</option>`).join('');}
+function pfRenderCal(){const y=parseInt(document.getElementById('pf-year').value)||new Date().getFullYear(),m=parseInt(document.getElementById('pf-month').value)||new Date().getMonth()+1;pfSel=new Set([...pfSel].filter(d=>d<=daysInMonth(y,m)));renderDateGrid('pf-dategrid',y,m,pfSel,'pf-info','pfToggle');}
+function pfToggle(d,y,m){pfSel.has(d)?pfSel.delete(d):pfSel.add(d);renderDateGrid('pf-dategrid',y,m,pfSel,'pf-info','pfToggle');}
+function openPreLeaveForm(){document.getElementById('pl-form-area').style.display='block';pfSel=new Set();pfSelectedLeaveType=null;const pfU=document.getElementById('pf-unit');pfU.innerHTML=getDepts().map(u=>`<option>${u}</option>`).join('');pfUpdateMembers();pfRenderCal();document.getElementById('pf-reason').value='';pfInitLeaveSelector();}
+function closePreLeaveForm(){document.getElementById('pl-form-area').style.display='none';pfSel=new Set();pfSelectedLeaveType=null;}
+function submitPreLeave(){
+  const unit=document.getElementById('pf-unit').value,name=document.getElementById('pf-emp').value;
+  const year=parseInt(document.getElementById('pf-year').value),month=parseInt(document.getElementById('pf-month').value),reason=document.getElementById('pf-reason').value.trim();
+  if(!pfSel.size){toast('請先選擇日期','err');return;}if(!reason){toast('請填入預假原因','err');return;}
+  const pl=getPreLeave(),days=[...pfSel].sort((a,b)=>a-b),addedAt=new Date().toISOString();
+  days.forEach(day=>pl.push({id:Date.now()+Math.random(),unit,name,year,month,day,leaveType:pfSelectedLeaveType||null,reason,addedAt}));
+  setPreLeave(pl);logOp(`新增預假：${unit} ${name} ${year}/${month}月 ${days.join('、')}日`);
+  toast(`✔ 已新增 ${name} ${year}/${month} 共${days.length}天預假`,'ok');closePreLeaveForm();
+  renderPreLeave();renderOverview();  // sync to 幼幼班假表
+}
+function removePreLeaveEntry(id){if(!confirm('確定刪除此預假記錄？'))return;setPreLeave(getPreLeave().filter(e=>String(e.id)!==String(id)));logOp('刪除預假記錄');toast('已刪除','ok');renderPreLeave();renderOverview();}
+function renderPreLeave(){
+  renderPreLeaveRules();
+  const year=parseInt(document.getElementById('pl-year').value)||new Date().getFullYear(),unit=document.getElementById('pl-unit').value,empF=document.getElementById('pl-emp').value;
+  const mems=getMembers(),depts=getDepts(),unitList=unit==='all'?depts:[unit];
+  const names=['all'];unitList.forEach(u=>(mems[u]||[]).forEach(n=>{if(!names.includes(n))names.push(n);}));
+  const pe=document.getElementById('pl-emp'),pv=pe.value;pe.innerHTML=`<option value="all">（全部）</option>`+names.slice(1).map(n=>`<option${n===pv?' selected':''}>${n}</option>`).join('');
+  const pu=document.getElementById('pl-unit'),puv=pu.value;pu.innerHTML='<option value="all">（全部）</option>'+depts.map(u=>`<option${u===puv?' selected':''}>${u}</option>`).join('');
+  const pl=getPreLeave().filter(e=>parseInt(e.year)===year&&(unit==='all'||e.unit===unit)&&(empF==='all'||e.name===empF)).sort((a,b)=>a.month!==b.month?a.month-b.month:a.day-b.day);
+  let h=`<thead><tr><th>部門</th><th>員工</th><th>日期</th><th>星期</th><th>假別</th><th>預假原因</th><th>新增時間</th><th style="width:65px">操作</th></tr></thead><tbody>`;
+  if(!pl.length)h+=`<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:var(--text-light)">暫無預假記錄，點「新增預假」開始規劃</td></tr>`;
+  else pl.forEach(e=>{const uc=getDeptColor(e.unit),dw=new Date(e.year,e.month-1,e.day).getDay(),wk=dw===0||dw===6;const ltCell=e.leaveType&&LCM[e.leaveType]?`<td style="background:${LCM[e.leaveType].bg};color:${LCM[e.leaveType].fg};font-weight:700;white-space:nowrap">${LCM[e.leaveType].full}</td>`:`<td style="color:var(--text-light)">—</td>`;h+=`<tr><td style="background:${uc.bg};color:${uc.fg};font-weight:700">${e.unit}</td><td style="font-weight:600">${e.name}</td><td style="${wk?'color:#aaa':''}">${e.year}/${e.month}/${e.day}</td><td style="${wk?'color:#E74C3C':''}">（${DOW[dw]}）</td>${ltCell}<td style="text-align:left">${e.reason}</td><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.addedAt)||'—'}</td><td><button class="btn btn-danger btn-sm" onclick="removePreLeaveEntry('${e.id}')">刪除</button></td></tr>`;});
+  document.getElementById('pl-table').innerHTML=h+'</tbody>';
+}
+
+// ── TAB 4：MEMBERS ──
+function renderMembers(){
+  const depts=getDepts(),mems=getMembers(),grid=document.getElementById('mem-grid');grid.innerHTML='';
+  depts.forEach(u=>{const div=document.createElement('div');div.className='card';div.id='memCard-'+u;grid.appendChild(div);});
+  depts.forEach(u=>{const members=mems[u]||[],uc=getDeptColor(u),card=document.getElementById('memCard-'+u);if(!card)return;
+    card.innerHTML=`<div class="card-head"><span class="card-title"><span class="unit-badge" style="background:${uc.bg};color:${uc.fg}">${u}</span></span><span class="info">${members.length} 人</span></div>
+    <ul class="mem-list">${members.map((n,i)=>`<li class="mem-item"><span class="mem-idx">${i+1}.</span><span class="mem-name">${n}</span><button class="btn btn-danger btn-sm" onclick="removeMember('${u}','${n.replace(/'/g,"\\'")}')">移除</button></li>`).join('')}</ul>
+    <div class="divider"></div><div style="display:flex;gap:.4rem"><input type="text" id="nm-${u}" placeholder="輸入姓名" class="fc" style="flex:1" onkeydown="if(event.key==='Enter')addMember('${u}')"><button class="btn btn-success" onclick="addMember('${u}')">新增</button></div>`;
+  });
+}
+function addMember(unit){const inp=document.getElementById('nm-'+unit),name=inp.value.trim();if(!name){toast('請輸入姓名','err');return;}const mems=getMembers();if(!mems[unit])mems[unit]=[];if(mems[unit].includes(name)){toast('此員工已存在','err');return;}mems[unit].push(name);setMembers(mems);inp.value='';logOp(`新增員工：${unit} - ${name}`);renderMembers();toast(`已新增 ${name} 至 ${unit}`,'ok');}
+function removeMember(unit,name){if(!confirm(`確定移除「${name}」？`))return;const mems=getMembers();mems[unit]=(mems[unit]||[]).filter(n=>n!==name);setMembers(mems);logOp(`移除員工：${unit} - ${name}`);renderMembers();toast(`已移除 ${name}`,'ok');}
+
+// ── TAB 5：TASK CONFIG ──
+function renderTaskConfig(){
+  const cfg=getTaskCfg(),depts=getDepts();let h='';
+  depts.forEach(u=>{const uc=getDeptColor(u),rows=cfg.filter(c=>c.unit===u).sort((a,b)=>b.count-a.count);
+    h+=`<div class="unit-section"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem"><div class="unit-badge" style="background:${uc.bg};color:${uc.fg};font-size:13px;padding:4px 13px">${u}</div><button class="btn btn-danger btn-sm" onclick="promptDelDept('${u}')">刪除此部門</button></div>
+    <table class="tct" style="margin-bottom:.5rem"><thead><tr><th style="width:75px">出勤人數</th><th>工作任務列表（逗號分隔）</th><th style="width:60px;text-align:center">操作</th></tr></thead><tbody>
+    ${rows.map(c=>`<tr><td style="text-align:center;font-weight:700">${c.count}人</td><td><textarea rows="2" data-unit="${u}" data-count="${c.count}">${c.tasks}</textarea></td><td style="text-align:center"><button class="btn btn-danger btn-sm" onclick="delTaskRow('${u}',${c.count})">刪除</button></td></tr>`).join('')}
+    </tbody></table><div style="display:flex;gap:.4rem;align-items:center"><span class="info">新增出勤人數：</span><input type="number" id="nc-${u}" min="1" max="30" value="${(rows[0]?.count||3)+1}" style="width:60px"><button class="btn btn-outline btn-sm" onclick="addTaskRow('${u}')">+ 新增</button></div></div>`;
+  });
+  document.getElementById('tc-area').innerHTML=h;
+}
+function saveTaskCfg(){const cfg=getTaskCfg();document.querySelectorAll('#tc-area textarea[data-unit]').forEach(ta=>{const hit=cfg.find(c=>c.unit===ta.dataset.unit&&parseInt(c.count)===parseInt(ta.dataset.count));if(hit)hit.tasks=ta.value;});setTaskCfg(cfg);logOp('儲存工作配置');toast('工作配置已儲存','ok');}
+function delTaskRow(unit,count){if(!confirm(`確定刪除 ${unit} ${count}人的配置？`))return;setTaskCfg(getTaskCfg().filter(c=>!(c.unit===unit&&parseInt(c.count)===count)));renderTaskConfig();toast('已刪除','ok');}
+function addTaskRow(unit){const count=parseInt(document.getElementById('nc-'+unit).value);if(!count||count<1){toast('請輸入有效人數','err');return;}const cfg=getTaskCfg();if(cfg.find(c=>c.unit===unit&&parseInt(c.count)===count)){toast(`${unit} ${count}人配置已存在`,'err');return;}cfg.push({unit,count,tasks:''});setTaskCfg(cfg);renderTaskConfig();}
+function promptAddDept(){const name=(prompt('請輸入新部門名稱：')||'').trim();if(!name)return;const depts=getDepts();if(depts.includes(name)){toast(`部門「${name}」已存在`,'err');return;}depts.push(name);setDepts(depts);const mems=getMembers();if(!mems[name])mems[name]=[];setMembers(mems);logOp(`新增部門：${name}`);toast(`已新增部門：${name}`,'ok');syncAll();}
+function promptDelDept(unit){const mems=getMembers(),count=(mems[unit]||[]).length;if(!confirm(count>0?`確定刪除部門「${unit}」？（共 ${count} 位員工，刪除後無法復原）`:`確定刪除部門「${unit}」？`))return;setDepts(getDepts().filter(d=>d!==unit));setTaskCfg(getTaskCfg().filter(c=>c.unit!==unit));logOp(`刪除部門：${unit}`);toast(`已刪除部門：${unit}`,'ok');syncAll();}
+function syncAll(){refreshUnitDropdowns();renderOverview();renderSchedule();renderMembers();renderTaskConfig();renderPreLeave();renderPreLeaveRules();}
+
+// ── TAB 6：生死抽籤 ──
+let wheelCtx=null,wheelAngle=0,wheelSpinning=false;
+let lotSession={pool:[],winners:[]};
+
+// Save lottery record per date (one record per date, accumulates winners)
+function saveLotRecord(date,winnerName,remainingPool){
+  const recs=getLotteryRecords();
+  const key=date||'(未指定日期)';
+  const existing=recs.find(r=>r.date===key);
+  if(existing){existing.winners.push(winnerName);existing.working=remainingPool.map(p=>p.name||p);existing.drawnAt=new Date().toISOString();}
+  else recs.unshift({date:key,winners:[winnerName],working:remainingPool.map(p=>p.name||p),drawnAt:new Date().toISOString()});
+  setLotteryRecords(recs);
+}
+
+function renderLotteryRecords(){
+  const recs=getLotteryRecords(),area=document.getElementById('lottery-records-area');if(!area)return;
+  if(!recs.length){area.innerHTML='<p class="info" style="padding:.5rem">暫無抽籤記錄</p>';return;}
+  let h=`<table class="lot-rec-tbl"><thead><tr><th>放假日期</th><th>放假人員</th><th>上班人員</th><th>抽籤時間</th></tr></thead><tbody>`;
+  recs.forEach(r=>{const dt=new Date(r.drawnAt),t=`${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;h+=`<tr><td style="font-weight:600;white-space:nowrap">${r.date}</td><td style="color:#1E8449;font-weight:700">${r.winners.join('、')}</td><td style="color:var(--text-light)">${r.working.join('、')||'—'}</td><td style="white-space:nowrap;font-size:12px">${dt.toLocaleDateString('zh-TW')} ${t}</td></tr>`;});
+  area.innerHTML=h+'</tbody></table>';
+}
+function clearLotteryRecords(){if(!confirm('確定清除所有抽籤記錄？'))return;setLotteryRecords([]);renderLotteryRecords();toast('已清除抽籤記錄','ok');}
+
+function renderLotteryMemberBtns(){
+  const unit=document.getElementById('lottery-add-unit')?.value;if(!unit)return;
+  const mems=getMembers()[unit]||[],pool=getLotteryPool(),inPool=pool.map(p=>p.name);
+  document.getElementById('lottery-member-btns').innerHTML=mems.map(name=>`<button class="btn btn-outline btn-sm" style="margin:2px" onclick="addToPool('${name.replace(/'/g,"\\'")}','${unit}')" ${inPool.includes(name)?'disabled':''}>+${name}</button>`).join('')||'<span class="info">此部門無員工</span>';
+}
+
+function renderLottery(){
+  const pool=getLotteryPool();
+  const pc=document.getElementById('pool-count');if(pc)pc.textContent=`（${pool.length} 人）`;
+  document.getElementById('lottery-pool-list').innerHTML=pool.length?pool.map((p,i)=>`<div class="pool-person"><span style="flex:1;font-size:13px;font-weight:500">${p.name}</span><button class="btn btn-danger btn-sm" onclick="removeFromPool(${i})">×</button></div>`).join(''):'<span class="info" style="padding:.3rem">尚未加入任何人員</span>';
+  renderLotteryMemberBtns();drawWheelFrame(pool,wheelAngle);renderSessionResult();renderLotteryRecords();
+}
+
+function addToPool(name,unit){
+  const pool=getLotteryPool();if(pool.find(p=>p.name===name)){toast(`${name} 已在名單中`,'err');return;}
+  pool.push({name,unit:unit||''});setLotteryPool(pool);lotSession.pool=[...pool];renderLottery();toast(`已加入 ${name}`,'ok');
+}
+function addCustomToPool(){const inp=document.getElementById('lottery-custom-name'),name=(inp.value||'').trim();if(!name){toast('請輸入姓名','err');return;}addToPool(name,'');inp.value='';}
+function removeFromPool(idx){const pool=getLotteryPool(),removed=pool[idx];pool.splice(idx,1);setLotteryPool(pool);lotSession.pool=lotSession.pool.filter(p=>p.name!==removed.name);renderLottery();toast(`已移除 ${removed.name}`);}
+function clearPool(){if(!confirm('確定清空抽籤名單？'))return;setLotteryPool([]);lotSession={pool:[],winners:[]};renderLottery();toast('已清空名單','ok');}
+function resetSession(){lotSession={pool:[...getLotteryPool()],winners:[]};document.getElementById('lottery-result-area').innerHTML='';drawWheelFrame(getLotteryPool(),wheelAngle=0);renderLotteryRecords();}
+
+function drawWheelFrame(pool,angle){
+  const canvas=document.getElementById('wheel-canvas');if(!canvas)return;
+  if(!wheelCtx)wheelCtx=canvas.getContext('2d');
+  const ctx=wheelCtx,W=canvas.width,H=canvas.height;ctx.clearRect(0,0,W,H);
+  if(!pool||!pool.length){ctx.fillStyle='#EEF2F7';ctx.fillRect(0,0,W,H);ctx.fillStyle='#6B7A8A';ctx.font='15px Microsoft JhengHei,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('請先加入抽籤人員',W/2,H/2);return;}
+  const cx=W/2,cy=H/2,r=Math.min(W,H)/2-32,n=pool.length,arc=(2*Math.PI)/n;
+  pool.forEach((p,i)=>{
+    const sa=arc*i+angle,ea=arc*(i+1)+angle;
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,sa,ea);ctx.closePath();ctx.fillStyle=WHEEL_COLORS[i%WHEEL_COLORS.length];ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+    const ma=sa+arc/2,tr=r*0.62,tx=cx+Math.cos(ma)*tr,ty=cy+Math.sin(ma)*tr;
+    ctx.save();ctx.translate(tx,ty);ctx.rotate(ma+Math.PI/2);ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#1A2530';const fs=Math.min(14,Math.max(9,150/n));ctx.font=`bold ${fs}px Microsoft JhengHei,PingFang TC,sans-serif`;ctx.fillText(p.name||String(p),0,0);ctx.restore();
+  });
+  ctx.beginPath();ctx.arc(cx,cy,r,0,2*Math.PI);ctx.strokeStyle='#2C3E50';ctx.lineWidth=4;ctx.stroke();
+  ctx.beginPath();ctx.arc(cx,cy,22,0,2*Math.PI);ctx.fillStyle='#2C3E50';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();
+  ctx.fillStyle='#fff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('✦',cx,cy);
+  // Fixed pointer at top
+  ctx.beginPath();ctx.moveTo(cx,cy-r+8);ctx.lineTo(cx-13,cy-r-24);ctx.lineTo(cx+13,cy-r-24);ctx.closePath();ctx.fillStyle='#E74C3C';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();
+}
+
+function startSpin(){
+  if(wheelSpinning)return;
+  const pool=lotSession.pool;
+  if(!pool||pool.length<2){toast(pool&&pool.length===1?'只剩一人，直接上班 😅':'至少需要 2 人才能抽籤','err');return;}
+  const n=pool.length,arc=(2*Math.PI)/n;
+  const dateVal=document.getElementById('lottery-date').value;
+
+  // Internal probability weighting (not displayed):
+  // If a person already won a draw this calendar month, their weight = 0.2; others = 1.0
+  const drawMonth=dateVal?dateVal.slice(0,7):new Date().toISOString().slice(0,7);
+  const mw=_getLotMW()[drawMonth]||[];
+  const weights=pool.map(p=>mw.includes(p.name)?0.2:1.0);
+  const totalW=weights.reduce((s,w)=>s+w,0);
+  let rnd=Math.random()*totalW,wi=pool.length-1;
+  for(let i=0;i<pool.length;i++){rnd-=weights[i];if(rnd<=0){wi=i;break;}}
+
+  // Calculate target angle so winner lands at top pointer
+  const desiredNorm=(((-Math.PI/2)-(wi+0.5)*arc)%(2*Math.PI)+2*Math.PI)%(2*Math.PI);
+  const curNorm=((wheelAngle%(2*Math.PI))+2*Math.PI)%(2*Math.PI);
+  const diff=((desiredNorm-curNorm)+2*Math.PI)%(2*Math.PI);
+  const extra=(6+Math.floor(Math.random()*4))*2*Math.PI;
+  const targetAngle=wheelAngle+diff+extra;
+  wheelSpinning=true;document.getElementById('btn-spin').disabled=true;
+  const startAngle=wheelAngle,t0=performance.now(),dur=4000+Math.random()*1500;
+  function animate(now){
+    const t=Math.min((now-t0)/dur,1),e=1-Math.pow(1-t,5);
+    wheelAngle=startAngle+(targetAngle-startAngle)*e;drawWheelFrame(pool,wheelAngle);
+    if(t<1)requestAnimationFrame(animate);
+    else{wheelAngle=targetAngle;wheelSpinning=false;document.getElementById('btn-spin').disabled=false;onWheelStop(pool[wi],dateVal,drawMonth);}
+  }
+  requestAnimationFrame(animate);
+}
+
+function onWheelStop(winner,dateVal,drawMonth){
+  const name=winner.name||winner;
+  lotSession.winners.push(name);lotSession.pool=lotSession.pool.filter(p=>(p.name||p)!==name);
+  // Update internal monthly winners for probability tracking
+  const mw=_getLotMW();if(!mw[drawMonth])mw[drawMonth]=[];if(!mw[drawMonth].includes(name))mw[drawMonth].push(name);_setLotMW(mw);
+  // Save record for this date
+  saveLotRecord(dateVal,name,lotSession.pool);
+  logOp(`生死抽籤：${name} 抽中放假${dateVal?' ('+dateVal+')':''}`);
+  toast(`🎉 ${name} 抽中放假！`,'ok');
+  renderSessionResult();drawWheelFrame(lotSession.pool,0);wheelAngle=0;renderLotteryRecords();
+}
+
+function renderSessionResult(){
+  const area=document.getElementById('lottery-result-area');if(!area)return;
+  const{winners,pool}=lotSession;if(!winners.length){area.innerHTML='';return;}
+  const dateVal=document.getElementById('lottery-date')?.value||'';
+  let html=`<div style="background:#E8F5E9;color:#1E8449;border-radius:10px;padding:.75rem 1rem;margin-bottom:.5rem;font-weight:700;font-size:14px;text-align:center">🎉 放假人員${dateVal?' ('+dateVal+')':''}<br><span style="font-size:16px">${winners.join('　')}</span></div>`;
+  if(pool.length)html+=`<div style="background:#F5F5F5;color:#5A6B73;border-radius:8px;padding:.6rem .9rem;font-size:13px;margin-bottom:.65rem">💼 上班：${pool.map(p=>p.name||p).join('、')}</div>`;
+  if(pool.length>=2)html+=`<button class="btn btn-warning btn-sm" onclick="startSpin()" style="width:100%;margin-bottom:.4rem">🎰 繼續抽下一位</button>`;
+  html+=`<button class="btn btn-secondary btn-sm" onclick="resetSession()" style="width:100%">🔄 重置抽籤</button>`;
+  area.innerHTML=html;
+}
+
+// ── RULES ──
+const DEFAULT_RULES={
+  'BBP':'1.確定出國的日期請提前二個月先預假（當月已排出國其餘天數需配合其他人排假，無商議空間）\n2.每月預假天數最多3天（出國、生日 例外）\n3.節慶一律不可預假，超過一律抽籤\n4.當天預假人數超過一律抽籤，不管預假優先順序（抽有排休的人員）\n⚠️ 排下個月預假的前一個月前就須排完\n例：排9月的假，8/1前就要先預排好，8/1後排的預假若有超過人數需包含在抽籤人數內',
+  '財務':'1.確定出國的日期請提前二個月先預假（當月已排出國其餘天數需配合其他人排假，無商議空間）\n2.每月預假天數最多3天（出國、生日 例外）\n3.節慶一律不可預假，超過一律抽籤\n4.當天預假人數超過一律抽籤，不管預假優先順序（抽有排休的人員）\n⚠️ 排下個月預假的前一個月前就須排完\n例：排9月的假，8/1前就要先預排好，8/1後排的預假若有超過人數需包含在抽籤人數內'
+};
+function getDeptRules(){try{const d=JSON.parse(localStorage.getItem('dept_rules'));if(d&&typeof d==='object')return d;}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_RULES));}
+function setDeptRules(d){localStorage.setItem('dept_rules',JSON.stringify(d));}
+
+function showRuleTip(u,el){
+  const rules=getDeptRules(),tip=document.getElementById('rule-tooltip');
+  tip.textContent=rules[u]||'尚未設定規則';
+  tip.style.display='block';
+  const r=el.getBoundingClientRect();
+  let left=r.left,top=r.bottom+8;
+  if(left+490>window.innerWidth-10)left=window.innerWidth-495;
+  if(left<8)left=8;
+  if(top+220>window.innerHeight)top=r.top-8-tip.offsetHeight;
+  tip.style.left=left+'px';tip.style.top=top+'px';
+}
+function hideRuleTip(){document.getElementById('rule-tooltip').style.display='none';}
+
+function renderPreLeaveRules(){
+  const area=document.getElementById('pl-rules-area');if(!area)return;
+  const depts=getDepts(),rules=getDeptRules();
+  let h=`<div class="card" style="margin-bottom:1rem"><div class="card-head" style="margin-bottom:.7rem"><span class="card-title">📋 預假規則</span><span class="info" style="font-size:11px;margin-left:.5rem">滑鼠移至規則可查看完整說明 &nbsp;｜&nbsp; 點 ✏️ 可編輯</span></div>`;
+  depts.forEach(u=>{
+    const uc=getDeptColor(u),rule=rules[u]||'',firstLine=rule?rule.split('\n')[0]:'（尚未設定規則）',hasMore=rule&&rule.split('\n').length>1;
+    h+=`<div style="display:flex;align-items:center;gap:.6rem;padding:.5rem .75rem;border-radius:8px;margin-bottom:.4rem;background:#F8FAFC;border:1px solid var(--border)">
+      <span class="unit-badge" style="background:${uc.bg};color:${uc.fg};flex-shrink:0">${u}</span>
+      <span style="flex:1;font-size:13px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:help" onmouseenter="showRuleTip('${u}',this)" onmouseleave="hideRuleTip()">${firstLine}${hasMore?'…':''}</span>
+      <button class="btn btn-outline btn-sm" onclick="editRule('${u}')" title="編輯規則">✏️</button>
+    </div>
+    <div id="rule-edit-${u}" style="display:none;padding:.75rem;background:#F0F7FF;border:1px solid var(--accent);border-radius:8px;margin-bottom:.5rem">
+      <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:.4rem">${u} 預假規則</div>
+      <textarea id="rule-ta-${u}" rows="8" style="width:100%;font-size:13px;line-height:1.8;border:1px solid var(--border);border-radius:6px;padding:.5rem .8rem;font-family:inherit;resize:vertical"></textarea>
+      <div style="display:flex;gap:.4rem;margin-top:.5rem;justify-content:flex-end">
+        <button class="btn btn-secondary btn-sm" onclick="cancelEditRule('${u}')">取消</button>
+        <button class="btn btn-success btn-sm" onclick="saveRule('${u}')">💾 儲存</button>
+      </div>
+    </div>`;
+  });
+  area.innerHTML=h+'</div>';
+  depts.forEach(u=>{const ta=document.getElementById('rule-ta-'+u);if(ta)ta.value=rules[u]||'';});
+}
+function editRule(u){document.getElementById('rule-edit-'+u).style.display='block';const ta=document.getElementById('rule-ta-'+u);if(ta)ta.focus();}
+function cancelEditRule(u){document.getElementById('rule-edit-'+u).style.display='none';}
+function saveRule(u){
+  const val=document.getElementById('rule-ta-'+u).value;
+  const rules=getDeptRules();rules[u]=val;setDeptRules(rules);
+  cancelEditRule(u);renderPreLeaveRules();
+  logOp(`更新 ${u} 預假規則`);toast('規則已儲存','ok');
+}
+
+// ── CALENDAR IMAGES ──
+function getCalImages(){try{return JSON.parse(localStorage.getItem('calendar_images'))||{};}catch(e){return{};}}
+function setCalImages(d){localStorage.setItem('calendar_images',JSON.stringify(d));}
+
+let calCurrentYear='2026';
+function openCalModal(){
+  calCurrentYear=document.getElementById('ov-year').value||'2026';
+  refreshCalModal();
+  document.getElementById('modal-cal').classList.add('open');
+}
+function closeCalModal(){document.getElementById('modal-cal').classList.remove('open');}
+function switchCalYear(y){calCurrentYear=String(y);refreshCalModal();}
+function refreshCalModal(){
+  document.getElementById('cal-modal-year').textContent=calCurrentYear;
+  for(let y=2026;y<=2030;y++){const b=document.getElementById('cal-yr-'+y);if(b)b.className='btn btn-sm '+(String(y)===calCurrentYear?'btn-primary':'btn-secondary');}
+  const imgs=getCalImages(),src=imgs[calCurrentYear],area=document.getElementById('cal-img-area'),delBtn=document.getElementById('cal-del-btn');
+  if(src){
+    area.innerHTML=`<img src="${src}" style="max-width:100%;max-height:74vh;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.13);display:block">`;
+    if(delBtn)delBtn.style.display='inline-flex';
+  }else{
+    area.innerHTML=`<div style="color:var(--text-light);padding:3rem 1rem;font-size:14px;text-align:center">📅 尚未上傳 ${calCurrentYear} 年行事曆圖片<br><span style="font-size:12px;opacity:.8">點下方「上傳圖片」開始新增</span></div>`;
+    if(delBtn)delBtn.style.display='none';
+  }
+}
+function uploadCalImg(e){
+  const file=e.target.files[0];if(!file)return;
+  e.target.value='';
+  if(file.size>10*1024*1024){toast('圖片過大！請使用 10MB 以內的圖片','err');return;}
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    const imgs=getCalImages();imgs[calCurrentYear]=ev.target.result;
+    try{setCalImages(imgs);}catch(ex){toast('儲存失敗（localStorage 空間不足，請先清除其他年份圖片）','err');return;}
+    logOp(`上傳 ${calCurrentYear} 年行事曆圖片`);
+    toast(`${calCurrentYear} 年行事曆已更新`,'ok');
+    refreshCalModal();
+  };
+  reader.readAsDataURL(file);
+}
+function deleteCalImg(){
+  if(!confirm(`確定刪除 ${calCurrentYear} 年行事曆圖片？`))return;
+  const imgs=getCalImages();delete imgs[calCurrentYear];setCalImages(imgs);
+  logOp(`刪除 ${calCurrentYear} 年行事曆圖片`);
+  toast('已刪除','ok');
+  refreshCalModal();
+}
+
+// ── LOTTERY DATE CHANGE ──
+function onLotteryDateChange(){
+  if(!lotSession.winners.length)return;
+  resetSession();
+  toast('日期已更改，抽籤已重置');
+}
+
+// ── TAB 7：OP LOG ──
+function renderOpLog(){
+  cleanOpLog();
+  const log=getOpLog();let h=`<thead><tr><th style="width:180px">時間</th><th>操作內容</th></tr></thead><tbody>`;
+  if(!log.length)h+=`<tr><td colspan="2" style="text-align:center;padding:1.5rem;color:var(--text-light)">暫無操作記錄</td></tr>`;
+  else log.forEach(e=>{h+=`<tr><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.time)}</td><td>${e.action}</td></tr>`;});
+  document.getElementById('oplog-table').innerHTML=h+'</tbody>';
+}
+function clearOpLog(){if(!confirm('確定清除所有操作記錄？'))return;setOpLog([]);renderOpLog();toast('已清除','ok');}
+
+// ── FIREBASE 即時同步 ──
+// ┌─────────────────────────────────────────────────────┐
+// │  設定步驟（一次性）：                                  │
+// │  1. 前往 https://console.firebase.google.com         │
+// │  2. 建立專案 → 新增 Realtime Database               │
+// │     地區選 asia-southeast1（新加坡，台灣最近）         │
+// │  3. 規則頁籤 → 貼入：                                │
+// │     {"rules":{".read":true,".write":true}}           │
+// │  4. 專案設定 > 一般 > 您的應用程式 > 複製設定          │
+// │  5. 將下方 FIREBASE_CONFIG 的 null 替換為複製的設定   │
+// │  6. 上傳此 HTML 至 GitHub Pages                       │
+// └─────────────────────────────────────────────────────┘
+const FIREBASE_CONFIG = null;
+// 填入後範例（移除這行，取消下方註解並填入真實值）：
+// const FIREBASE_CONFIG = {
+//   apiKey: "AIzaSy…",
+//   authDomain: "your-project.firebaseapp.com",
+//   databaseURL: "https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app",
+//   projectId: "your-project",
+//   storageBucket: "your-project.appspot.com",
+//   messagingSenderId: "123456789",
+//   appId: "1:123456789:web:abc…"
+// };
+
+const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log'];
+let _db=null;
+const _lastWrite={};
+const SYNC_COOLDOWN=2500;
+
+function setSyncStatus(s,detail){
+  const el=document.getElementById('sync-status');if(!el)return;
+  const map={connected:['🟢','已同步'],connecting:['🟡','連線中…'],error:['🔴','同步失敗'],offline:['⚪','未啟用同步']};
+  const[icon,text]=map[s]||['',''];
+  el.textContent=icon+' '+text;el.title=detail||text;
+}
+
+function fbWrite(key,rawVal){
+  if(!_db||!SYNC_KEYS.includes(key))return;
+  _lastWrite[key]=Date.now();
+  try{const v=typeof rawVal==='string'?JSON.parse(rawVal):rawVal;
+    _db.ref('sched/'+key).set(v).catch(e=>{console.warn('fbWrite err',e);setSyncStatus('error','寫入失敗：'+key);});
+  }catch(e){}
+}
+
+// 攔截所有 localStorage.setItem，同步寫入 Firebase
+localStorage._rawSet=localStorage.setItem.bind(localStorage);
+(function(){
+  const _orig=Storage.prototype.setItem;
+  Storage.prototype.setItem=function(k,v){_orig.call(this,k,v);if(this===localStorage)fbWrite(k,v);};
+})();
+
+function initFirebaseSync(){
+  if(!FIREBASE_CONFIG){setSyncStatus('offline');return;}
+  setSyncStatus('connecting');
+  let loaded=0;
+  const urls=[
+    'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js'
+  ];
+  urls.forEach(src=>{
+    const s=document.createElement('script');s.src=src;
+    s.onerror=()=>setSyncStatus('error','載入 Firebase SDK 失敗');
+    s.onload=()=>{if(++loaded===urls.length)_fbReady();};
+    document.head.appendChild(s);
+  });
+}
+
+function _fbReady(){
+  try{
+    if(!window.firebase?.apps?.length)firebase.initializeApp(FIREBASE_CONFIG);
+    _db=firebase.database();
+
+    // 第一次連線：將本機資料推上雲端（以本機為主）
+    SYNC_KEYS.forEach(k=>{
+      const v=localStorage.getItem(k);
+      if(v)try{_db.ref('sched/'+k).set(JSON.parse(v));}catch(e){}
+    });
+
+    // 監聽雲端變更 → 更新本機 → 重繪目前分頁
+    SYNC_KEYS.forEach(k=>{
+      _db.ref('sched/'+k).on('value',snap=>{
+        if(Date.now()-(_lastWrite[k]||0)<SYNC_COOLDOWN)return; // 自己剛寫的，跳過
+        const val=snap.val();if(val===null)return;
+        localStorage._rawSet(k,JSON.stringify(val)); // 直接寫入，不再觸發 fbWrite
+        const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
+        if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+      });
+    });
+
+    setSyncStatus('connected');
+    // 斷線偵測
+    _db.ref('.info/connected').on('value',s=>{
+      if(!s.val())setSyncStatus('error','網路斷線，等待重連…');
+      else if(_db)setSyncStatus('connected');
+    });
+  }catch(e){
+    console.error('Firebase init error:',e);
+    setSyncStatus('error','初始化失敗：'+e.message);
+  }
+}
+
+// ── INIT ──
+(function init(){
+  migrateData();cleanOpLog();initDropdowns();initLeaveSelector();
+  mlUpdateMembers();renderModalDatePicker();
+  renderOverview();renderMembers();renderTaskConfig();renderPreLeave();
+  const laU=document.getElementById('lottery-add-unit');
+  if(laU){laU.innerHTML=getDepts().map(u=>`<option>${u}</option>`).join('');renderLotteryMemberBtns();}
+  lotSession={pool:[...getLotteryPool()],winners:[]};
+  drawWheelFrame(getLotteryPool(),0);
+  const pool=getLotteryPool();
+  document.getElementById('lottery-pool-list').innerHTML=pool.length?pool.map((p,i)=>`<div class="pool-person"><span style="flex:1;font-size:13px;font-weight:500">${p.name}</span><button class="btn btn-danger btn-sm" onclick="removeFromPool(${i})">×</button></div>`).join(''):'<span class="info" style="padding:.3rem">尚未加入任何人員</span>';
+  const pc=document.getElementById('pool-count');if(pc)pc.textContent=`（${pool.length} 人）`;
+  renderLotteryRecords();
+  initFirebaseSync();
+})();
+</script>
+</body>
+</html>
