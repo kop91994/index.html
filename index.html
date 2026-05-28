@@ -685,18 +685,19 @@ function renderOverview(){
     list.forEach((name,idx)=>{
       h+=`<tr>`;if(idx===0)h+=`<td rowspan="${list.length}" class="c-unit" style="background:${uc.bg};color:${uc.fg}">${u}</td>`;
       h+=`<td class="c-name" style="background:${uc.bg};color:${uc.fg}">${name}</td>`;
-      let cnt=0;const eu=u.replace(/'/g,"\\'"),en=name.replace(/'/g,"\\'");
+      let cnt=0;const cntByType={};const eu=u.replace(/'/g,"\\'"),en=name.replace(/'/g,"\\'");
       for(let d=1;d<=days;d++){
         const val=map[u+'_'+name+'_'+d]||'',dw=new Date(year,month-1,d).getDay(),wk=dw===0||dw===6;
         const oc=ed?` onclick="cellClick('${eu}','${en}',${d},${year},${month})" class="cell-editable"`:'';
-        if(isLeave(val)){const lc=LCM[val];h+=`<td${oc} style="background:${lc.bg};color:${lc.fg};font-weight:700" title="${lc.full}">${val}</td>`;cnt++;totalLeaves++;dayOff[d]++;}
+        if(isLeave(val)){const lc=LCM[val];h+=`<td${oc} style="background:${lc.bg};color:${lc.fg};font-weight:700" title="${lc.full}">${val}</td>`;cnt++;cntByType[val]=(cntByType[val]||0)+1;totalLeaves++;dayOff[d]++;}
         else{
           const pr=preMap[u+'_'+name+'_'+d];
-          if(pr){cnt++;dayOff[d]++;const at=fmtDt(pr.addedAt);const tipType=pr.leaveType&&LCM[pr.leaveType]?LCM[pr.leaveType].full:'';const tip=`預假${tipType?' ('+tipType+')':''}｜原因：${pr.reason}｜新增：${at}`;if(pr.leaveType&&LCM[pr.leaveType]){const lc=LCM[pr.leaveType];h+=`<td${oc} style="background:${lc.bg};color:${lc.fg};font-size:10px;font-weight:700;outline:2px dashed ${lc.fg}66;outline-offset:-2px" title="${tip}">預${pr.leaveType}</td>`;}else h+=`<td${oc} style="background:#F3E5F5;color:#7B1FA2;font-size:10px;font-weight:700" title="${tip}">預</td>`;}
+          if(pr){cnt++;dayOff[d]++;const prKey=pr.leaveType&&LCM[pr.leaveType]?pr.leaveType:'預';cntByType[prKey]=(cntByType[prKey]||0)+1;const at=fmtDt(pr.addedAt);const tipType=pr.leaveType&&LCM[pr.leaveType]?LCM[pr.leaveType].full:'';const tip=`預假${tipType?' ('+tipType+')':''}｜原因：${pr.reason}｜新增：${at}`;if(pr.leaveType&&LCM[pr.leaveType]){const lc=LCM[pr.leaveType];h+=`<td${oc} style="background:${lc.bg};color:${lc.fg};font-size:10px;font-weight:700;outline:2px dashed ${lc.fg}66;outline-offset:-2px" title="${tip}">預${pr.leaveType}</td>`;}else h+=`<td${oc} style="background:#F3E5F5;color:#7B1FA2;font-size:10px;font-weight:700" title="${tip}">預</td>`;}
           else h+=`<td${oc} style="${wk?'background:#F0F0F0;color:#aaa':''}"></td>`;
         }
       }
-      h+=`<td style="color:#E74C3C;font-weight:700">${cnt||''}</td></tr>`;
+      const cntDisplay=Object.keys(LCM).filter(k=>cntByType[k]).map(k=>k+cntByType[k]).join('')+(cntByType['預']?'預'+cntByType['預']:'');
+      h+=`<td style="color:#E74C3C;font-weight:700;font-size:11px;white-space:normal;line-height:1.55;letter-spacing:.3px;padding:4px 6px;min-width:48px" title="本月請假合計：${cnt}天">${cntDisplay}</td></tr>`;
     });
   });
   h+=`<tr class="day-off"><td colspan="2" style="color:#E74C3C;font-weight:700">當日請假人數</td>`;
