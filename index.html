@@ -50,7 +50,7 @@ table{border-collapse:collapse}
 .mtx{font-size:13px;width:100%}
 .mtx th{background:var(--primary);color:#fff;padding:6px 5px;text-align:center;position:sticky;top:0;white-space:nowrap;border:1px solid #3D4F5A}
 .mtx td{border:1px solid var(--border);padding:5px 4px;text-align:center;white-space:nowrap}
-.mtx .c-name{font-weight:600;text-align:left;padding:5px 8px;min-width:80px;position:sticky;left:0;z-index:2;border-right:2px solid var(--border)}
+.mtx .c-name{font-weight:600;text-align:center;padding:5px 6px;min-width:80px;position:sticky;left:0;z-index:2;border-right:2px solid var(--border)}
 .mtx .c-unit{font-weight:700;font-size:12px}
 .mtx .wkend{background:#4A5A61!important;color:#fff!important}
 .mtx .lv{font-weight:700}
@@ -154,10 +154,16 @@ table{border-collapse:collapse}
         <button class="btn btn-outline btn-sm" onclick="openCalModal()" style="margin-left:auto">📅 行事曆</button>
       </div>
     </div>
-    <div style="margin-bottom:.6rem">
-      <div style="font-size:12px;font-weight:600;color:var(--text-light);margin-bottom:.28rem">假別 <span style="font-weight:400">（選取後直接點格子套用）</span></div>
-      <div class="lv-selector" id="lv-selector"></div>
-      <div class="edit-mode-bar" id="edit-mode-bar">✏️ 點格子套用假別，再點同格移除，點假別圓圈取消選取</div>
+    <div style="display:flex;gap:1.5rem;flex-wrap:wrap;align-items:flex-start;margin-bottom:.6rem">
+      <div style="flex:1;min-width:220px">
+        <div style="font-size:12px;font-weight:600;color:var(--text-light);margin-bottom:.28rem">假別 <span style="font-weight:400">（選取後直接點格子套用）</span></div>
+        <div class="lv-selector" id="lv-selector"></div>
+        <div class="edit-mode-bar" id="edit-mode-bar">✏️ 點格子套用假別，再點同格移除，點假別圓圈取消選取</div>
+      </div>
+      <div style="min-width:160px">
+        <div style="font-size:12px;font-weight:600;color:var(--text-light);margin-bottom:.28rem">員工特休餘額</div>
+        <div id="sl-quota-panel"></div>
+      </div>
     </div>
     <div class="stats-row" id="ov-stats"></div>
     <div class="scroll-x"><table class="mtx" id="ov-table"></table></div>
@@ -480,6 +486,11 @@ function logOp(a){
   if(cleaned.length>500)cleaned.length=500;
   setOpLog(cleaned);
 }
+// ── 員工特休配額 ──
+function getSlQuota(){try{return JSON.parse(localStorage.getItem('sl_quota'))||{};}catch(e){return{};}}
+function setSlQuota(d){localStorage.setItem('sl_quota',JSON.stringify(d));}
+function getEmpSlQuota(unit,name){const q=getSlQuota();return(q[unit]&&q[unit][name]!=null)?q[unit][name]:null;}
+function setEmpSlQuota(unit,name,val){const q=getSlQuota();if(!q[unit])q[unit]={};q[unit][name]=val;setSlQuota(q);}
 
 // ── SCHEDULE CACHE (persists task assignments per unit/year/month) ──
 function getSchedCache(){try{return JSON.parse(localStorage.getItem('sched_cache'))||{};}catch(e){return{};}}
@@ -761,7 +772,9 @@ function renderOverview(){
     const list=mems[u]||[];totalPeople+=list.length;const uc=getDeptColor(u);
     list.forEach((name,idx)=>{
       h+=`<tr>`;if(idx===0)h+=`<td rowspan="${list.length}" class="c-unit" style="background:${uc.bg};color:${uc.fg}">${u}</td>`;
-      h+=`<td class="c-name" style="background:${uc.bg};color:${uc.fg}">${name}</td>`;
+      const slq=getEmpSlQuota(u,name);
+      const slBadge=slq!=null?`<div style="font-size:10px;font-weight:700;color:${slq>0?'#0288D1':'#E74C3C'};line-height:1.3;margin-top:2px;letter-spacing:.3px">特${slq}</div>`:'';
+      h+=`<td class="c-name" style="background:${uc.bg};color:${uc.fg}">${name}${slBadge}</td>`;
       let cnt=0;const cntByType={};const eu=u.replace(/'/g,"\\'"),en=name.replace(/'/g,"\\'");
       for(let d=1;d<=days;d++){
         const val=map[u+'_'+name+'_'+d]||'',dw=new Date(year,month-1,d).getDay(),wk=dw===0||dw===6;
@@ -785,6 +798,7 @@ function renderOverview(){
   document.getElementById('ov-table').innerHTML=h;
   const mo=maxRestOff(month);
   document.getElementById('ov-stats').innerHTML=`<div class="stat-card"><div class="stat-val">${totalPeople}</div><div class="stat-lbl">總人數</div></div><div class="stat-card"><div class="stat-val">${workDays}</div><div class="stat-lbl">工作日數</div></div><div class="stat-card"><div class="stat-val">${MAX_REST_ABS}</div><div class="stat-lbl">請假上限/人<br><span style="font-size:10px;font-weight:400;color:var(--text-light)">喪假婚假不限</span></div></div>`;
+  renderSlPanel();
 }
 
 function cellClick(unit,name,day,year,month){
@@ -792,9 +806,53 @@ function cellClick(unit,name,day,year,month){
   const preMap=loadMonthPreLeave(year,month);
   if(preMap[unit+'_'+name+'_'+day]){toast(`${name} ${month}/${day} 當天已有預假！\n只能到年度預假刪除後才能點選`,'err');return;}
   const hist=getHistory(),key=histKey(unit,name,year,month),pack=hist[key]||{};
-  if(pack[day]===selectedLeaveType){delete pack[day];if(Object.keys(pack).length)hist[key]=pack;else delete hist[key];setHistory(hist);logOp(`移除 ${unit} ${name} ${month}/${day} 假期`);toast(`已移除 ${name} ${month}/${day} 假期`);renderOverview();return;}
+  if(pack[day]===selectedLeaveType){
+    delete pack[day];if(Object.keys(pack).length)hist[key]=pack;else delete hist[key];setHistory(hist);
+    // 取消特休 → 歸還配額
+    if(selectedLeaveType==='特'){const q=getEmpSlQuota(unit,name);if(q!=null)setEmpSlQuota(unit,name,q+1);}
+    logOp(`移除 ${unit} ${name} ${month}/${day} 假期`);toast(`已移除 ${name} ${month}/${day} 假期`);renderOverview();return;
+  }
+  // 特休配額不足則擋住
+  if(selectedLeaveType==='特'){const q=getEmpSlQuota(unit,name);if(q!=null&&q<=0){toast(`${name} 特休剩餘 0 天，無法申請特休`,'err');return;}}
   if(pack[day]){delete pack[day];if(Object.keys(pack).length)hist[key]=pack;else delete hist[key];setHistory(hist);}
   processLeave(unit,name,selectedLeaveType,year,month,[parseInt(day)]);
+  // 確認特休已寫入 → 扣減配額
+  if(selectedLeaveType==='特'){const ap=(getHistory()[histKey(unit,name,year,month)])||{};if(ap[day]==='特'){const q=getEmpSlQuota(unit,name);if(q!=null&&q>0)setEmpSlQuota(unit,name,q-1);}}
+}
+// ── 員工特休餘額面板 ──
+function renderSlPanel(){
+  const unit=document.getElementById('ov-unit').value,mems=getMembers(),depts=getDepts();
+  const units=unit==='all'?depts:[unit],q=getSlQuota();
+  const el=document.getElementById('sl-quota-panel');if(!el)return;
+  let h='';
+  units.forEach(u=>{
+    const list=mems[u]||[];if(!list.length)return;
+    const uc=getDeptColor(u);
+    if(units.length>1)h+=`<div style="font-size:11px;font-weight:700;background:${uc.bg};color:${uc.fg};padding:1px 7px;border-radius:3px;display:inline-block;margin-bottom:.22rem">${u}</div>`;
+    h+=`<div style="display:flex;flex-wrap:wrap;gap:.28rem;margin-bottom:.3rem">`;
+    list.forEach(name=>{
+      const val=(q[u]&&q[u][name]!=null)?q[u][name]:'';
+      const eu=u.replace(/'/g,"\\'"),en=name.replace(/'/g,"\\'");
+      const low=val!==''&&parseInt(val)===0;
+      h+=`<div style="display:inline-flex;align-items:center;gap:.25rem;background:${low?'#FFF0F0':'#F0F7FF'};border:1px solid ${low?'#FFCDD2':'#C5DBF5'};border-radius:6px;padding:3px 7px 3px 8px">
+        <span style="font-size:12px;font-weight:600;color:${low?'#C62828':'#1A4A6E'}">${name}</span>
+        <input type="number" min="0" max="99" value="${val}" placeholder="—" title="${name} 特休天數（空白＝不限制）"
+          style="width:34px;border:1px solid ${low?'#FFCDD2':'#B8D0ED'};border-radius:4px;background:#fff;font-size:12px;font-weight:700;color:${low?'#E74C3C':'#0288D1'};text-align:center;outline:none;padding:1px 2px"
+          onchange="setEmpSlQuotaUI('${eu}','${en}',this.value)" onfocus="this.select()">
+      </div>`;
+    });
+    h+=`</div>`;
+  });
+  el.innerHTML=h||'<span style="font-size:12px;color:var(--text-light)">無員工資料</span>';
+}
+function setEmpSlQuotaUI(unit,name,val){
+  if(val===''||val==null){
+    const q=getSlQuota();if(q[unit]){delete q[unit][name];if(!Object.keys(q[unit]).length)delete q[unit];}setSlQuota(q);
+  }else{
+    const v=parseInt(val);if(isNaN(v)||v<0)return;
+    setEmpSlQuota(unit,name,v);logOp(`設定 ${unit} ${name} 特休餘額 ${v} 天`);toast(`${name} 特休餘額設為 ${v} 天`,'ok');
+  }
+  renderOverview();
 }
 
 async function clearMonthLeave(){
@@ -1357,7 +1415,7 @@ const FIREBASE_CONFIG = {
   measurementId: "G-KH94JFM0SJ"
 };
 
-const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log','calendar_images','saved_schedules'];
+const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log','calendar_images','saved_schedules','sl_quota'];
 let _db=null;
 const _lastWrite={};
 const SYNC_COOLDOWN=2500;
