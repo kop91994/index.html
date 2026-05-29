@@ -559,13 +559,19 @@ function distributeTasks(g,days,count,u){
     }
   }
 
-  // ── 後處理均衡：嘗試所有 hi/lo 配對，最多 500 輪 ──
-  function equalize(gw){
-    let changed=true,passes=0;
-    while(changed&&passes<500){
+  // ── 後處理均衡（relaxed=false: 嚴格模式；relaxed=true: 寬鬆模式） ──
+  // 嚴格：不允許惡化其他任務差距；寬鬆：允許暫時惡化，但偵測循環後停止
+  function equalize(gw,relaxed){
+    let changed=true,passes=0,bestSeen=Infinity,stuckP=0;
+    while(changed&&passes<(relaxed?800:500)){
       changed=false;passes++;
       const tm={};
       for(let i=0;i<count;i++)for(let d=1;d<=days;d++){const v=gw[i][d];if(!v||isLeave(v)||v[0]==='~'||_EQ_SKIP.has(v))continue;if(!tm[v])tm[v]=new Array(count).fill(0);tm[v][i]++;}
+      if(relaxed){
+        // 寬鬆模式：追蹤總差距，若 50 輪未改善代表陷入循環，提前結束
+        const cur=Object.values(tm).reduce((s,cs)=>s+(Math.max(...cs)-Math.min(...cs)),0);
+        if(cur<bestSeen){bestSeen=cur;stuckP=0;}else if(++stuckP>50)break;
+      }
       outer:for(const[t,cs]of Object.entries(tm)){
         const mx=Math.max(...cs),mn2=Math.min(...cs);if(mx-mn2<=1)continue;
         const hiList=cs.reduce((a,c,i)=>(c===mx?[...a,i]:a),[]);
@@ -575,10 +581,13 @@ function distributeTasks(g,days,count,u){
             if(gw[hi][d]!==t)continue;
             const lv=gw[lo][d];
             if(!lv||isLeave(lv)||lv[0]==='~'||_EQ_SKIP.has(lv)||lv===t)continue;
-            const lvCs=tm[lv]?[...tm[lv]]:new Array(count).fill(0);
-            lvCs[hi]++;lvCs[lo]--;
-            const origSp=tm[lv]?Math.max(...tm[lv])-Math.min(...tm[lv]):0;
-            if(Math.max(...lvCs)-Math.min(...lvCs)>Math.max(origSp,1))continue;
+            if(!relaxed){
+              // 嚴格：若此交換會讓 lv 差距超過 max(原差距,1) 則跳過
+              const lvCs=tm[lv]?[...tm[lv]]:new Array(count).fill(0);
+              lvCs[hi]++;lvCs[lo]--;
+              const origSp=tm[lv]?Math.max(...tm[lv])-Math.min(...tm[lv]):0;
+              if(Math.max(...lvCs)-Math.min(...lvCs)>Math.max(origSp,1))continue;
+            }
             gw[hi][d]=lv;gw[lo][d]=t;changed=true;break outer;
           }
         }
@@ -586,7 +595,7 @@ function distributeTasks(g,days,count,u){
     }
   }
 
-  // 評分：差距>1 的任務數（×1000，主要指標）＋總差距（次要）
+  // 評分：有差距>1 的任務數（×1000，必須清零）＋總差距（次要優化）
   function calcScore(gw){
     const tm={};
     for(let i=0;i<count;i++)for(let d=1;d<=days;d++){const v=gw[i][d];if(!v||isLeave(v)||v[0]==='~'||_EQ_SKIP.has(v))continue;if(!tm[v])tm[v]=new Array(count).fill(0);tm[v][i]++;}
@@ -595,15 +604,28 @@ function distributeTasks(g,days,count,u){
   }
 
   // 有快取時只補空格，不多跑
-  if(hasCached){runOnce(g);equalize(g);return;}
+  if(hasCached){runOnce(g);equalize(g,false);return;}
 
-  // 無快取：最多跑 25 次，保留最佳結果（差距全為 0/1 即提早結束）
+  // Phase 1：25 次嚴格模式，達到「所有差距 ≤1」即提早結束
   let bestG=null,bestScore=Infinity;
   for(let a=0;a<25;a++){
     const gTry=orig.map(r=>[...r]);
-    runOnce(gTry);equalize(gTry);
+    runOnce(gTry);equalize(gTry,false);
     const s=calcScore(gTry);
-    if(s<bestScore){bestScore=s;bestG=gTry;if(s===0)break;}
+    if(s<bestScore){bestScore=s;bestG=gTry;}
+    if(bestScore<1000)break; // 全部差距 ≤1，目標達成
+  }
+  // Phase 2：若仍有差距>1，允許寬鬆交換（可能產生少量連續相同任務，但優先保證均衡）
+  if(bestScore>=1000){
+    for(let a=0;a<10;a++){
+      const gTry=orig.map(r=>[...r]);
+      runOnce(gTry);
+      equalize(gTry,false);                          // 先跑嚴格
+      if(calcScore(gTry)>=1000)equalize(gTry,true);  // 若仍不達標再跑寬鬆
+      const s=calcScore(gTry);
+      if(s<bestScore){bestScore=s;bestG=gTry;}
+      if(bestScore<1000)break; // 達成目標即停
+    }
   }
   for(let i=0;i<g.length;i++)g[i]=bestG[i];
 }
