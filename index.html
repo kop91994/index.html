@@ -766,11 +766,12 @@ function renderOverview(){
     const list=mems[u]||[];totalPeople+=list.length;const uc=getDeptColor(u);
     list.forEach((name,idx)=>{
       h+=`<tr>`;if(idx===0)h+=`<td rowspan="${list.length}" class="c-unit" style="background:${uc.bg};color:${uc.fg}">${u}</td>`;
+      const eu=u.replace(/'/g,"\\'"),en=name.replace(/'/g,"\\'");
       const slq=getEmpSlQuota(u,name);
       const slBadge=slq!=null?`<div style="font-size:10px;font-weight:700;color:${slq>0?'#0288D1':'#E74C3C'};line-height:1.3;margin-top:2px;letter-spacing:.3px">特${slq}</div>`:'';
       const slTip=slq!=null?`特休剩餘 ${slq} 天，點擊修改`:'點擊輸入特休天數';
       h+=`<td class="c-name" style="background:${uc.bg};color:${uc.fg};cursor:pointer" onclick="editSlQuota('${eu}','${en}')" title="${slTip}">${name}${slBadge}</td>`;
-      let cnt=0;const cntByType={};const eu=u.replace(/'/g,"\\'"),en=name.replace(/'/g,"\\'");
+      let cnt=0;const cntByType={};
       for(let d=1;d<=days;d++){
         const val=map[u+'_'+name+'_'+d]||'',dw=new Date(year,month-1,d).getDay(),wk=dw===0||dw===6;
         const oc=ed?` onclick="cellClick('${eu}','${en}',${d},${year},${month})" class="cell-editable"`:'';
