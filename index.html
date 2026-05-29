@@ -521,70 +521,91 @@ function histKey(u,n,y,m){return u+'_'+n+'_'+y+'_'+m;}
 function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}}
 function tasksForCount(u,n){const h=getTaskCfg().find(c=>c.unit===u&&parseInt(c.count)===n);if(h){const a=h.tasks.split(',').map(s=>s.trim()).filter(Boolean);while(a.length<n)a.push('備崗');return a.slice(0,n);}return Array.from({length:n},()=>'待命');}
 function distributeTasks(g,days,count,u){
-  const st={};for(let i=0;i<count;i++)st[i]={};
-  // Pre-init st from already-filled slots (e.g. restored from cache)
-  for(let i=0;i<count;i++){for(let d=1;d<=days;d++){const v=g[i][d];if(v&&!isLeave(v)&&!(v&&v[0]==='~'))st[i][v]=(st[i][v]||0)+1;}}
-  function tot(i){return Object.values(st[i]).reduce((s,v)=>s+v,0);}
-  function lastWorkTask(i,d){
-    for(let dd=d-1;dd>=1;dd--){const v=g[i][dd];if(isLeave(v)||(v&&v[0]==='~'))continue;return v||null;}
-    return null;
-  }
-  for(let d=1;d<=days;d++){
-    const w=[];for(let i=0;i<count;i++)if(g[i][d]==='')w.push(i);if(!w.length)continue;
-    const tasks=tasksForCount(u,w.length);if(!tasks.length)continue;
-    const pending=[...tasks];shuffle(pending);
-    const avail=[...w];
-    while(pending.length&&avail.length){
-      // Pick task by: 1st = most imbalanced spread among avail (DESC), 2nd = fewest eligible/MRV (ASC)
-      let bestTi=0,bestSpread=-1,bestMrv=Infinity;
-      for(let ti=0;ti<pending.length;ti++){
-        const t=pending[ti];
-        const cnts=avail.map(i=>st[i][t]||0);
-        const spread=Math.max(...cnts)-Math.min(...cnts);
-        const mrv=avail.filter(i=>lastWorkTask(i,d)!==t).length||avail.length;
-        if(spread>bestSpread||(spread===bestSpread&&mrv<bestMrv)){bestSpread=spread;bestMrv=mrv;bestTi=ti;}
-      }
-      const task=pending.splice(bestTi,1)[0];
-      let pool=[...avail];
-      // ① PRIMARY (hard): pick workers with minimum count of THIS task → max diff ≤ 1
-      const mn=Math.min(...pool.map(i=>st[i][task]||0));
-      pool=pool.filter(i=>(st[i][task]||0)===mn);
-      // ② SECONDARY (soft, within min-count only): prefer no same task as last work day (skip leave days)
-      const notLast=pool.filter(i=>lastWorkTask(i,d)!==task);
-      if(notLast.length)pool=notLast;
-      // ③ BBP only (soft, within remaining): prefer no 外部 if last work task was 外部
-      if(u==='BBP'&&task.includes('外部')){
-        const notExt=pool.filter(i=>{const lt=lastWorkTask(i,d);return!lt||!lt.includes('外部');});
-        if(notExt.length)pool=notExt;
-      }
-      // ④ Tie-break: fewest total assignments
-      const mnT=Math.min(...pool.map(tot));
-      pool=pool.filter(i=>tot(i)===mnT);
-      // ⑤ Random final
-      const best=pool[Math.floor(Math.random()*pool.length)];
-      g[best][d]=task;st[best][task]=(st[best][task]||0)+1;
-      avail.splice(avail.indexOf(best),1);
-    }
-  }
-  // ── Post-processing equalization: reduce task max-min diff to ≤ 1 ──
   const _EQ_SKIP=new Set(['待命','備崗']);
-  let _eqOk=true,_eqP=0;
-  while(_eqOk&&_eqP<40){
-    _eqOk=false;_eqP++;
-    const _tm={};
-    for(let i=0;i<count;i++){for(let d=1;d<=days;d++){const v=g[i][d];if(!v||isLeave(v)||v[0]==='~'||_EQ_SKIP.has(v))continue;if(!_tm[v])_tm[v]=new Array(count).fill(0);_tm[v][i]++;}}
-    for(const[_t,_cs]of Object.entries(_tm)){
-      const _mx=Math.max(..._cs),_mn=Math.min(..._cs);if(_mx-_mn<=1)continue;
-      const _hi=_cs.indexOf(_mx),_lo=_cs.lastIndexOf(_mn);
-      for(let d=1;d<=days;d++){
-        if(g[_hi][d]!==_t)continue;
-        const _lv=g[_lo][d];
-        if(!_lv||isLeave(_lv)||_lv[0]==='~'||_EQ_SKIP.has(_lv)||_lv===_t)continue;
-        g[_hi][d]=_lv;g[_lo][d]=_t;_eqOk=true;break;
+  const orig=g.map(r=>[...r]);
+  // 偵測是否已有快取的任務指派（部分格已填）
+  let hasCached=false;
+  for(let i=0;i<count&&!hasCached;i++)for(let d=1;d<=days&&!hasCached;d++){const v=orig[i][d];if(v&&!isLeave(v)&&v[0]!=='~')hasCached=true;}
+
+  // ── 核心：單次逐日貪心指派 ──
+  function runOnce(gw){
+    const st={};for(let i=0;i<count;i++)st[i]={};
+    for(let i=0;i<count;i++){for(let d=1;d<=days;d++){const v=gw[i][d];if(v&&!isLeave(v)&&v[0]!=='~')st[i][v]=(st[i][v]||0)+1;}}
+    function tot(i){return Object.values(st[i]).reduce((s,v)=>s+v,0);}
+    function lastWork(i,d){for(let dd=d-1;dd>=1;dd--){const v=gw[i][dd];if(!isLeave(v)&&!(v&&v[0]==='~'))return v||null;}return null;}
+    for(let d=1;d<=days;d++){
+      const w=[];for(let i=0;i<count;i++)if(gw[i][d]==='')w.push(i);if(!w.length)continue;
+      const tasks=tasksForCount(u,w.length);if(!tasks.length)continue;
+      const pending=[...tasks];shuffle(pending);const avail=[...w];
+      while(pending.length&&avail.length){
+        let bTi=0,bSpread=-1,bMrv=Infinity;
+        for(let ti=0;ti<pending.length;ti++){
+          const t=pending[ti],cnts=avail.map(i=>st[i][t]||0);
+          const spread=Math.max(...cnts)-Math.min(...cnts);
+          const mrv=avail.filter(i=>lastWork(i,d)!==t).length||avail.length;
+          if(spread>bSpread||(spread===bSpread&&mrv<bMrv)){bSpread=spread;bMrv=mrv;bTi=ti;}
+        }
+        const task=pending.splice(bTi,1)[0];
+        let pool=[...avail];
+        const mn=Math.min(...pool.map(i=>st[i][task]||0));
+        pool=pool.filter(i=>(st[i][task]||0)===mn);
+        const notLast=pool.filter(i=>lastWork(i,d)!==task);if(notLast.length)pool=notLast;
+        if(u==='BBP'&&task.includes('外部')){const nE=pool.filter(i=>{const lt=lastWork(i,d);return!lt||!lt.includes('外部');});if(nE.length)pool=nE;}
+        const mnT=Math.min(...pool.map(tot));pool=pool.filter(i=>tot(i)===mnT);
+        const best=pool[Math.floor(Math.random()*pool.length)];
+        gw[best][d]=task;st[best][task]=(st[best][task]||0)+1;
+        avail.splice(avail.indexOf(best),1);
       }
-      if(_eqOk)break;
     }
   }
+
+  // ── 後處理均衡：嘗試所有 hi/lo 配對，最多 500 輪 ──
+  function equalize(gw){
+    let changed=true,passes=0;
+    while(changed&&passes<500){
+      changed=false;passes++;
+      const tm={};
+      for(let i=0;i<count;i++)for(let d=1;d<=days;d++){const v=gw[i][d];if(!v||isLeave(v)||v[0]==='~'||_EQ_SKIP.has(v))continue;if(!tm[v])tm[v]=new Array(count).fill(0);tm[v][i]++;}
+      outer:for(const[t,cs]of Object.entries(tm)){
+        const mx=Math.max(...cs),mn2=Math.min(...cs);if(mx-mn2<=1)continue;
+        const hiList=cs.reduce((a,c,i)=>(c===mx?[...a,i]:a),[]);
+        const loList=cs.reduce((a,c,i)=>(c===mn2?[...a,i]:a),[]);
+        for(const hi of hiList)for(const lo of loList){
+          for(let d=1;d<=days;d++){
+            if(gw[hi][d]!==t)continue;
+            const lv=gw[lo][d];
+            if(!lv||isLeave(lv)||lv[0]==='~'||_EQ_SKIP.has(lv)||lv===t)continue;
+            const lvCs=tm[lv]?[...tm[lv]]:new Array(count).fill(0);
+            lvCs[hi]++;lvCs[lo]--;
+            const origSp=tm[lv]?Math.max(...tm[lv])-Math.min(...tm[lv]):0;
+            if(Math.max(...lvCs)-Math.min(...lvCs)>Math.max(origSp,1))continue;
+            gw[hi][d]=lv;gw[lo][d]=t;changed=true;break outer;
+          }
+        }
+      }
+    }
+  }
+
+  // 評分：差距>1 的任務數（×1000，主要指標）＋總差距（次要）
+  function calcScore(gw){
+    const tm={};
+    for(let i=0;i<count;i++)for(let d=1;d<=days;d++){const v=gw[i][d];if(!v||isLeave(v)||v[0]==='~'||_EQ_SKIP.has(v))continue;if(!tm[v])tm[v]=new Array(count).fill(0);tm[v][i]++;}
+    const sps=Object.values(tm).map(cs=>Math.max(...cs)-Math.min(...cs));
+    return sps.filter(s=>s>1).length*1000+sps.reduce((a,b)=>a+b,0);
+  }
+
+  // 有快取時只補空格，不多跑
+  if(hasCached){runOnce(g);equalize(g);return;}
+
+  // 無快取：最多跑 25 次，保留最佳結果（差距全為 0/1 即提早結束）
+  let bestG=null,bestScore=Infinity;
+  for(let a=0;a<25;a++){
+    const gTry=orig.map(r=>[...r]);
+    runOnce(gTry);equalize(gTry);
+    const s=calcScore(gTry);
+    if(s<bestScore){bestScore=s;bestG=gTry;if(s===0)break;}
+  }
+  for(let i=0;i<g.length;i++)g[i]=bestG[i];
 }
 function isLeave(v){return v&&LCM[v];}
 function fmtDt(iso){if(!iso)return'';const d=new Date(iso);return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
