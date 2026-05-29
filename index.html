@@ -768,7 +768,7 @@ function renderOverview(){
       h+=`<tr>`;if(idx===0)h+=`<td rowspan="${list.length}" class="c-unit" style="background:${uc.bg};color:${uc.fg}">${u}</td>`;
       const eu=u.replace(/'/g,"\\'"),en=name.replace(/'/g,"\\'");
       const slq=getEmpSlQuota(u,name);
-      const slBadge=slq!=null?`<div style="font-size:10px;font-weight:700;color:${slq>0?'#0288D1':'#E74C3C'};line-height:1.3;margin-top:2px;letter-spacing:.3px">特${slq}</div>`:'';
+      const slBadge=slq!=null&&slq>0?`<div style="font-size:10px;font-weight:700;color:#0288D1;line-height:1.3;margin-top:2px;letter-spacing:.3px">特${slq}</div>`:'';
       const slTip=slq!=null?`特休剩餘 ${slq} 天，點擊修改`:'點擊輸入特休天數';
       h+=`<td class="c-name" style="background:${uc.bg};color:${uc.fg};cursor:pointer" onclick="editSlQuota('${eu}','${en}')" title="${slTip}">${name}${slBadge}</td>`;
       let cnt=0;const cntByType={};
