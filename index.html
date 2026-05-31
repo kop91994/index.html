@@ -804,8 +804,8 @@ function renderOverview(){
           else h+=`<td${oc} style="${wk?'background:#F0F0F0;color:#aaa':''}"></td>`;
         }
       }
-      const cntSpans=Object.keys(LCM).filter(k=>cntByType[k]).map(k=>{const lc=LCM[k];return`<span style="display:inline-block;background:${lc.bg};color:${lc.fg};font-weight:700;font-size:11px;border-radius:3px;padding:1px 4px;margin:1px;white-space:nowrap">${k}${cntByType[k]}</span>`;}).join('');
-      const preSpan=cntByType['預']?`<span style="display:inline-block;background:#F3E5F5;color:#7B1FA2;font-weight:700;font-size:11px;border-radius:3px;padding:1px 4px;margin:1px;white-space:nowrap">預${cntByType['預']}</span>`:'';
+      const cntSpans=Object.keys(LCM).filter(k=>cntByType[k]).map(k=>{const lc=LCM[k];return`<span style="display:inline-block;color:${lc.fg};font-weight:700;font-size:13px;white-space:nowrap;line-height:1.7">${k}${cntByType[k]}</span>`;}).join('<br>');
+      const preSpan=cntByType['預']?`<br><span style="display:inline-block;color:#7B1FA2;font-weight:700;font-size:13px;white-space:nowrap;line-height:1.7">預${cntByType['預']}</span>`:'';
       h+=`<td style="padding:4px 6px;min-width:52px;text-align:center;vertical-align:middle" title="本月請假合計：${cnt}天">${cntSpans}${preSpan}</td></tr>`;
     });
   });
