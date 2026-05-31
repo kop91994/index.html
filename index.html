@@ -186,7 +186,6 @@ table{border-collapse:collapse}
     <div class="scroll-x"><table class="sched" id="sc-table"></table></div>
   </div>
   <div id="sc-stats"></div>
-  <div id="sc-gallery"></div>
 </div>
 
 <!-- TAB 3：年度預假 -->
@@ -1318,54 +1317,8 @@ function savedSchedKey(u,y,m){return u+'_'+y+'_'+m;}
 function updateSaveBtn(u,y,m){
   const btn=document.getElementById('btn-save-sched');if(!btn)return;
   const saved=getSavedScheds(),k=savedSchedKey(u,y,m);
-  if(saved[k]){btn.innerHTML='📷 查看本月班表';btn.className='btn btn-success btn-sm';}
+  if(saved[k]){btn.innerHTML='📷 查看班表';btn.className='btn btn-success btn-sm';}
   else{btn.innerHTML='💾 儲存班表';btn.className='btn btn-primary btn-sm';}
-  renderSchedGallery();
-}
-function renderSchedGallery(){
-  const el=document.getElementById('sc-gallery');if(!el)return;
-  const unit=document.getElementById('sc-unit')?.value;
-  const year=parseInt(document.getElementById('sc-year')?.value);
-  if(!unit||!year){el.innerHTML='';return;}
-  const saved=getSavedScheds();
-  const months=[];
-  for(let m=1;m<=12;m++){const k=savedSchedKey(unit,year,m);if(saved[k])months.push({m,img:saved[k]});}
-  if(!months.length){el.innerHTML='';return;}
-  const uc=getDeptColor(unit);
-  let h=`<div class="card"><div class="card-head"><span class="card-title">📷 已儲存班表</span><span style="font-size:12px;color:var(--text-light);margin-left:.3rem">`;
-  h+=`<span class="unit-badge" style="background:${uc.bg};color:${uc.fg};font-size:11px;padding:2px 8px">${unit}</span> ${year}年 · 共 ${months.length} 個月份</span></div>`;
-  h+=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:.7rem">`;
-  months.forEach(({m,img})=>{
-    const curM=parseInt(document.getElementById('sc-month')?.value);
-    const isCur=m===curM;
-    h+=`<div style="border:2px solid ${isCur?'var(--accent)':'var(--border)'};border-radius:9px;overflow:hidden;background:#FAFCFD;transition:.15s">
-      <div style="background:${isCur?'var(--accent)':'var(--primary)'};color:#fff;padding:5px 10px;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:space-between">
-        <span>${year}年 ${m}月</span>${isCur?'<span style="font-size:10px;opacity:.85">▶ 目前</span>':''}
-      </div>
-      <img src="${img}" style="width:100%;display:block;cursor:zoom-in;height:90px;object-fit:cover;object-position:top" onclick="openSchedImgByKey('${unit.replace(/'/g,"\\'")}',${year},${m})" title="點擊放大">
-      <div style="padding:5px 7px;display:flex;gap:.35rem">
-        <button class="btn btn-primary btn-sm" style="flex:1;font-size:11px" onclick="openSchedImgByKey('${unit.replace(/'/g,"\\'")}',${year},${m})">🔍 放大</button>
-        <button class="btn btn-danger btn-sm" style="font-size:11px" onclick="deleteSavedSchedByKey('${unit.replace(/'/g,"\\'")}',${year},${m})">🗑</button>
-      </div>
-    </div>`;
-  });
-  h+=`</div></div>`;
-  el.innerHTML=h;
-}
-function openSchedImgByKey(unit,year,month){
-  const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);if(!saved[k])return;
-  document.getElementById('sched-img-full').src=saved[k];
-  document.getElementById('sched-img-modal-title').textContent=`📷 ${unit} ${year}年${month}月 班表`;
-  document.getElementById('sched-img-modal').classList.add('open');
-}
-async function deleteSavedSchedByKey(unit,year,month){
-  if(!await uiConfirm(`確定刪除 ${unit} ${year}年${month}月 班表圖片？`,{danger:true,okText:'刪除',title:'刪除班表圖片'}))return;
-  const saved=getSavedScheds(),k=savedSchedKey(unit,year,month);
-  delete saved[k];setSavedScheds(saved);
-  logOp(`刪除班表圖片：${unit} ${year}/${month}`);toast('已刪除班表圖片','ok');
-  const curUnit=document.getElementById('sc-unit').value,curYear=parseInt(document.getElementById('sc-year').value),curMonth=parseInt(document.getElementById('sc-month').value);
-  if(unit===curUnit&&year===curYear&&month===curMonth)updateSaveBtn(unit,year,month);
-  else renderSchedGallery();
 }
 function handleSaveBtn(){
   const unit=document.getElementById('sc-unit').value,year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
