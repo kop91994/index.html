@@ -302,6 +302,7 @@ table{border-collapse:collapse}
   <div class="card">
     <div class="card-head">
       <span class="card-title">📋 操作記錄</span>
+      <input type="text" id="oplog-search" placeholder="🔍 搜尋記錄內容…" style="flex:1;max-width:280px;font-size:12px" oninput="renderOpLog()">
       <span class="info" style="font-size:11px">保存 2 個月，自動清除</span>
     </div>
     <div class="scroll-x"><table class="oplog" id="oplog-table"></table></div>
@@ -783,7 +784,7 @@ function renderOverview(){
         }
       }
       const cntDisplay=Object.keys(LCM).filter(k=>cntByType[k]).map(k=>k+cntByType[k]).join('')+(cntByType['預']?'預'+cntByType['預']:'');
-      h+=`<td style="color:#E74C3C;font-weight:700;font-size:11px;white-space:normal;line-height:1.55;letter-spacing:.3px;padding:4px 6px;min-width:48px" title="本月請假合計：${cnt}天">${cntDisplay}</td></tr>`;
+      h+=`<td style="color:#E74C3C;font-weight:700;font-size:13px;white-space:normal;line-height:1.6;letter-spacing:.3px;padding:4px 6px;min-width:52px" title="本月請假合計：${cnt}天">${cntDisplay}</td></tr>`;
     });
   });
   h+=`<tr class="day-off"><td colspan="2" style="color:#E74C3C;font-weight:700">當日請假人數</td>`;
@@ -1362,9 +1363,12 @@ function onLotteryDateChange(){
 // ── TAB 7：OP LOG ──
 function renderOpLog(){
   cleanOpLog();
-  const log=getOpLog();let h=`<thead><tr><th style="width:180px">時間</th><th>操作內容</th></tr></thead><tbody>`;
-  if(!log.length)h+=`<tr><td colspan="2" style="text-align:center;padding:1.5rem;color:var(--text-light)">暫無操作記錄</td></tr>`;
-  else log.forEach(e=>{h+=`<tr><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.time)}</td><td>${e.action}</td></tr>`;});
+  const log=getOpLog();
+  const q=(document.getElementById('oplog-search')?.value||'').trim().toLowerCase();
+  const filtered=q?log.filter(e=>e.action.toLowerCase().includes(q)||fmtDt(e.time).includes(q)):log;
+  let h=`<thead><tr><th style="width:180px">時間</th><th>操作內容</th></tr></thead><tbody>`;
+  if(!filtered.length)h+=`<tr><td colspan="2" style="text-align:center;padding:1.5rem;color:var(--text-light)">${q?'無符合的記錄':'暫無操作記錄'}</td></tr>`;
+  else filtered.forEach(e=>{h+=`<tr><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.time)}</td><td>${e.action}</td></tr>`;});
   document.getElementById('oplog-table').innerHTML=h+'</tbody>';
 }
 async function clearOpLog(){if(!await uiConfirm('確定清除所有操作記錄？',{danger:true,okText:'清除',title:'清除記錄'}))return;setOpLog([]);renderOpLog();toast('已清除','ok');}
