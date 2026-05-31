@@ -117,6 +117,11 @@ table{border-collapse:collapse}
 .toast{background:#2C3E50;color:#fff;padding:.6rem 1rem;border-radius:8px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.22);animation:tIn .25s ease;max-width:280px;pointer-events:auto}
 .toast.ok{background:var(--success)}.toast.err{background:var(--danger)}
 @keyframes tIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
+.pg-bar{display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.75rem;justify-content:center}
+.pg-btn{min-width:32px;height:30px;padding:0 .55rem;border-radius:6px;border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;justify-content:center;font-family:inherit}
+.pg-btn:hover:not([disabled]){border-color:var(--accent);color:var(--accent);background:rgba(41,128,185,.07)}
+.pg-btn.pg-active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pg-btn[disabled]{opacity:.35;cursor:default}
 .info{font-size:12px;color:var(--text-light)}
 .rule-tooltip{position:fixed;background:#2C3E50;color:#fff;border-radius:10px;padding:.9rem 1.2rem;font-size:12px;line-height:1.85;max-width:480px;white-space:pre-wrap;z-index:600;box-shadow:0 8px 28px rgba(0,0,0,.35);display:none;pointer-events:none;border-left:4px solid #5DADE2}
 @media(max-width:700px){.main{padding:.75rem}}
@@ -190,9 +195,9 @@ table{border-collapse:collapse}
     <div class="card-head">
       <span class="card-title">📆 年度預假規劃</span>
       <div class="fbar">
-        <label>年份</label><select id="pl-year" onchange="renderPreLeave()"></select>
-        <label>部門</label><select id="pl-unit" onchange="renderPreLeave()"><option value="all">（全部）</option></select>
-        <label>員工</label><select id="pl-emp" onchange="renderPreLeave()"><option value="all">（全部）</option></select>
+        <label>年份</label><select id="pl-year" onchange="_plPage=1;renderPreLeave()"></select>
+        <label>部門</label><select id="pl-unit" onchange="_plPage=1;renderPreLeave()"><option value="all">（全部）</option></select>
+        <label>員工</label><select id="pl-emp" onchange="_plPage=1;renderPreLeave()"><option value="all">（全部）</option></select>
         <button class="btn btn-primary btn-sm" onclick="openPreLeaveForm()">+ 新增預假</button>
       </div>
     </div>
@@ -302,7 +307,7 @@ table{border-collapse:collapse}
   <div class="card">
     <div class="card-head">
       <span class="card-title">📋 操作記錄</span>
-      <input type="text" id="oplog-search" placeholder="🔍 搜尋記錄內容…" style="flex:1;max-width:280px;font-size:12px" oninput="renderOpLog()">
+      <input type="text" id="oplog-search" placeholder="🔍 搜尋記錄內容…" style="flex:1;max-width:280px;font-size:12px" oninput="_oplogPage=1;renderOpLog()">
       <span class="info" style="font-size:11px">保存 2 個月，自動清除</span>
     </div>
     <div class="scroll-x"><table class="oplog" id="oplog-table"></table></div>
@@ -738,6 +743,22 @@ function selectLeaveType(type){
 
 // ── PRE-LEAVE TYPE SELECTOR ──
 let pfSelectedLeaveType=null;
+let _plPage=1;
+let _oplogPage=1;
+const PAGE_SIZE=50;
+
+function renderPageBar(total,cur,setFn,containerId){
+  const pages=Math.ceil(total/PAGE_SIZE);if(pages<=1)return'';
+  let h=`<div class="pg-bar" id="${containerId}">`;
+  h+=`<button class="pg-btn" ${cur<=1?'disabled':''} onclick="${setFn}(${cur-1})">‹</button>`;
+  for(let p=1;p<=pages;p++){
+    if(pages>7&&p>2&&p<pages-1&&Math.abs(p-cur)>2){if(p===3||p===pages-2)h+=`<span style="padding:0 2px;color:var(--text-light)">…</span>`;continue;}
+    h+=`<button class="pg-btn${p===cur?' pg-active':''}" onclick="${setFn}(${p})">${p}</button>`;
+  }
+  h+=`<button class="pg-btn" ${cur>=pages?'disabled':''} onclick="${setFn}(${cur+1})">›</button>`;
+  h+=`<span style="font-size:12px;color:var(--text-light);margin-left:.3rem">共 ${total} 筆</span>`;
+  return h+'</div>';
+}
 function pfInitLeaveSelector(){
   document.getElementById('pf-lv-selector').innerHTML=Object.entries(LCM).filter(([k])=>!HIDDEN_LV.has(k)).map(([k,v])=>
     `<div class="lv-chip pf-lv-chip" data-type="${k}" onclick="pfSelectLeaveType('${k}')" style="background:${v.bg};color:${v.fg}"><span class="lv-radio"></span><span>${v.full}</span></div>`).join('');
@@ -783,8 +804,9 @@ function renderOverview(){
           else h+=`<td${oc} style="${wk?'background:#F0F0F0;color:#aaa':''}"></td>`;
         }
       }
-      const cntDisplay=Object.keys(LCM).filter(k=>cntByType[k]).map(k=>k+cntByType[k]).join('')+(cntByType['預']?'預'+cntByType['預']:'');
-      h+=`<td style="color:#E74C3C;font-weight:700;font-size:13px;white-space:normal;line-height:1.6;letter-spacing:.3px;padding:4px 6px;min-width:52px" title="本月請假合計：${cnt}天">${cntDisplay}</td></tr>`;
+      const cntSpans=Object.keys(LCM).filter(k=>cntByType[k]).map(k=>{const lc=LCM[k];return`<span style="display:inline-block;background:${lc.bg};color:${lc.fg};font-weight:700;font-size:11px;border-radius:3px;padding:1px 4px;margin:1px;white-space:nowrap">${k}${cntByType[k]}</span>`;}).join('');
+      const preSpan=cntByType['預']?`<span style="display:inline-block;background:#F3E5F5;color:#7B1FA2;font-weight:700;font-size:11px;border-radius:3px;padding:1px 4px;margin:1px;white-space:nowrap">預${cntByType['預']}</span>`:'';
+      h+=`<td style="padding:4px 6px;min-width:52px;text-align:center;vertical-align:middle" title="本月請假合計：${cnt}天">${cntSpans}${preSpan}</td></tr>`;
     });
   });
   h+=`<tr class="day-off"><td colspan="2" style="color:#E74C3C;font-weight:700">當日請假人數</td>`;
@@ -972,6 +994,8 @@ function submitPreLeave(){
   toast(`✔ 已新增 ${name} ${year}/${month} 共${days.length}天預假`,'ok');closePreLeaveForm();
   renderPreLeave();renderOverview();  // sync to 幼幼班假表
 }
+function setPlPage(p){_plPage=p;renderPreLeave();}
+function setOplogPage(p){_oplogPage=p;renderOpLog();}
 async function removePreLeaveEntry(id){if(!await uiConfirm('確定刪除此預假記錄？',{danger:true,okText:'刪除',title:'刪除確認'}))return;setPreLeave(getPreLeave().filter(e=>String(e.id)!==String(id)));logOp('刪除預假記錄');toast('已刪除','ok');renderPreLeave();renderOverview();}
 function renderPreLeave(){
   renderPreLeaveRules();
@@ -980,11 +1004,19 @@ function renderPreLeave(){
   const names=['all'];unitList.forEach(u=>(mems[u]||[]).forEach(n=>{if(!names.includes(n))names.push(n);}));
   const pe=document.getElementById('pl-emp'),pv=pe.value;pe.innerHTML=`<option value="all">（全部）</option>`+names.slice(1).map(n=>`<option${n===pv?' selected':''}>${n}</option>`).join('');
   const pu=document.getElementById('pl-unit'),puv=pu.value;pu.innerHTML='<option value="all">（全部）</option>'+depts.map(u=>`<option${u===puv?' selected':''}>${u}</option>`).join('');
-  const pl=getPreLeave().filter(e=>parseInt(e.year)===year&&(unit==='all'||e.unit===unit)&&(empF==='all'||e.name===empF)).sort((a,b)=>a.month!==b.month?a.month-b.month:a.day-b.day);
+  const plAll=getPreLeave().filter(e=>parseInt(e.year)===year&&(unit==='all'||e.unit===unit)&&(empF==='all'||e.name===empF)).sort((a,b)=>a.month!==b.month?a.month-b.month:a.day-b.day);
+  const plTotal=plAll.length;
+  const plPages=Math.ceil(plTotal/PAGE_SIZE)||1;
+  if(_plPage>plPages)_plPage=plPages;
+  const pl=plAll.slice((_plPage-1)*PAGE_SIZE,_plPage*PAGE_SIZE);
   let h=`<thead><tr><th>部門</th><th>員工</th><th>日期</th><th>星期</th><th>假別</th><th>預假原因</th><th>新增時間</th><th style="width:65px">操作</th></tr></thead><tbody>`;
-  if(!pl.length)h+=`<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:var(--text-light)">暫無預假記錄，點「新增預假」開始規劃</td></tr>`;
+  if(!plTotal)h+=`<tr><td colspan="8" style="text-align:center;padding:1.5rem;color:var(--text-light)">暫無預假記錄，點「新增預假」開始規劃</td></tr>`;
   else pl.forEach(e=>{const uc=getDeptColor(e.unit),dw=new Date(e.year,e.month-1,e.day).getDay(),wk=dw===0||dw===6;const ltCell=e.leaveType&&LCM[e.leaveType]?`<td style="background:${LCM[e.leaveType].bg};color:${LCM[e.leaveType].fg};font-weight:700;white-space:nowrap">${LCM[e.leaveType].full}</td>`:`<td style="color:var(--text-light)">—</td>`;h+=`<tr><td style="background:${uc.bg};color:${uc.fg};font-weight:700">${e.unit}</td><td style="font-weight:600">${e.name}</td><td style="${wk?'color:#aaa':''}">${e.year}/${e.month}/${e.day}</td><td style="${wk?'color:#E74C3C':''}">（${DOW[dw]}）</td>${ltCell}<td style="text-align:left">${e.reason}</td><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.addedAt)||'—'}</td><td><button class="btn btn-danger btn-sm" onclick="removePreLeaveEntry('${e.id}')">刪除</button></td></tr>`;});
   document.getElementById('pl-table').innerHTML=h+'</tbody>';
+  const pgHtml=renderPageBar(plTotal,_plPage,'setPlPage','pl-pg-bar');
+  let pgEl=document.getElementById('pl-pg-bar');
+  if(pgEl)pgEl.outerHTML=pgHtml||'';
+  else if(pgHtml){const wrap=document.createElement('div');wrap.innerHTML=pgHtml;document.getElementById('pl-table').parentNode.after(wrap.firstChild);}
 }
 
 // ── TAB 4：MEMBERS ──
@@ -1366,10 +1398,18 @@ function renderOpLog(){
   const log=getOpLog();
   const q=(document.getElementById('oplog-search')?.value||'').trim().toLowerCase();
   const filtered=q?log.filter(e=>e.action.toLowerCase().includes(q)||fmtDt(e.time).includes(q)):log;
+  const total=filtered.length;
+  const pages=Math.ceil(total/PAGE_SIZE)||1;
+  if(_oplogPage>pages)_oplogPage=pages;
+  const page=filtered.slice((_oplogPage-1)*PAGE_SIZE,_oplogPage*PAGE_SIZE);
   let h=`<thead><tr><th style="width:180px">時間</th><th>操作內容</th></tr></thead><tbody>`;
-  if(!filtered.length)h+=`<tr><td colspan="2" style="text-align:center;padding:1.5rem;color:var(--text-light)">${q?'無符合的記錄':'暫無操作記錄'}</td></tr>`;
-  else filtered.forEach(e=>{h+=`<tr><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.time)}</td><td>${e.action}</td></tr>`;});
+  if(!total)h+=`<tr><td colspan="2" style="text-align:center;padding:1.5rem;color:var(--text-light)">${q?'無符合的記錄':'暫無操作記錄'}</td></tr>`;
+  else page.forEach(e=>{h+=`<tr><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.time)}</td><td>${e.action}</td></tr>`;});
   document.getElementById('oplog-table').innerHTML=h+'</tbody>';
+  const pgHtml=renderPageBar(total,_oplogPage,'setOplogPage','oplog-pg-bar');
+  let pgEl=document.getElementById('oplog-pg-bar');
+  if(pgEl)pgEl.outerHTML=pgHtml||'';
+  else if(pgHtml){const wrap=document.createElement('div');wrap.innerHTML=pgHtml;document.querySelector('#tab-oplog .card').appendChild(wrap.firstChild);}
 }
 async function clearOpLog(){if(!await uiConfirm('確定清除所有操作記錄？',{danger:true,okText:'清除',title:'清除記錄'}))return;setOpLog([]);renderOpLog();toast('已清除','ok');}
 
