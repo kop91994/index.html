@@ -786,7 +786,7 @@ function renderOverview(){
   for(let d=1;d<=days;d++){const dw=new Date(year,month-1,d).getDay();const hn=getHolidayName(year,month,d);h+=`<th class="${dw===0||dw===6?'wkend':''}" style="font-size:10px${hn?';color:#FF6B6B':''}" title="${hn||''}">${DOW[dw]}</th>`;}
   h+=`<th style="background:#3D4F5A"></th></tr></thead><tbody>`;
   units.forEach(u=>{
-    const list=mems[u]||[];totalPeople+=list.length;const uc=getDeptColor(u);
+    const list=mems[u]||[];totalPeople+=list.length;const uc={bg:'#EAF0F6',fg:'#2A3A42'};
     list.forEach((name,idx)=>{
       h+=`<tr>`;if(idx===0)h+=`<td rowspan="${list.length}" class="c-unit" style="background:${uc.bg};color:${uc.fg}">${u}</td>`;
       const eu=u.replace(/'/g,"\\'"),en=name.replace(/'/g,"\\'");
@@ -879,7 +879,7 @@ async function confirmRegen(){
 function renderSchedule(){
   const unit=document.getElementById('sc-unit').value;if(!unit){document.getElementById('sc-table').innerHTML='';document.getElementById('sc-stats').innerHTML='';return;}
   const year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value),days=daysInMonth(year,month);
-  const mems=getMembers(),list=mems[unit]||[],count=list.length,map=loadMonthLeave(year,month),mo=maxRestOff(month),uc=getDeptColor(unit);
+  const mems=getMembers(),list=mems[unit]||[],count=list.length,map=loadMonthLeave(year,month),mo=maxRestOff(month),uc={bg:'#EAF0F6',fg:'#2A3A42'};
   const scPreMap=loadMonthPreLeave(year,month);
   const grid=list.map(name=>{const r=[name];for(let d=1;d<=days;d++){const v=map[unit+'_'+name+'_'+d]||'';if(isLeave(v))r.push(v);else{const pr=scPreMap[unit+'_'+name+'_'+d];r.push(pr?'~'+(pr.leaveType||''):'');}}r.push('');return r;});
   // Restore from cache: apply saved task assignments to present (empty) slots
