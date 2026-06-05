@@ -1797,11 +1797,20 @@ let sportsPeriod=0; // 0=本月 1=下個月
 function getSportsLog(){try{return JSON.parse(localStorage.getItem('sports_log'))||{};}catch(e){return{};}}
 function setSportsLog(d){localStorage.setItem('sports_log',JSON.stringify(d));}
 function sportsKey(u,y,m){return u+'_'+y+'_'+m;}
+// 自動清除「本月以前」的登記（例如進入7月後，6月以前的登記自動刪除）
+function pruneOldSports(){
+  const now=new Date();const cur=now.getFullYear()*12+(now.getMonth()+1);
+  const log=getSportsLog();let changed=false;
+  Object.keys(log).forEach(k=>{const p=k.split('_');const m=parseInt(p.pop()),y=parseInt(p.pop());if(!isNaN(y)&&!isNaN(m)&&(y*12+m)<cur){delete log[k];changed=true;}});
+  if(changed)setSportsLog(log);
+  return changed;
+}
 function sportsYM(){const now=new Date();let y=now.getFullYear(),m=now.getMonth()+1;if(sportsPeriod===1){m++;if(m>12){m=1;y++;}}return{y,m};}
 function setSportsPeriod(p){sportsPeriod=p;renderSports();}
 function emojiForSport(name){const hit=SPORTS_PRESET.find(s=>s[0]===name);return hit?hit[1]:'🏅';}
 function sportsTypeChange(){const w=document.getElementById('sports-custom-wrap');if(w)w.style.display=document.getElementById('sports-type').value==='__custom'?'flex':'none';}
 function renderSports(){
+  pruneOldSports();
   const depts=getDepts();
   const us=document.getElementById('sports-unit');if(!us)return;
   if(!us.options.length)us.innerHTML=depts.map(u=>`<option>${u}</option>`).join('');
