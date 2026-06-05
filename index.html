@@ -82,6 +82,40 @@ table{border-collapse:collapse}
 .modal-title{font-size:15px;font-weight:700}
 .modal-x{background:none;border:none;cursor:pointer;font-size:21px;color:var(--text-light);line-height:1;padding:0 2px}
 .modal-x:hover{color:var(--danger)}
+/* 任務內容彈窗 — 清爽配色 */
+.task-add-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.3rem;background:linear-gradient(135deg,#2DBE8E 0%,#1FA8C4 100%)}
+.task-add-x{background:rgba(255,255,255,.18);border:none;cursor:pointer;font-size:18px;color:#fff;line-height:1;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:.15s}
+.task-add-x:hover{background:rgba(255,255,255,.35)}
+.task-add-sub{font-size:12.5px;line-height:1.7;color:#5A6B78;background:#F3FBF8;border:1px solid #DCEFE8;border-radius:8px;padding:.55rem .75rem;margin-bottom:.95rem}
+.task-add-row{display:flex;gap:.55rem;align-items:center;background:#F5FBFA;border:1px solid #DDEEE9;border-radius:9px;padding:.4rem .5rem;transition:.15s}
+.task-add-row:focus-within{border-color:#2DBE8E;background:#fff;box-shadow:0 0 0 3px rgba(45,190,142,.13)}
+.task-add-badge{font-size:11.5px;font-weight:700;color:#fff;background:linear-gradient(135deg,#2DBE8E,#1FA8C4);min-width:48px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:.3px}
+.task-add-inp{flex:1;border:1px solid #D5E3E0;border-radius:7px;padding:.4rem .65rem;font-size:13px;outline:none;font-family:inherit;background:#fff;color:var(--text)}
+.task-add-inp:focus{border-color:#2DBE8E}
+.task-add-del{background:#fff;border:1px solid #E4D0D0;color:#D9756B;cursor:pointer;width:26px;height:26px;border-radius:7px;font-size:15px;line-height:1;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.15s}
+.task-add-del:hover{background:#FDECEA;border-color:#E74C3C;color:#E74C3C}
+.task-add-more{width:100%;background:#EAF7F3;border:1.5px dashed #7FD3B8;color:#1B8F6B;border-radius:9px;padding:.5rem;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.task-add-more:hover{background:#DCF2EA;border-color:#2DBE8E}
+.task-add-btn-cancel{background:#EEF2F3;border:none;color:#5A6B78;border-radius:8px;padding:.5rem 1.1rem;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.task-add-btn-cancel:hover{background:#E1E7E9}
+.task-add-btn-ok{background:linear-gradient(135deg,#2DBE8E,#1FA8C4);border:none;color:#fff;border-radius:8px;padding:.5rem 1.3rem;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(31,168,196,.3);transition:.15s}
+.task-add-btn-ok:hover{filter:brightness(1.06);box-shadow:0 4px 14px rgba(31,168,196,.42)}
+/* 運動登記表 */
+.sports-period{display:flex;gap:.35rem}
+.sports-period .btn{border:1.5px solid var(--border);background:#fff;color:var(--text-light);font-weight:700}
+.sports-period .btn.on{background:linear-gradient(135deg,#2DBE8E,#1FA8C4);color:#fff;border-color:transparent;box-shadow:0 2px 8px rgba(31,168,196,.3)}
+.sports-form{background:#F3FBF8;border:1px solid #DCEFE8;border-radius:11px;padding:.95rem 1.05rem;margin-bottom:.9rem}
+.sports-form-grid{display:flex;flex-wrap:wrap;gap:.65rem;align-items:flex-end}
+.sports-form-grid>div{display:flex;flex-direction:column;gap:.26rem}
+.sports-lbl{font-size:11px;font-weight:600;color:var(--text-light)}
+.sports-form-grid select,.sports-form-grid input{min-width:130px}
+.sports-add-btn{background:linear-gradient(135deg,#2DBE8E,#1FA8C4);border:none;color:#fff;border-radius:8px;padding:.45rem 1.15rem;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(31,168,196,.3);white-space:nowrap;transition:.15s}
+.sports-add-btn:hover{filter:brightness(1.07);box-shadow:0 4px 14px rgba(31,168,196,.42)}
+.sports-tbl{font-size:13px;width:100%;border-collapse:collapse}
+.sports-tbl th{background:var(--primary);color:#fff;padding:7px 10px;border:1px solid #3D4F5A;white-space:nowrap}
+.sports-tbl td{border:1px solid var(--border);padding:6px 10px;text-align:center;white-space:nowrap}
+.sports-tbl tr:nth-child(even) td{background:#F8FAFC}
+.sport-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;background:#EAF7F3;color:#1B8F6B}
 .mem-list{list-style:none}
 .mem-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .65rem;border-radius:6px;margin-bottom:3px;background:#FAFCFD;border:1px solid var(--border)}
 .mem-idx{font-size:11px;color:var(--text-light);width:20px;text-align:right;flex-shrink:0}
@@ -137,8 +171,9 @@ table{border-collapse:collapse}
     <div class="nav-tab" data-tab="schedule">🗓 排班表</div>
     <div class="nav-tab" data-tab="preleave">📆 年度預假</div>
     <div class="nav-tab" data-tab="members">👥 員工設定</div>
-    <div class="nav-tab" data-tab="tasks">⚙️ 工作配置</div>
+    <div class="nav-tab" data-tab="tasks">⚙️ 任務配置</div>
     <div class="nav-tab" data-tab="lottery">🎰 生死抽籤</div>
+    <div class="nav-tab" data-tab="sports">💪 運動登記表</div>
     <div class="nav-tab" data-tab="oplog">📋 操作記錄</div>
   </div>
   <span id="sync-status" style="color:rgba(255,255,255,.7);font-size:11px;margin-left:auto;padding:0 .8rem;white-space:nowrap;flex-shrink:0" title=""></span>
@@ -238,17 +273,17 @@ table{border-collapse:collapse}
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem" id="mem-grid"></div>
 </div>
 
-<!-- TAB 5：工作配置 -->
+<!-- TAB 5：任務配置 -->
 <div class="section" id="tab-tasks">
   <div class="card">
     <div class="card-head">
-      <span class="card-title">⚙️ 工作配置設定</span>
+      <span class="card-title">⚙️ 任務配置設定</span>
       <div style="display:flex;gap:.4rem;flex-wrap:wrap">
         <button class="btn btn-success btn-sm" onclick="promptAddDept()">+ 新增部門</button>
         <button class="btn btn-primary btn-sm" onclick="saveTaskCfg()">💾 儲存配置</button>
       </div>
     </div>
-    <p class="info" style="margin-bottom:.9rem">各部門在不同出勤人數時的工作任務，逗號分隔。新增／刪除部門同步所有分頁。</p>
+    <p class="info" style="margin-bottom:.9rem">各部門在不同出勤人數時的任務，逗號分隔。新增／刪除部門同步所有分頁。</p>
     <div id="tc-area"></div>
   </div>
 </div>
@@ -300,6 +335,35 @@ table{border-collapse:collapse}
       <button class="btn btn-danger btn-sm" onclick="clearLotteryRecords()">🗑 清除記錄</button>
     </div>
     <div class="scroll-x"><div id="lottery-records-area"><p class="info" style="padding:.5rem">暫無抽籤記錄</p></div></div>
+  </div>
+</div>
+
+<!-- TAB：運動登記表 -->
+<div class="section" id="tab-sports">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">💪 運動登記表</span>
+      <div class="fbar">
+        <label>部門</label><select id="sports-unit" onchange="renderSports()"></select>
+        <div class="sports-period">
+          <button class="btn btn-sm" id="sports-p0" type="button" onclick="setSportsPeriod(0)">本月</button>
+          <button class="btn btn-sm" id="sports-p1" type="button" onclick="setSportsPeriod(1)">下個月</button>
+        </div>
+      </div>
+    </div>
+    <div class="sports-form">
+      <div style="font-weight:700;color:#1B8F6B;margin-bottom:.65rem;font-size:13px">➕ 登記運動時間　<span id="sports-form-period" style="font-weight:400;color:var(--text-light);font-size:12px"></span></div>
+      <div class="sports-form-grid">
+        <div><label class="sports-lbl">員工</label><select class="fc" id="sports-emp"></select></div>
+        <div><label class="sports-lbl">運動項目</label><select class="fc" id="sports-type" onchange="sportsTypeChange()"></select></div>
+        <div id="sports-custom-wrap" style="display:none"><label class="sports-lbl">自訂項目</label><input type="text" class="fc" id="sports-custom" placeholder="輸入運動名稱"></div>
+        <div><label class="sports-lbl">日期</label><select class="fc" id="sports-day"></select></div>
+        <div style="flex:1;min-width:160px"><label class="sports-lbl">時間／時長</label><input type="text" class="fc" id="sports-time" placeholder="例：19:00-21:00 或 2小時" onkeydown="if(event.key==='Enter')addSportsEntry()"></div>
+        <div style="justify-content:flex-end"><label class="sports-lbl">&nbsp;</label><button class="sports-add-btn" type="button" onclick="addSportsEntry()">➕ 登記</button></div>
+      </div>
+    </div>
+    <div class="stats-row" id="sports-stats"></div>
+    <div class="scroll-x"><table class="sports-tbl" id="sports-table"></table></div>
   </div>
 </div>
 
@@ -394,6 +458,25 @@ table{border-collapse:collapse}
     <div style="display:flex;gap:.5rem;justify-content:flex-end">
       <button class="btn btn-secondary" id="ui-modal-cancel">取消</button>
       <button class="btn btn-primary" id="ui-modal-ok">確定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新增任務內容彈窗 -->
+<div class="modal-ov" id="task-add-modal" onclick="if(event.target===this)closeTaskAddModal()">
+  <div class="modal task-add-modal-box" style="max-width:470px;width:min(470px,92vw);padding:0;overflow:hidden">
+    <div class="task-add-head">
+      <div class="modal-title" style="color:#fff;font-size:15px">📋 新增任務內容</div>
+      <button class="task-add-x" onclick="closeTaskAddModal()">×</button>
+    </div>
+    <div style="padding:1.1rem 1.3rem 1.3rem">
+      <p id="task-add-sub" class="task-add-sub">逐項輸入任務內容（任務1、任務2…以此類推），確定後會加入到此配置的任務列表。</p>
+      <div id="task-add-inputs" style="display:flex;flex-direction:column;gap:.5rem;margin-bottom:.85rem"></div>
+      <button class="task-add-more" type="button" onclick="addTaskInputField()">＋ 再加一項</button>
+      <div style="display:flex;gap:.55rem;justify-content:flex-end;margin-top:1.2rem">
+        <button class="task-add-btn-cancel" type="button" onclick="closeTaskAddModal()">取消</button>
+        <button class="task-add-btn-ok" type="button" onclick="confirmTaskAdd()">確定新增</button>
+      </div>
     </div>
   </div>
 </div>
@@ -695,7 +778,7 @@ function uiPrompt(msg,opts={}){
 document.getElementById('ui-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('ui-modal-cancel').click();});
 
 // ── NAV ──
-const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,oplog:renderOpLog};
+const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,sports:renderSports,oplog:renderOpLog};
 document.getElementById('navTabs').querySelectorAll('.nav-tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -722,6 +805,7 @@ function refreshUnitDropdowns(){
   const pfU=document.getElementById('pf-unit');if(pfU){pres(pfU,only,null);pfUpdateMembers();}
   const mlU=document.getElementById('ml-unit');if(mlU){pres(mlU,only,null);mlUpdateMembers();}
   const laU=document.getElementById('lottery-add-unit');if(laU){pres(laU,only,null);}
+  const spU=document.getElementById('sports-unit');if(spU){pres(spU,only,null);}
   renderLotteryMemberBtns();
 }
 
@@ -862,10 +946,17 @@ async function clearMonthLeave(){
   const pwd=await uiPrompt('請輸入密碼（清空後無法復原）：',{password:true,title:'密碼驗證'});
   if(pwd===null)return;
   if(pwd!=='0000'){toast('密碼錯誤，無法清空','err');return;}
-  if(!await uiConfirm(`確定清空【${label}】${year}年${month}月的全部請假紀錄？`,{danger:true,okText:'確定清空',title:'清空確認'}))return;
+  if(!await uiConfirm(`確定清空【${label}】${year}年${month}月的全部請假紀錄？\n（已輸入的特休天數將一併歸 0）`,{danger:true,okText:'確定清空',title:'清空確認'}))return;
   const hist=getHistory(),mems=getMembers(),units=unit==='all'?getDepts():[unit];
-  units.forEach(u=>(mems[u]||[]).forEach(n=>{delete hist[histKey(u,n,year,month)];}));
-  setHistory(hist);logOp(`清空 ${label} ${year}年${month}月請假紀錄`);toast(`已清空 ${label} ${year}年${month}月請假紀錄`,'ok');renderOverview();
+  const slq=getSlQuota();let slCleared=0;
+  units.forEach(u=>(mems[u]||[]).forEach(n=>{
+    delete hist[histKey(u,n,year,month)];
+    if(slq[u]&&slq[u][n]!=null&&slq[u][n]!==0){slq[u][n]=0;slCleared++;}
+  }));
+  setHistory(hist);setSlQuota(slq);
+  logOp(`清空 ${label} ${year}年${month}月請假紀錄${slCleared?`（特休歸0：${slCleared}人）`:''}`);
+  toast(`已清空 ${label} ${year}年${month}月請假紀錄${slCleared?`，並將 ${slCleared} 位員工特休歸0`:''}`,'ok');
+  renderOverview();
 }
 
 // ── TAB 2：排班表 ──
@@ -1080,15 +1171,55 @@ function renderTaskConfig(){
   const cfg=getTaskCfg(),depts=getDepts();let h='';
   depts.forEach(u=>{const uc=getDeptColor(u),rows=cfg.filter(c=>c.unit===u).sort((a,b)=>b.count-a.count);
     h+=`<div class="unit-section"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem"><div class="unit-badge" style="background:${uc.bg};color:${uc.fg};font-size:13px;padding:4px 13px">${u}</div><button class="btn btn-danger btn-sm" onclick="promptDelDept('${u}')">刪除此部門</button></div>
-    <table class="tct" style="margin-bottom:.5rem"><thead><tr><th style="width:75px">出勤人數</th><th>工作任務列表（逗號分隔）</th><th style="width:60px;text-align:center">操作</th></tr></thead><tbody>
-    ${rows.map(c=>`<tr><td style="text-align:center;font-weight:700">${c.count}人</td><td><textarea rows="2" data-unit="${u}" data-count="${c.count}">${c.tasks}</textarea></td><td style="text-align:center"><button class="btn btn-danger btn-sm" onclick="delTaskRow('${u}',${c.count})">刪除</button></td></tr>`).join('')}
+    <table class="tct" style="margin-bottom:.5rem"><thead><tr><th style="width:75px">出勤人數</th><th>任務列表（逗號分隔）</th><th style="width:120px;text-align:center">操作</th></tr></thead><tbody>
+    ${rows.map(c=>`<tr><td style="text-align:center;font-weight:700">${c.count}人</td><td><textarea rows="2" data-unit="${u}" data-count="${c.count}">${c.tasks}</textarea></td><td style="text-align:center;white-space:nowrap"><button class="btn btn-success btn-sm" onclick="openTaskAddModal('${u}',${c.count})">新增</button> <button class="btn btn-danger btn-sm" onclick="delTaskRow('${u}',${c.count})">刪除</button></td></tr>`).join('')}
     </tbody></table><div style="display:flex;gap:.4rem;align-items:center"><span class="info">新增出勤人數：</span><input type="number" id="nc-${u}" min="1" max="30" value="${(rows[0]?.count||3)+1}" style="width:60px"><button class="btn btn-outline btn-sm" onclick="addTaskRow('${u}')">+ 新增</button></div></div>`;
   });
   document.getElementById('tc-area').innerHTML=h;
 }
-function saveTaskCfg(){const cfg=getTaskCfg();document.querySelectorAll('#tc-area textarea[data-unit]').forEach(ta=>{const hit=cfg.find(c=>c.unit===ta.dataset.unit&&parseInt(c.count)===parseInt(ta.dataset.count));if(hit)hit.tasks=ta.value;});setTaskCfg(cfg);logOp('儲存工作配置');toast('工作配置已儲存','ok');}
+function saveTaskCfg(){const cfg=getTaskCfg();document.querySelectorAll('#tc-area textarea[data-unit]').forEach(ta=>{const hit=cfg.find(c=>c.unit===ta.dataset.unit&&parseInt(c.count)===parseInt(ta.dataset.count));if(hit)hit.tasks=ta.value;});setTaskCfg(cfg);logOp('儲存任務配置');toast('任務配置已儲存','ok');}
 async function delTaskRow(unit,count){if(!await uiConfirm(`確定刪除 ${unit} ${count}人的配置？`,{danger:true,okText:'刪除',title:'刪除配置'}))return;setTaskCfg(getTaskCfg().filter(c=>!(c.unit===unit&&parseInt(c.count)===count)));renderTaskConfig();toast('已刪除','ok');}
 function addTaskRow(unit){const count=parseInt(document.getElementById('nc-'+unit).value);if(!count||count<1){toast('請輸入有效人數','err');return;}const cfg=getTaskCfg();if(cfg.find(c=>c.unit===unit&&parseInt(c.count)===count)){toast(`${unit} ${count}人配置已存在`,'err');return;}cfg.push({unit,count,tasks:''});setTaskCfg(cfg);renderTaskConfig();}
+let _taskAddTarget=null;
+const TASK_ADD_MIN=5;
+function openTaskAddModal(unit,count){
+  _taskAddTarget={unit,count};
+  document.getElementById('task-add-sub').textContent=`為「${unit}　${count}人」配置新增任務（任務1、任務2…以此類推），確定後會加入到此配置的任務列表。`;
+  document.getElementById('task-add-inputs').innerHTML='';
+  for(let i=0;i<TASK_ADD_MIN;i++)addTaskInputField(i===0);
+  document.getElementById('task-add-modal').classList.add('open');
+}
+function closeTaskAddModal(){document.getElementById('task-add-modal').classList.remove('open');_taskAddTarget=null;}
+function addTaskInputField(focusIt){
+  const box=document.getElementById('task-add-inputs');
+  const row=document.createElement('div');
+  row.className='task-add-row';
+  row.innerHTML=`<span class="task-add-badge"></span><input type="text" class="task-add-inp" placeholder="輸入任務內容（可留空）"><button class="task-add-del" type="button" onclick="this.parentNode.remove();renumberTaskInputs()">×</button>`;
+  box.appendChild(row);
+  renumberTaskInputs();
+  const inp=row.querySelector('input');
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addTaskInputField(true);}};
+  if(focusIt!==false)setTimeout(()=>inp.focus(),40);
+}
+function renumberTaskInputs(){document.querySelectorAll('#task-add-inputs .task-add-badge').forEach((s,i)=>s.textContent='任務'+(i+1));}
+function confirmTaskAdd(){
+  if(!_taskAddTarget)return;
+  const {unit,count}=_taskAddTarget;
+  const items=[...document.querySelectorAll('#task-add-inputs .task-add-inp')].map(i=>i.value.trim()).filter(Boolean);
+  if(!items.length){toast('請至少輸入一項任務內容','err');return;}
+  const cfg=getTaskCfg();
+  let hit=cfg.find(c=>c.unit===unit&&parseInt(c.count)===parseInt(count));
+  const ta=document.querySelector(`#tc-area textarea[data-unit="${unit}"][data-count="${count}"]`);
+  const base=ta?ta.value:(hit?hit.tasks:'');
+  const existing=base.split(',').map(s=>s.trim()).filter(Boolean);
+  const merged=[...existing,...items].join(',');
+  if(hit)hit.tasks=merged;else cfg.push({unit,count:parseInt(count),tasks:merged});
+  setTaskCfg(cfg);
+  logOp(`新增任務內容：${unit} ${count}人 +${items.length}項`);
+  closeTaskAddModal();
+  renderTaskConfig();
+  toast(`已新增 ${items.length} 項任務內容至 ${unit} ${count}人`,'ok');
+}
 async function promptAddDept(){const raw=await uiPrompt('請輸入新部門名稱：',{title:'新增部門',placeholder:'例：行政'});if(raw===null)return;const name=raw.trim();if(!name)return;const depts=getDepts();if(depts.includes(name)){toast(`部門「${name}」已存在`,'err');return;}depts.push(name);setDepts(depts);const mems=getMembers();if(!mems[name])mems[name]=[];setMembers(mems);logOp(`新增部門：${name}`);toast(`已新增部門：${name}`,'ok');syncAll();}
 async function promptDelDept(unit){const mems=getMembers(),count=(mems[unit]||[]).length;if(!await uiConfirm(count>0?`確定刪除部門「${unit}」？\n（共 ${count} 位員工，刪除後無法復原）`:`確定刪除部門「${unit}」？`,{danger:true,okText:'刪除部門',title:'刪除部門'}))return;setDepts(getDepts().filter(d=>d!==unit));setTaskCfg(getTaskCfg().filter(c=>c.unit!==unit));logOp(`刪除部門：${unit}`);toast(`已刪除部門：${unit}`,'ok');syncAll();}
 function syncAll(){refreshUnitDropdowns();renderOverview();renderSchedule();renderMembers();renderTaskConfig();renderPreLeave();renderPreLeaveRules();}
@@ -1415,6 +1546,80 @@ function renderOpLog(){
 }
 async function clearOpLog(){if(!await uiConfirm('確定清除所有操作記錄？',{danger:true,okText:'清除',title:'清除記錄'}))return;setOpLog([]);renderOpLog();toast('已清除','ok');}
 
+// ── 運動登記表 ──
+const SPORTS_PRESET=[['羽毛球','🏸'],['瑜伽','🧘'],['網球','🎾'],['籃球','🏀'],['跑步','🏃'],['游泳','🏊'],['健身','🏋️'],['桌球','🏓'],['足球','⚽'],['騎車','🚴'],['登山','🥾']];
+let sportsPeriod=0; // 0=本月 1=下個月
+function getSportsLog(){try{return JSON.parse(localStorage.getItem('sports_log'))||{};}catch(e){return{};}}
+function setSportsLog(d){localStorage.setItem('sports_log',JSON.stringify(d));}
+function sportsKey(u,y,m){return u+'_'+y+'_'+m;}
+function sportsYM(){const now=new Date();let y=now.getFullYear(),m=now.getMonth()+1;if(sportsPeriod===1){m++;if(m>12){m=1;y++;}}return{y,m};}
+function setSportsPeriod(p){sportsPeriod=p;renderSports();}
+function emojiForSport(name){const hit=SPORTS_PRESET.find(s=>s[0]===name);return hit?hit[1]:'🏅';}
+function sportsTypeChange(){const w=document.getElementById('sports-custom-wrap');if(w)w.style.display=document.getElementById('sports-type').value==='__custom'?'flex':'none';}
+function renderSports(){
+  const depts=getDepts();
+  const us=document.getElementById('sports-unit');if(!us)return;
+  if(!us.options.length)us.innerHTML=depts.map(u=>`<option>${u}</option>`).join('');
+  const unit=us.value||depts[0]||'';
+  const {y,m}=sportsYM();
+  // 期間按鈕標籤
+  const now=new Date();let cm=now.getMonth()+1,nm=cm+1;if(nm>12)nm=1;
+  const b0=document.getElementById('sports-p0'),b1=document.getElementById('sports-p1');
+  if(b0){b0.textContent=`本月（${cm}月）`;b0.classList.toggle('on',sportsPeriod===0);}
+  if(b1){b1.textContent=`下個月（${nm}月）`;b1.classList.toggle('on',sportsPeriod===1);}
+  const fp=document.getElementById('sports-form-period');if(fp)fp.textContent=`目前登記月份：${y}年 ${m}月`;
+  // 員工下拉
+  const mems=getMembers()[unit]||[];
+  document.getElementById('sports-emp').innerHTML=mems.length?mems.map(n=>`<option>${n}</option>`).join(''):'<option value="">（此部門尚無員工）</option>';
+  // 運動項目下拉
+  document.getElementById('sports-type').innerHTML=SPORTS_PRESET.map(s=>`<option value="${s[0]}">${s[1]} ${s[0]}</option>`).join('')+'<option value="__custom">➕ 其他（自訂）</option>';
+  sportsTypeChange();
+  // 日期下拉
+  const dim=new Date(y,m,0).getDate();let dayOpts='<option value="">（不指定）</option>';
+  for(let d=1;d<=dim;d++){const dw=new Date(y,m-1,d).getDay();dayOpts+=`<option value="${d}">${m}/${d}（${DOW[dw]}）</option>`;}
+  document.getElementById('sports-day').innerHTML=dayOpts;
+  // 表格
+  const entries=getSportsLog()[sportsKey(unit,y,m)]||[];
+  let h='<thead><tr><th>員工</th><th>運動項目</th><th style="width:120px">日期</th><th>時間／時長</th><th style="width:130px">登記時間</th><th style="width:70px">操作</th></tr></thead><tbody>';
+  if(!entries.length)h+='<tr><td colspan="6" style="text-align:center;padding:1.6rem;color:var(--text-light)">尚無登記紀錄，使用上方表單新增運動時間</td></tr>';
+  else entries.forEach(e=>{const dw=e.day?DOW[new Date(y,m-1,e.day).getDay()]:'';h+=`<tr><td style="font-weight:600">${e.emp}</td><td><span class="sport-badge">${emojiForSport(e.sport)} ${e.sport}</span></td><td>${e.day?`${m}/${e.day}（${dw}）`:'—'}</td><td style="font-weight:600">${e.time||'—'}</td><td style="color:var(--text-light);font-size:12px">${fmtDt(e.addedAt)||'—'}</td><td><button class="btn btn-danger btn-sm" type="button" onclick="removeSportsEntry('${e.id}')">刪除</button></td></tr>`;});
+  h+='</tbody>';
+  document.getElementById('sports-table').innerHTML=h;
+  // 統計
+  const bySport={};entries.forEach(e=>bySport[e.sport]=(bySport[e.sport]||0)+1);
+  const top=Object.entries(bySport).sort((a,b)=>b[1]-a[1]);
+  let st=`<div class="stat-card"><div class="stat-val">${entries.length}</div><div class="stat-lbl">總登記次數</div></div><div class="stat-card"><div class="stat-val">${new Set(entries.map(e=>e.emp)).size}</div><div class="stat-lbl">參與人數</div></div>`;
+  top.slice(0,3).forEach(([s,c])=>{st+=`<div class="stat-card"><div class="stat-val">${c}</div><div class="stat-lbl">${emojiForSport(s)} ${s}</div></div>`;});
+  document.getElementById('sports-stats').innerHTML=st;
+}
+function addSportsEntry(){
+  const us=document.getElementById('sports-unit'),unit=us.value;
+  const emp=document.getElementById('sports-emp').value;
+  if(!emp){toast('此部門尚無員工，請先到員工設定新增','err');return;}
+  let sport=document.getElementById('sports-type').value;
+  if(sport==='__custom'){sport=(document.getElementById('sports-custom').value||'').trim();if(!sport){toast('請輸入自訂運動名稱','err');return;}}
+  const day=document.getElementById('sports-day').value;
+  const time=document.getElementById('sports-time').value.trim();
+  if(!time){toast('請輸入時間／時長','err');return;}
+  const {y,m}=sportsYM();
+  const log=getSportsLog(),k=sportsKey(unit,y,m);if(!log[k])log[k]=[];
+  log[k].push({id:'sp'+Date.now()+Math.random().toString(36).slice(2,6),emp,sport,day:day?parseInt(day):'',time,addedAt:new Date().toISOString()});
+  setSportsLog(log);
+  logOp(`運動登記：${unit} ${emp} ${sport} ${y}/${m}${day?'/'+day:''} ${time}`);
+  document.getElementById('sports-time').value='';
+  const cf=document.getElementById('sports-custom');if(cf)cf.value='';
+  renderSports();
+  toast(`已登記 ${emp} 的 ${sport}`,'ok');
+}
+async function removeSportsEntry(id){
+  if(!await uiConfirm('確定刪除此運動登記？',{danger:true,okText:'刪除',title:'刪除登記'}))return;
+  const unit=document.getElementById('sports-unit').value,{y,m}=sportsYM();
+  const log=getSportsLog(),k=sportsKey(unit,y,m);
+  if(log[k]){log[k]=log[k].filter(e=>e.id!==id);setSportsLog(log);}
+  logOp(`刪除運動登記：${unit} ${y}/${m}`);
+  renderSports();toast('已刪除','ok');
+}
+
 // ── FIREBASE 即時同步 ──
 // ┌─────────────────────────────────────────────────────┐
 // │  設定步驟（一次性）：                                  │
@@ -1438,7 +1643,7 @@ const FIREBASE_CONFIG = {
   measurementId: "G-KH94JFM0SJ"
 };
 
-const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log','calendar_images','saved_schedules','sl_quota'];
+const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log','calendar_images','saved_schedules','sl_quota','sports_log'];
 let _db=null;
 const _lastWrite={};
 const SYNC_COOLDOWN=2500;
@@ -1541,7 +1746,7 @@ function _fbReady(){
 (function init(){
   migrateData();cleanOpLog();initDropdowns();initLeaveSelector();
   mlUpdateMembers();renderModalDatePicker();
-  renderOverview();renderMembers();renderTaskConfig();renderPreLeave();
+  renderOverview();renderMembers();renderTaskConfig();renderPreLeave();renderSports();
   const laU=document.getElementById('lottery-add-unit');
   if(laU){laU.innerHTML=getDepts().map(u=>`<option>${u}</option>`).join('');renderLotteryMemberBtns();}
   lotSession={pool:[...getLotteryPool()],winners:[]};
