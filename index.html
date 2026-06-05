@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>排假管理系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{--primary:#2C3E50;--accent:#2980B9;--success:#27AE60;--warning:#E67E22;--danger:#E74C3C;--bg:#EEF2F7;--border:#D5DDE8;--text:#2C3E50;--text-light:#6B7A8A}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -116,6 +119,54 @@ table{border-collapse:collapse}
 .sports-tbl td{border:1px solid var(--border);padding:6px 10px;text-align:center;white-space:nowrap}
 .sports-tbl tr:nth-child(even) td{background:#F8FAFC}
 .sport-badge{display:inline-block;padding:2px 10px;border-radius:12px;font-size:12px;font-weight:700;background:#EAF7F3;color:#1B8F6B}
+/* 工作筆記 */
+#tab-notes,.note-modal-box{font-family:'Noto Sans TC','Microsoft JhengHei','PingFang TC',sans-serif}
+.notes-add-btn{background:linear-gradient(135deg,#2DBE8E,#1FA8C4);border:none;color:#fff;border-radius:9px;padding:.5rem 1.15rem;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(31,168,196,.3);transition:.15s}
+.notes-add-btn:hover{filter:brightness(1.07);box-shadow:0 4px 14px rgba(31,168,196,.42)}
+.notes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:.95rem;margin-top:.3rem}
+.note-card{background:#fff;border:1px solid #E7ECEF;border-radius:15px;padding:1.05rem 1.1rem;box-shadow:0 2px 10px rgba(40,60,80,.05);display:flex;flex-direction:column;gap:.55rem;transition:.18s}
+.note-card:hover{box-shadow:0 8px 22px rgba(40,60,80,.11);transform:translateY(-2px)}
+.note-card-top{display:flex;justify-content:space-between;align-items:center}
+.note-author{font-size:13px;font-weight:700;color:#2C3E50;display:flex;align-items:center;gap:.3rem}
+.note-dept{font-size:10px;font-weight:600;background:#EAF7F3;color:#1B8F6B;padding:1px 8px;border-radius:10px;margin-left:.35rem}
+.note-lock{font-size:15px;opacity:.45}
+.note-title-txt{font-size:15.5px;font-weight:700;color:#1A2530;line-height:1.45;letter-spacing:.4px;word-break:break-word}
+.note-meta{font-size:11.5px;color:#9AA7B0;letter-spacing:.2px}
+.note-card-actions{display:flex;gap:.45rem;margin-top:.35rem}
+.note-open-btn,.note-del-btn{flex:1;border:none;border-radius:8px;padding:.45rem;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.note-open-btn{background:linear-gradient(135deg,#2DBE8E,#1FA8C4);color:#fff}
+.note-open-btn:hover{filter:brightness(1.08)}
+.note-del-btn{background:#FBEDEB;color:#D9756B}
+.note-del-btn:hover{background:#F6D8D4;color:#E74C3C}
+.notes-empty{grid-column:1/-1;text-align:center;padding:2.8rem 1rem;color:#9AA7B0;font-size:14px;letter-spacing:.3px}
+.note-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.35rem;background:linear-gradient(135deg,#2C3E50,#3B5168)}
+.note-field{margin-bottom:.85rem;display:flex;flex-direction:column;gap:.32rem}
+.note-lbl{font-size:12px;font-weight:600;color:#5A6B78;letter-spacing:.2px}
+.note-upload{display:inline-block;width:fit-content;background:#EAF7F3;border:1.5px dashed #7FD3B8;color:#1B8F6B;border-radius:9px;padding:.5rem .95rem;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.note-upload:hover{background:#DCF2EA;border-color:#2DBE8E}
+.note-img-preview{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.55rem}
+.note-thumb{position:relative;width:74px;height:74px;border-radius:9px;overflow:hidden;border:1px solid #E0E6EA}
+.note-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.note-thumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,.62);color:#fff;font-size:13px;cursor:pointer;line-height:1;display:flex;align-items:center;justify-content:center}
+.note-view-meta{font-size:12.5px;color:#7A8893;margin-bottom:.95rem;padding-bottom:.75rem;border-bottom:1px solid #EEF1F3;letter-spacing:.3px}
+.note-view-content{font-size:15.5px;line-height:1.9;color:#2A3742;white-space:pre-wrap;letter-spacing:.3px;word-break:break-word}
+.note-view-images{display:flex;flex-direction:column;gap:.75rem;margin-top:1.1rem}
+.note-view-images img{width:100%;border-radius:11px;border:1px solid #E7ECEF}
+.note-toolbar{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center;padding:.45rem .55rem;background:#F3F6F8;border:1px solid #DDE4E9;border-bottom:none;border-radius:9px 9px 0 0}
+.note-toolbar button{background:#fff;border:1px solid #D8E0E6;border-radius:6px;min-width:30px;height:30px;padding:0 .5rem;font-size:13px;cursor:pointer;color:#3A4A57;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;transition:.12s}
+.note-toolbar button:hover{background:#EAF7F3;border-color:#7FD3B8;color:#1B8F6B}
+.note-toolbar .note-tb-img{background:linear-gradient(135deg,#2DBE8E,#1FA8C4);color:#fff;border:none;font-weight:700;font-size:12.5px;padding:0 .8rem;white-space:nowrap}
+.note-toolbar .note-tb-img:hover{filter:brightness(1.08);color:#fff;border:none}
+.note-toolbar select{height:30px;border:1px solid #D8E0E6;border-radius:6px;font-size:12.5px;padding:0 .3rem;background:#fff;cursor:pointer}
+.note-toolbar input[type=color]{width:30px;height:30px;border:1px solid #D8E0E6;border-radius:6px;padding:2px;cursor:pointer;background:#fff}
+.note-tb-sep{width:1px;height:20px;background:#D8E0E6;margin:0 .12rem}
+.note-editor{min-height:175px;max-height:46vh;overflow:auto;border:1px solid #DDE4E9;border-radius:0 0 9px 9px;padding:.85rem .95rem;font-size:14.5px;line-height:1.85;color:#2A3742;background:#fff;outline:none;letter-spacing:.2px}
+.note-editor:focus{border-color:#2DBE8E;box-shadow:0 0 0 3px rgba(45,190,142,.12)}
+.note-editor:empty:before{content:attr(data-ph);color:#A9B4BD}
+.note-editor img{max-width:100%;height:auto;border-radius:8px;display:block;margin:.45rem 0}
+.note-view-content img{max-width:100%;height:auto;border-radius:9px;display:block;margin:.55rem 0}
+.note-edit-btn{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:7px;padding:.32rem .8rem;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
+.note-edit-btn:hover{background:rgba(255,255,255,.32)}
 .mem-list{list-style:none}
 .mem-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .65rem;border-radius:6px;margin-bottom:3px;background:#FAFCFD;border:1px solid var(--border)}
 .mem-idx{font-size:11px;color:var(--text-light);width:20px;text-align:right;flex-shrink:0}
@@ -173,6 +224,7 @@ table{border-collapse:collapse}
     <div class="nav-tab" data-tab="members">👥 員工設定</div>
     <div class="nav-tab" data-tab="tasks">⚙️ 任務配置</div>
     <div class="nav-tab" data-tab="lottery">🎰 生死抽籤</div>
+    <div class="nav-tab" data-tab="notes">📝 工作筆記</div>
     <div class="nav-tab" data-tab="sports">💪 運動登記表</div>
     <div class="nav-tab" data-tab="oplog">📋 操作記錄</div>
   </div>
@@ -338,6 +390,18 @@ table{border-collapse:collapse}
   </div>
 </div>
 
+<!-- TAB：工作筆記 -->
+<div class="section" id="tab-notes">
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">📝 工作筆記</span>
+      <button class="notes-add-btn" type="button" onclick="openNoteModal()">＋ 新增筆記</button>
+    </div>
+    <p class="info" style="margin-bottom:1rem">每位員工可建立自己的筆記（文字＋圖片）。開啟與刪除都需輸入該筆記設定的密碼。</p>
+    <div id="notes-grid" class="notes-grid"></div>
+  </div>
+</div>
+
 <!-- TAB：運動登記表 -->
 <div class="section" id="tab-sports">
   <div class="card">
@@ -458,6 +522,62 @@ table{border-collapse:collapse}
     <div style="display:flex;gap:.5rem;justify-content:flex-end">
       <button class="btn btn-secondary" id="ui-modal-cancel">取消</button>
       <button class="btn btn-primary" id="ui-modal-ok">確定</button>
+    </div>
+  </div>
+</div>
+
+<!-- 工作筆記：新增彈窗 -->
+<div class="modal-ov" id="note-modal" onclick="if(event.target===this)closeNoteModal()">
+  <div class="modal note-modal-box" style="max-width:560px;width:min(560px,94vw);padding:0;overflow:hidden">
+    <div class="note-head">
+      <div class="modal-title" id="note-modal-title" style="color:#fff;font-size:15px">📝 新增工作筆記</div>
+      <button class="task-add-x" type="button" onclick="closeNoteModal()">×</button>
+    </div>
+    <div style="padding:1.15rem 1.35rem 1.35rem;max-height:74vh;overflow:auto">
+      <div class="note-field"><label class="note-lbl">員工</label><select class="fc" id="note-author"></select></div>
+      <div class="note-field"><label class="note-lbl">標題（選填）</label><input type="text" class="fc" id="note-title" placeholder="例：交接事項、本週重點…"></div>
+      <div class="note-field"><label class="note-lbl">內容（可自由排版，文字與圖片隨處插入）</label>
+        <div class="note-toolbar">
+          <button type="button" title="粗體" onmousedown="event.preventDefault()" onclick="noteExec('bold')"><b>B</b></button>
+          <button type="button" title="斜體" onmousedown="event.preventDefault()" onclick="noteExec('italic')"><i>I</i></button>
+          <button type="button" title="底線" onmousedown="event.preventDefault()" onclick="noteExec('underline')"><u>U</u></button>
+          <span class="note-tb-sep"></span>
+          <button type="button" title="項目符號" onmousedown="event.preventDefault()" onclick="noteExec('insertUnorderedList')">• 清單</button>
+          <select title="文字大小" onmousedown="event.stopPropagation()" onchange="noteExecVal('fontSize',this.value);this.selectedIndex=0">
+            <option value="">字級</option><option value="2">小</option><option value="3">正常</option><option value="5">大</option><option value="6">特大</option>
+          </select>
+          <input type="color" title="文字顏色" value="#2A3742" onchange="noteExecVal('foreColor',this.value)">
+          <span class="note-tb-sep"></span>
+          <button type="button" class="note-tb-img" title="在游標處插入圖片" onmousedown="event.preventDefault()" onclick="noteInsertImageBtn()">📷 插入圖片</button>
+          <input type="file" id="note-editor-file" accept="image/*" multiple style="display:none" onchange="noteEditorAddImage(event)">
+        </div>
+        <div id="note-editor" class="note-editor" contenteditable="true" data-ph="在這裡輸入文字，並可隨處插入圖片…"
+             onkeyup="saveNoteSelection()" onmouseup="saveNoteSelection()" onblur="saveNoteSelection()"></div>
+      </div>
+      <div class="note-field"><label class="note-lbl" id="note-pwd-lbl">🔒 設定密碼（開啟與刪除時需輸入）</label><input type="password" class="fc" id="note-pwd" placeholder="輸入密碼"></div>
+      <div class="note-field"><label class="note-lbl">確認密碼</label><input type="password" class="fc" id="note-pwd2" placeholder="再次輸入密碼"></div>
+      <div style="display:flex;gap:.55rem;justify-content:flex-end;margin-top:.9rem">
+        <button class="task-add-btn-cancel" type="button" onclick="closeNoteModal()">取消</button>
+        <button class="task-add-btn-ok" type="button" onclick="saveNote()">儲存筆記</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 工作筆記：檢視彈窗 -->
+<div class="modal-ov" id="note-view-modal" onclick="if(event.target===this)closeNoteView()">
+  <div class="modal note-modal-box" style="max-width:600px;width:min(600px,94vw);padding:0;overflow:hidden">
+    <div class="note-head">
+      <div class="modal-title" id="note-view-title" style="color:#fff;font-size:15px">工作筆記</div>
+      <div style="display:flex;align-items:center;gap:.5rem">
+        <button class="note-edit-btn" type="button" onclick="editCurrentNote()">✏️ 編輯</button>
+        <button class="task-add-x" type="button" onclick="closeNoteView()">×</button>
+      </div>
+    </div>
+    <div style="padding:1.25rem 1.45rem 1.45rem;max-height:76vh;overflow:auto">
+      <div id="note-view-meta" class="note-view-meta"></div>
+      <div id="note-view-content" class="note-view-content"></div>
+      <div id="note-view-images" class="note-view-images"></div>
     </div>
   </div>
 </div>
@@ -778,7 +898,7 @@ function uiPrompt(msg,opts={}){
 document.getElementById('ui-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('ui-modal-cancel').click();});
 
 // ── NAV ──
-const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,sports:renderSports,oplog:renderOpLog};
+const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,notes:renderNotes,sports:renderSports,oplog:renderOpLog};
 document.getElementById('navTabs').querySelectorAll('.nav-tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -984,7 +1104,7 @@ function renderSchedule(){
   let h=`<thead><tr><th colspan="${days+3}" style="background:#1A252F;font-size:14px;padding:11px 16px;text-align:left;letter-spacing:.5px">　${unit}　${year}年${month}月　<span style="font-size:11px;font-weight:400;opacity:.72">休假上限 ${mo}天／人</span></th></tr>`;
   h+=`<tr><th class="s-name" style="background:${uc.bg};color:${uc.fg}">員工╲日期</th>`;
   for(let d=1;d<=days;d++)h+=`<th>${d}</th>`;
-  h+=`<th>已請假</th></tr><tr><th style="background:#3D4F5A;font-size:10px">星期</th>`;
+  h+=`<th>已放假</th></tr><tr><th style="background:#3D4F5A;font-size:10px">星期</th>`;
   for(let d=1;d<=days;d++){const dw=new Date(year,month-1,d).getDay();h+=`<th class="${dw===0||dw===6?'wkend':''}" style="font-size:10px">${DOW[dw]}</th>`;}
   h+=`<th></th></tr></thead><tbody>`;
   list.forEach((name,i)=>{
@@ -1546,6 +1666,131 @@ function renderOpLog(){
 }
 async function clearOpLog(){if(!await uiConfirm('確定清除所有操作記錄？',{danger:true,okText:'清除',title:'清除記錄'}))return;setOpLog([]);renderOpLog();toast('已清除','ok');}
 
+// ── 工作筆記 ──
+function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function notesHashPwd(s){let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return 'h'+h.toString(36);}
+const NOTE_MASTER_PWD='0000'; // 工作筆記萬用密碼
+function noteCheckPwd(input,note){return input===NOTE_MASTER_PWD||notesHashPwd(input)===note.pwd;}
+let _noteEditId=null,_noteViewId=null;
+function getNotes(){try{return JSON.parse(localStorage.getItem('work_notes'))||[];}catch(e){return[];}}
+function setNotes(d){localStorage.setItem('work_notes',JSON.stringify(d));}
+function noteCompressImage(file,maxW,q){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{const im=new Image();im.onload=()=>{let w=im.width,h=im.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);res(c.toDataURL('image/jpeg',q));};im.onerror=rej;im.src=e.target.result;};r.onerror=rej;r.readAsDataURL(file);});}
+function noteAuthorOptions(){const m=getMembers();let o='';Object.keys(m).forEach(u=>(m[u]||[]).forEach(n=>{o+=`<option value="${escapeHtml(n)}" data-unit="${escapeHtml(u)}">${escapeHtml(n)}（${escapeHtml(u)}）</option>`;}));return o||'<option value="">（尚無員工，請先到員工設定建立）</option>';}
+// 富文本編輯：選區保存／指令／插圖
+let _noteSavedRange=null;
+function saveNoteSelection(){const ed=document.getElementById('note-editor');const s=window.getSelection();if(s&&s.rangeCount&&ed&&ed.contains(s.anchorNode))_noteSavedRange=s.getRangeAt(0).cloneRange();}
+function restoreNoteSelection(){const ed=document.getElementById('note-editor');ed.focus();const s=window.getSelection();if(_noteSavedRange){s.removeAllRanges();s.addRange(_noteSavedRange);}else{const r=document.createRange();r.selectNodeContents(ed);r.collapse(false);s.removeAllRanges();s.addRange(r);}}
+function noteExec(cmd){const ed=document.getElementById('note-editor');ed.focus();if(_noteSavedRange){const s=window.getSelection();s.removeAllRanges();s.addRange(_noteSavedRange);}document.execCommand(cmd,false,null);saveNoteSelection();}
+function noteExecVal(cmd,val){if(!val)return;const ed=document.getElementById('note-editor');ed.focus();if(_noteSavedRange){const s=window.getSelection();s.removeAllRanges();s.addRange(_noteSavedRange);}document.execCommand(cmd,false,val);saveNoteSelection();}
+function noteInsertImageBtn(){saveNoteSelection();document.getElementById('note-editor-file').click();}
+async function noteEditorAddImage(e){
+  const files=[...e.target.files];e.target.value='';
+  for(const f of files){
+    if(f.size>12*1024*1024){toast(`「${f.name}」超過 12MB，已略過`,'err');continue;}
+    try{const d=await noteCompressImage(f,1100,0.72);restoreNoteSelection();document.execCommand('insertHTML',false,`<img src="${d}" alt="圖片">`);saveNoteSelection();}
+    catch(ex){toast('圖片處理失敗','err');}
+  }
+}
+function sanitizeNoteHtml(html){
+  const tmp=document.createElement('div');tmp.innerHTML=html;
+  tmp.querySelectorAll('script,style,iframe,object,embed,link,meta').forEach(n=>n.remove());
+  tmp.querySelectorAll('*').forEach(el=>{[...el.attributes].forEach(a=>{const nm=a.name.toLowerCase(),v=(a.value||'').trim();if(nm.startsWith('on'))el.removeAttribute(a.name);else if((nm==='src'||nm==='href')&&!/^(data:image\/|https?:|#|\/)/i.test(v))el.removeAttribute(a.name);});});
+  return tmp.innerHTML;
+}
+function openNoteModal(editId){
+  _noteEditId=editId||null;
+  const sel=document.getElementById('note-author');
+  sel.innerHTML=noteAuthorOptions();
+  const title=document.getElementById('note-modal-title');
+  const pwdLbl=document.getElementById('note-pwd-lbl');
+  const pwd=document.getElementById('note-pwd'),pwd2=document.getElementById('note-pwd2');
+  if(_noteEditId){
+    const n=getNotes().find(x=>x.id===_noteEditId);
+    if(!n){_noteEditId=null;return;}
+    title.textContent='✏️ 編輯工作筆記';
+    sel.value=n.author;
+    document.getElementById('note-title').value=n.title||'';
+    document.getElementById('note-editor').innerHTML=(n.html!=null?sanitizeNoteHtml(n.html):escapeHtml(n.content||'').replace(/\n/g,'<br>'));
+    pwdLbl.textContent='🔒 變更密碼（留空＝維持原密碼）';
+    pwd.placeholder='留空則不變更';pwd2.placeholder='留空則不變更';
+  }else{
+    title.textContent='📝 新增工作筆記';
+    document.getElementById('note-title').value='';
+    document.getElementById('note-editor').innerHTML='';
+    pwdLbl.textContent='🔒 設定密碼（開啟與刪除時需輸入）';
+    pwd.placeholder='輸入密碼';pwd2.placeholder='再次輸入密碼';
+  }
+  pwd.value='';pwd2.value='';
+  _noteSavedRange=null;
+  document.getElementById('note-modal').classList.add('open');
+}
+function editCurrentNote(){if(!_noteViewId)return;const id=_noteViewId;closeNoteView();openNoteModal(id);}
+function closeNoteModal(){document.getElementById('note-modal').classList.remove('open');_noteSavedRange=null;_noteEditId=null;}
+function saveNote(){
+  const sel=document.getElementById('note-author'),author=sel.value;
+  if(!author){toast('請先選擇員工（需先到員工設定建立）','err');return;}
+  const dept=sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].dataset.unit||'':'';
+  const title=document.getElementById('note-title').value.trim();
+  const ed=document.getElementById('note-editor');
+  const html=sanitizeNoteHtml(ed.innerHTML);
+  const hasText=ed.textContent.trim().length>0,hasImg=/<img/i.test(html);
+  const pwd=document.getElementById('note-pwd').value,pwd2=document.getElementById('note-pwd2').value;
+  if(!hasText&&!hasImg){toast('請輸入內容或插入至少一張圖片','err');return;}
+  const notes=getNotes();
+  if(_noteEditId){
+    const n=notes.find(x=>x.id===_noteEditId);
+    if(!n){toast('找不到要編輯的筆記','err');return;}
+    if(pwd||pwd2){if(pwd!==pwd2){toast('兩次輸入的密碼不一致','err');return;}n.pwd=notesHashPwd(pwd);}
+    n.author=author;n.dept=dept;n.title=title;n.html=html;n.updatedAt=new Date().toISOString();
+    delete n.content;delete n.images;
+    try{setNotes(notes);}catch(ex){toast('儲存失敗（空間不足，圖片過多或過大）','err');return;}
+    logOp(`編輯工作筆記：${author}${title?' - '+title:''}`);
+    closeNoteModal();renderNotes();toast('筆記已更新','ok');
+  }else{
+    if(!pwd){toast('請設定密碼','err');return;}
+    if(pwd!==pwd2){toast('兩次輸入的密碼不一致','err');return;}
+    notes.unshift({id:'nt'+Date.now()+Math.random().toString(36).slice(2,6),author,dept,title,html,pwd:notesHashPwd(pwd),createdAt:new Date().toISOString()});
+    try{setNotes(notes);}catch(ex){toast('儲存失敗（空間不足，圖片過多或過大）','err');return;}
+    logOp(`新增工作筆記：${author}${title?' - '+title:''}`);
+    closeNoteModal();renderNotes();toast('筆記已儲存','ok');
+  }
+}
+function renderNotes(){
+  const box=document.getElementById('notes-grid');if(!box)return;
+  const notes=getNotes();
+  if(!notes.length){box.innerHTML='<div class="notes-empty">尚無筆記，點右上角「＋ 新增筆記」建立第一筆。</div>';return;}
+  box.innerHTML=notes.map(n=>`<div class="note-card">
+    <div class="note-card-top"><span class="note-author">👤 ${escapeHtml(n.author)}${n.dept?`<span class="note-dept">${escapeHtml(n.dept)}</span>`:''}</span><span class="note-lock" title="需密碼開啟">🔒</span></div>
+    <div class="note-title-txt">${n.title?escapeHtml(n.title):'（無標題）'}</div>
+    <div class="note-meta">${fmtDt(n.createdAt)}${n.images&&n.images.length?`　·　🖼 ${n.images.length} 張`:''}</div>
+    <div class="note-card-actions"><button class="note-open-btn" type="button" onclick="openNote('${n.id}')">🔓 開啟</button><button class="note-del-btn" type="button" onclick="deleteNote('${n.id}')">🗑 刪除</button></div>
+  </div>`).join('');
+}
+async function openNote(id){
+  const n=getNotes().find(x=>x.id===id);if(!n)return;
+  const pwd=await uiPrompt(`開啟「${n.author}」的筆記，請輸入密碼：`,{password:true,title:'🔒 密碼驗證'});
+  if(pwd===null)return;
+  if(!noteCheckPwd(pwd,n)){toast('密碼錯誤','err');return;}
+  _noteViewId=id;
+  document.getElementById('note-view-title').textContent=n.title||'工作筆記';
+  document.getElementById('note-view-meta').innerHTML=`👤 ${escapeHtml(n.author)}${n.dept?'　·　'+escapeHtml(n.dept):''}　·　${fmtDt(n.updatedAt||n.createdAt)}${n.updatedAt?'（已編輯）':''}`;
+  const cEl=document.getElementById('note-view-content'),iEl=document.getElementById('note-view-images');
+  if(n.html!=null){cEl.innerHTML=sanitizeNoteHtml(n.html)||'（無內容）';iEl.innerHTML='';}
+  else{cEl.textContent=n.content||'（無文字內容）';iEl.innerHTML=(n.images||[]).map(d=>`<img src="${d}" alt="筆記圖片">`).join('');}
+  document.getElementById('note-view-modal').classList.add('open');
+}
+function closeNoteView(){document.getElementById('note-view-modal').classList.remove('open');_noteViewId=null;}
+async function deleteNote(id){
+  const n=getNotes().find(x=>x.id===id);if(!n)return;
+  const pwd=await uiPrompt(`刪除「${n.author}」的筆記，請輸入密碼：`,{password:true,title:'🗑 刪除驗證'});
+  if(pwd===null)return;
+  if(!noteCheckPwd(pwd,n)){toast('密碼錯誤，無法刪除','err');return;}
+  if(!await uiConfirm('確定刪除這筆筆記？刪除後無法復原。',{danger:true,okText:'確定刪除',title:'刪除筆記'}))return;
+  setNotes(getNotes().filter(x=>x.id!==id));
+  logOp(`刪除工作筆記：${n.author}${n.title?' - '+n.title:''}`);
+  renderNotes();toast('已刪除','ok');
+}
+
 // ── 運動登記表 ──
 const SPORTS_PRESET=[['羽毛球','🏸'],['瑜伽','🧘'],['網球','🎾'],['籃球','🏀'],['跑步','🏃'],['游泳','🏊'],['健身','🏋️'],['桌球','🏓'],['足球','⚽'],['騎車','🚴'],['登山','🥾']];
 let sportsPeriod=0; // 0=本月 1=下個月
@@ -1643,7 +1888,7 @@ const FIREBASE_CONFIG = {
   measurementId: "G-KH94JFM0SJ"
 };
 
-const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log','calendar_images','saved_schedules','sl_quota','sports_log'];
+const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log','calendar_images','saved_schedules','sl_quota','sports_log','work_notes'];
 let _db=null;
 const _lastWrite={};
 const SYNC_COOLDOWN=2500;
@@ -1746,7 +1991,7 @@ function _fbReady(){
 (function init(){
   migrateData();cleanOpLog();initDropdowns();initLeaveSelector();
   mlUpdateMembers();renderModalDatePicker();
-  renderOverview();renderMembers();renderTaskConfig();renderPreLeave();renderSports();
+  renderOverview();renderMembers();renderTaskConfig();renderPreLeave();renderSports();renderNotes();
   const laU=document.getElementById('lottery-add-unit');
   if(laU){laU.innerHTML=getDepts().map(u=>`<option>${u}</option>`).join('');renderLotteryMemberBtns();}
   lotSession={pool:[...getLotteryPool()],winners:[]};
