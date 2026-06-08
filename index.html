@@ -103,6 +103,38 @@ table{border-collapse:collapse}
 .task-add-btn-cancel:hover{background:#E1E7E9}
 .task-add-btn-ok{background:linear-gradient(135deg,#2DBE8E,#1FA8C4);border:none;color:#fff;border-radius:8px;padding:.5rem 1.3rem;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(31,168,196,.3);transition:.15s}
 .task-add-btn-ok:hover{filter:brightness(1.06);box-shadow:0 4px 14px rgba(31,168,196,.42)}
+/* 員工本月班表 — 淡藍清爽配色 */
+.em-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.3rem;background:linear-gradient(135deg,#5B9BD5 0%,#7FB7EC 100%)}
+.em-head .modal-title{color:#fff;font-size:15px}
+.em-x{background:rgba(255,255,255,.2);border:none;cursor:pointer;font-size:18px;color:#fff;line-height:1;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:.15s}
+.em-x:hover{background:rgba(255,255,255,.38)}
+.em-body{padding:1.05rem 1.25rem 1.25rem}
+.em-meta{font-size:12.5px;color:#4A6275;background:#EFF6FC;border:1px solid #D6E8F7;border-radius:8px;padding:.5rem .8rem;margin-bottom:.85rem;display:flex;align-items:center;gap:.45rem;flex-wrap:wrap}
+.em-sel{margin-bottom:.95rem}
+.em-sel label{font-size:12px;font-weight:700;color:#2E6DA4;display:block;margin-bottom:.35rem}
+.em-sel select{width:100%;border:1px solid #CFE0F2;border-radius:8px;padding:.5rem .7rem;font-size:14px;font-family:inherit;background:#fff;color:var(--text);outline:none}
+.em-sel select:focus{border-color:#5B9BD5;box-shadow:0 0 0 3px rgba(91,155,213,.18)}
+.em-stats{display:flex;gap:.55rem;margin-bottom:.95rem}
+.em-stat{flex:1;text-align:center;border-radius:11px;padding:.65rem .4rem;border:1px solid}
+.em-stat .v{font-size:22px;font-weight:800;line-height:1}
+.em-stat .l{font-size:11px;margin-top:.3rem;font-weight:600;opacity:.9}
+.em-stat.work{background:#EAF3FC;border-color:#CFE2F5}.em-stat.work .v{color:#2E6DA4}.em-stat.work .l{color:#3A7BB8}
+.em-stat.leave{background:#E6F4FA;border-color:#CBE7F2}.em-stat.leave .v{color:#1C7FA8}.em-stat.leave .l{color:#2890B8}
+.em-stat.idle{background:#F1F4F8;border-color:#E0E7F0}.em-stat.idle .v{color:#7E8DA0}.em-stat.idle .l{color:#7E8DA0}
+.em-list{max-height:48vh;overflow-y:auto;border:1px solid #DCEAF6;border-radius:12px;background:#fff}
+.em-row{display:flex;align-items:center;gap:.7rem;padding:.5rem .85rem;border-bottom:1px solid #EEF4FA}
+.em-row:last-child{border-bottom:none}
+.em-row.wk{background:#F5FAFE}
+.em-date{min-width:44px;text-align:center;flex-shrink:0}
+.em-date .d{font-size:15px;font-weight:800;color:#2C4660;line-height:1.05}
+.em-date .w{font-size:10px;color:#8CA3BD;margin-top:1px}
+.em-row.wk .em-date .w{color:#E08A8A}
+.em-line{flex:1;height:1px;background:linear-gradient(90deg,#E3EEF8,transparent)}
+.em-pill{font-size:12.5px;font-weight:700;padding:.34rem .8rem;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.em-pill.work{background:#E8F2FB;color:#2E6DA4}
+.em-pill.idle{background:#EFF2F7;color:#7E8DA0}
+.em-pill.none{background:transparent;color:#BCCBDB;font-weight:600}
+.em-empty{padding:1.5rem;text-align:center;color:var(--text-light);font-size:13px}
 /* 運動登記表 */
 .sports-period{display:flex;gap:.35rem}
 .sports-period .btn{border:1.5px solid var(--border);background:#fff;color:var(--text-light);font-weight:700}
@@ -210,10 +242,76 @@ table{border-collapse:collapse}
 .info{font-size:12px;color:var(--text-light)}
 .rule-tooltip{position:fixed;background:#2C3E50;color:#fff;border-radius:10px;padding:.9rem 1.2rem;font-size:12px;line-height:1.85;max-width:480px;white-space:pre-wrap;z-index:600;box-shadow:0 8px 28px rgba(0,0,0,.35);display:none;pointer-events:none;border-left:4px solid #5DADE2}
 @media(max-width:700px){.main{padding:.75rem}}
+/* ═══ 開場選取頁面（清爽淺色） ═══ */
+#shift-launcher{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#shift-launcher.hide{opacity:0;visibility:hidden;transform:scale(1.04);transition:opacity .5s ease,transform .5s ease,visibility .5s}
+.sl-bg{position:absolute;inset:0;background:linear-gradient(135deg,#FBFDFF 0%,#EFF6FC 45%,#F4F0FF 100%)}
+.sl-bg::before{content:"";position:absolute;top:-12%;left:-8%;width:50%;height:50%;background:radial-gradient(circle,rgba(255,205,120,.28),transparent 70%);filter:blur(14px)}
+.sl-bg::after{content:"";position:absolute;bottom:-16%;right:-10%;width:55%;height:55%;background:radial-gradient(circle,rgba(150,170,255,.26),transparent 70%);filter:blur(14px)}
+.sl-inner{position:relative;text-align:center;padding:2rem 1.25rem;width:100%;max-width:920px}
+.sl-title{font-size:clamp(28px,6vw,46px);font-weight:900;color:#3A4A63;letter-spacing:.18em;margin-bottom:.55rem}
+.sl-sub{font-size:clamp(13px,2.4vw,15px);color:#8595AB;margin-bottom:2.4rem;letter-spacing:.05em}
+.sl-cards{display:flex;gap:1.4rem;justify-content:center;flex-wrap:wrap}
+.sl-card{position:relative;width:230px;max-width:78vw;border:1px solid rgba(255,255,255,.7);cursor:pointer;border-radius:22px;padding:2.1rem 1.4rem 1.6rem;overflow:hidden;display:flex;flex-direction:column;align-items:center;box-shadow:0 12px 30px rgba(120,140,175,.18);transition:transform .28s cubic-bezier(.2,.8,.3,1),box-shadow .28s;font-family:inherit}
+.sl-card:hover{transform:translateY(-12px) scale(1.025);box-shadow:0 24px 48px rgba(120,140,175,.3)}
+.sl-card:active{transform:translateY(-6px) scale(1.01)}
+.sl-card.zao{background:linear-gradient(160deg,#FFF3DC 0%,#FFE7C2 100%);color:#B5710A}
+.sl-card.zhong{background:linear-gradient(160deg,#FFE6DD 0%,#FCD9E4 100%);color:#C75A78}
+.sl-card.wan{background:linear-gradient(160deg,#E7ECFF 0%,#EADFF9 100%);color:#5B53A8}
+.sl-glow{position:absolute;top:-40%;left:50%;transform:translateX(-50%);width:160%;height:120%;background:radial-gradient(circle,rgba(255,255,255,.6),transparent 60%);opacity:.7;pointer-events:none}
+.sl-icon{font-size:58px;line-height:1;filter:drop-shadow(0 5px 10px rgba(120,120,120,.18));margin-bottom:.7rem;position:relative;animation:slFloat 4s ease-in-out infinite}
+.sl-card.zhong .sl-icon{animation-delay:.6s}.sl-card.wan .sl-icon{animation-delay:1.2s}
+@keyframes slFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.sl-name{font-size:23px;font-weight:800;letter-spacing:.08em;position:relative}
+.sl-period{position:absolute;top:1rem;right:1.15rem;font-size:13px;font-weight:800;background:rgba(255,255,255,.7);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.sl-desc{font-size:13px;opacity:.8;margin-top:.3rem;letter-spacing:.12em}
+.sl-go{margin-top:1.25rem;font-size:14px;font-weight:700;background:rgba(255,255,255,.65);padding:.5rem 1.3rem;border-radius:30px;letter-spacing:.05em;transition:background .2s}
+.sl-card:hover .sl-go{background:#fff}
+.sl-foot{margin-top:2.3rem;font-size:12px;color:#A2AFC0;letter-spacing:.05em}
+.shift-pill{display:inline-flex;align-items:center;gap:.3rem;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;margin-left:.55rem;vertical-align:middle;color:#fff;cursor:pointer;border:none;font-family:inherit}
+.shift-pill.zao{background:linear-gradient(135deg,#FFC86B,#F0980E)}
+.shift-pill.zhong{background:linear-gradient(135deg,#FF9E80,#EE7BA0)}
+.shift-pill.wan{background:linear-gradient(135deg,#8AA4F0,#9B7BE8)}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
 <body>
+
+<!-- ═══ 開場選取：班別（早／中／晚） ═══ -->
+<div id="shift-launcher">
+  <div class="sl-bg"></div>
+  <div class="sl-inner">
+    <div class="sl-title">排班系統</div>
+    <div class="sl-sub">請選擇要進入的班別 · 三套資料各自獨立</div>
+    <div class="sl-cards">
+      <button class="sl-card zao" onclick="chooseShift('zao')">
+        <div class="sl-glow"></div>
+        <div class="sl-icon">🌞</div>
+        <div class="sl-name">太陽之子</div>
+        <div class="sl-period">早</div>
+        <div class="sl-desc">晨光班別</div>
+        <div class="sl-go">進入 →</div>
+      </button>
+      <button class="sl-card zhong" onclick="chooseShift('zhong')">
+        <div class="sl-glow"></div>
+        <div class="sl-icon">🌅</div>
+        <div class="sl-name">落日遊俠</div>
+        <div class="sl-period">中</div>
+        <div class="sl-desc">午後班別</div>
+        <div class="sl-go">進入 →</div>
+      </button>
+      <button class="sl-card wan" onclick="chooseShift('wan')">
+        <div class="sl-glow"></div>
+        <div class="sl-icon">🔮</div>
+        <div class="sl-name">月神之子</div>
+        <div class="sl-period">晚</div>
+        <div class="sl-desc">夜間班別</div>
+        <div class="sl-go">進入 →</div>
+      </button>
+    </div>
+    <div class="sl-foot">選定後可隨時重新整理頁面切換班別</div>
+  </div>
+</div>
 
 <nav class="nav">
   <div class="nav-brand">📅 排假系統</div>
@@ -266,11 +364,11 @@ table{border-collapse:collapse}
         <label>部門</label><select id="sc-unit" onchange="renderSchedule()"></select>
         <label>年份</label><select id="sc-year" onchange="renderSchedule()"></select>
         <label>月份</label><select id="sc-month" onchange="renderSchedule()"></select>
-        <button class="btn btn-warning btn-sm" onclick="confirmRegen()">🔀 重新產生</button>
-        <button id="btn-save-sched" class="btn btn-primary btn-sm" onclick="handleSaveBtn()" onmouseenter="showSchedImgTip(this)" onmouseleave="hideSchedImgTip()">💾 儲存班表</button>
+        <button id="btn-regen" class="btn btn-warning btn-sm" onclick="confirmRegen()">🔀 重新產生</button>
+        <button id="btn-sched-lock" class="btn btn-outline btn-sm" onclick="toggleSchedLock()" title="鎖定後將無法重新產生此班表">🔓 班表鎖定</button>
       </div>
     </div>
-    <p class="info" style="margin-bottom:.6rem">依請假紀錄自動分配每日工作，公平輪流。</p>
+    <div style="margin-bottom:.7rem"><button class="btn btn-outline btn-sm" onclick="openEmpMonthModal()">👤 員工本月班表</button></div>
     <div class="scroll-x"><table class="sched" id="sc-table"></table></div>
   </div>
   <div id="sc-stats"></div>
@@ -422,7 +520,13 @@ table{border-collapse:collapse}
         <div><label class="sports-lbl">運動項目</label><select class="fc" id="sports-type" onchange="sportsTypeChange()"></select></div>
         <div id="sports-custom-wrap" style="display:none"><label class="sports-lbl">自訂項目</label><input type="text" class="fc" id="sports-custom" placeholder="輸入運動名稱"></div>
         <div><label class="sports-lbl">日期</label><select class="fc" id="sports-day"></select></div>
-        <div style="flex:1;min-width:160px"><label class="sports-lbl">時間／時長</label><input type="text" class="fc" id="sports-time" placeholder="例：19:00-21:00 或 2小時" onkeydown="if(event.key==='Enter')addSportsEntry()"></div>
+        <div><label class="sports-lbl">時間（開始～結束）</label>
+          <div style="display:flex;align-items:center;gap:.3rem">
+            <select class="fc" id="sports-start" style="min-width:86px"></select>
+            <span style="color:var(--text-light);font-weight:700">～</span>
+            <select class="fc" id="sports-end" style="min-width:86px"></select>
+          </div>
+        </div>
         <div style="justify-content:flex-end"><label class="sports-lbl">&nbsp;</label><button class="sports-add-btn" type="button" onclick="addSportsEntry()">➕ 登記</button></div>
       </div>
     </div>
@@ -507,6 +611,25 @@ table{border-collapse:collapse}
     <div style="overflow:hidden;flex:1;display:flex;align-items:center;justify-content:center"><img id="sched-img-full" style="display:block;max-width:100%;max-height:100%;width:auto;height:auto;border-radius:6px;object-fit:contain"></div>
   </div>
 </div>
+
+<!-- MODAL：員工本月班表 -->
+<div class="modal-ov" id="emp-month-modal" onclick="if(event.target===this)closeEmpMonthModal()">
+  <div class="modal" style="max-width:min(560px,95vw);width:min(560px,95vw);padding:0;overflow:hidden">
+    <div class="em-head">
+      <div class="modal-title">👤 員工本月班表</div>
+      <button class="em-x" onclick="closeEmpMonthModal()">×</button>
+    </div>
+    <div class="em-body">
+      <div id="emp-month-meta" class="em-meta"></div>
+      <div class="em-sel">
+        <label>選擇員工</label>
+        <select id="emp-month-sel" onchange="renderEmpMonth()"></select>
+      </div>
+      <div id="emp-month-body"></div>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toasts"></div>
 
 <!-- MODAL：自訂 confirm / prompt（取代醜陋的瀏覽器原生彈窗） -->
@@ -603,6 +726,17 @@ table{border-collapse:collapse}
 
 <script>
 'use strict';
+
+// ══════════════════════════════════════════════════════════════
+// 班別（早／中／晚）— 三套各自獨立的資料，共用同一套功能
+//   早＝沿用現有資料（無前綴、雲端 sched）；中／晚＝全新獨立資料
+// ══════════════════════════════════════════════════════════════
+const SHIFTS={
+  zao:  {key:'',    fb:'sched',       name:'太陽之子', period:'早', icon:'🌞'},
+  zhong:{key:'m2_', fb:'sched_zhong', name:'落日遊俠', period:'中', icon:'🌅'},
+  wan:  {key:'m3_', fb:'sched_wan',   name:'月神之子', period:'晚', icon:'🔮'}
+};
+let SHIFT='zao'; // 由開場選取頁面決定
 
 const LCM={
   '休':{bg:'#E8F5E9',fg:'#2E7D32',full:'休假'},'事':{bg:'#FFF3E0',fg:'#E65100',full:'事假'},
@@ -1081,15 +1215,43 @@ async function clearMonthLeave(){
 
 // ── TAB 2：排班表 ──
 async function confirmRegen(){
-  if(!await uiConfirm('確定重新產生【當前部門】本月排班？\n其他部門不受影響。',{okText:'重新產生',title:'重新排班'}))return;
   const unit=document.getElementById('sc-unit').value;
   const year=parseInt(document.getElementById('sc-year').value);
   const month=parseInt(document.getElementById('sc-month').value);
+  if(unit&&isSchedLocked(unit,year,month)){toast('班表已鎖定，請先解鎖才能重新產生','err');return;}
+  if(!await uiConfirm('確定重新產生【當前部門】本月排班？\n其他部門不受影響。',{okText:'重新產生',title:'重新排班'}))return;
   clearSchedUnit(unit,year,month);
   renderSchedule();
 }
+// ── 班表鎖定（依 部門+年+月，會雲端同步） ──
+function getSchedLocks(){try{return JSON.parse(localStorage.getItem('sched_lock'))||{};}catch(e){return{};}}
+function setSchedLocks(d){try{localStorage.setItem('sched_lock',JSON.stringify(d));}catch(e){}}
+function schedLockKey(u,y,m){return u+'_'+y+'_'+m;}
+function isSchedLocked(u,y,m){return !!getSchedLocks()[schedLockKey(u,y,m)];}
+function updateRegenLockUI(){
+  const lb=document.getElementById('btn-sched-lock'),rb=document.getElementById('btn-regen');
+  if(!lb||!rb)return;
+  const unit=document.getElementById('sc-unit').value;
+  const year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
+  const locked=unit&&isSchedLocked(unit,year,month);
+  if(locked){
+    lb.innerHTML='🔒 班表鎖定';lb.className='btn btn-success btn-sm';
+    rb.disabled=true;rb.style.opacity='.45';rb.style.cursor='not-allowed';
+  }else{
+    lb.innerHTML='🔓 班表鎖定';lb.className='btn btn-outline btn-sm';
+    rb.disabled=false;rb.style.opacity='';rb.style.cursor='';
+  }
+}
+function toggleSchedLock(){
+  const unit=document.getElementById('sc-unit').value;if(!unit){toast('請先選擇部門','err');return;}
+  const year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value);
+  const locks=getSchedLocks(),k=schedLockKey(unit,year,month);
+  if(locks[k]){delete locks[k];setSchedLocks(locks);logOp(`解鎖班表：${unit} ${year}/${month}`);toast('已解鎖，可重新產生','ok');}
+  else{locks[k]=true;setSchedLocks(locks);logOp(`鎖定班表：${unit} ${year}/${month}`);toast('已鎖定，無法重新產生','ok');}
+  updateRegenLockUI();
+}
 function renderSchedule(){
-  const unit=document.getElementById('sc-unit').value;if(!unit){document.getElementById('sc-table').innerHTML='';document.getElementById('sc-stats').innerHTML='';return;}
+  const unit=document.getElementById('sc-unit').value;if(!unit){document.getElementById('sc-table').innerHTML='';document.getElementById('sc-stats').innerHTML='';updateRegenLockUI();return;}
   const year=parseInt(document.getElementById('sc-year').value),month=parseInt(document.getElementById('sc-month').value),days=daysInMonth(year,month);
   const mems=getMembers(),list=mems[unit]||[],count=list.length,map=loadMonthLeave(year,month),mo=maxRestOff(month),uc={bg:'#EAF0F6',fg:'#2A3A42'};
   const scPreMap=loadMonthPreLeave(year,month);
@@ -1101,6 +1263,10 @@ function renderSchedule(){
   // Persist: save final assignments back to cache
   const _save={};list.forEach((name,i)=>{_save[name]={};for(let d=1;d<=days;d++){const v=grid[i][d];if(v&&!isLeave(v)&&!(v&&v[0]==='~'))_save[name][d]=v;}});
   saveSchedUnit(unit,year,month,_save);
+  // ★ 快照當下本月班表，供「員工本月班表」使用 ★
+  _curSched={unit,year,month,days,list:list.slice(),grid:grid.map(r=>r.slice())};
+  updateRegenLockUI();
+  if(document.getElementById('emp-month-modal')?.classList.contains('open'))renderEmpMonth();
   let h=`<thead><tr><th colspan="${days+3}" style="background:#1A252F;font-size:14px;padding:11px 16px;text-align:left;letter-spacing:.5px">　${unit}　${year}年${month}月　<span style="font-size:11px;font-weight:400;opacity:.72">休假上限 ${mo}天／人</span></th></tr>`;
   h+=`<tr><th class="s-name" style="background:${uc.bg};color:${uc.fg}">員工╲日期</th>`;
   for(let d=1;d<=days;d++)h+=`<th>${d}</th>`;
@@ -1156,7 +1322,54 @@ function renderSchedule(){
   statsEl.innerHTML=sh;
 }
 
-// ── DATE GRID ──
+// ── 員工本月班表（依當下本月班表資料） ──
+let _curSched=null;
+function openEmpMonthModal(){
+  // 以當前下拉選單為準，確保資料為「當下本月班表」
+  const unit=document.getElementById('sc-unit').value;
+  if(!unit){toast('請先選擇部門','err');return;}
+  renderSchedule(); // 重新計算當下班表，更新 _curSched
+  if(!_curSched||!_curSched.list.length){toast('此部門本月無員工','err');return;}
+  const sel=document.getElementById('emp-month-sel');
+  const prev=sel.value;
+  sel.innerHTML=_curSched.list.map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
+  if(prev&&_curSched.list.includes(prev))sel.value=prev;
+  document.getElementById('emp-month-modal').classList.add('open');
+  renderEmpMonth();
+}
+function closeEmpMonthModal(){document.getElementById('emp-month-modal').classList.remove('open');}
+function renderEmpMonth(){
+  if(!_curSched)return;
+  const{unit,year,month,days,list,grid}=_curSched;
+  const meta=document.getElementById('emp-month-meta');
+  const body=document.getElementById('emp-month-body');
+  const name=document.getElementById('emp-month-sel').value;
+  const i=list.indexOf(name);
+  if(i<0){meta.innerHTML='';body.innerHTML='<div class="em-empty">查無此員工資料</div>';return;}
+  const uc=getDeptColor(unit);
+  meta.innerHTML=`<span class="unit-badge" style="background:${uc.bg};color:${uc.fg};padding:2px 9px;border-radius:20px;font-weight:700">${escapeHtml(unit)}</span><span>${escapeHtml(name)}</span><span style="opacity:.6">·</span><span>${year} 年 ${month} 月</span><span style="opacity:.6">·</span><span>共 ${days} 天</span>`;
+  let workCnt=0,leaveCnt=0,idleCnt=0;
+  const SKIP_TASK=new Set(['待命','備崗']);
+  let rows='';
+  for(let d=1;d<=days;d++){
+    const dw=new Date(year,month-1,d).getDay(),wk=dw===0||dw===6;
+    const val=grid[i][d];
+    let pill;
+    if(isLeave(val)){const lc=LCM[val];pill=`<span class="em-pill" style="background:${lc.bg};color:${lc.fg}">${lc.full}</span>`;leaveCnt++;}
+    else if(val&&val[0]==='~'){const lt=val.slice(1);if(lt&&LCM[lt]){const lc=LCM[lt];pill=`<span class="em-pill" style="background:${lc.bg};color:${lc.fg};outline:1.5px dashed ${lc.fg}66;outline-offset:-2px">預假 ${LCM[lt].full}</span>`;}else{pill='<span class="em-pill" style="background:#F3E5F5;color:#7B1FA2">預假</span>';}leaveCnt++;}
+    else if(val){if(SKIP_TASK.has(val)){pill=`<span class="em-pill idle">${escapeHtml(val)}</span>`;idleCnt++;}else{pill=`<span class="em-pill work">${escapeHtml(val)}</span>`;workCnt++;}}
+    else{pill='<span class="em-pill none">— 未排</span>';}
+    rows+=`<div class="em-row${wk?' wk':''}"><div class="em-date"><div class="d">${month}/${d}</div><div class="w">週${DOW[dw]}</div></div><div class="em-line"></div>${pill}</div>`;
+  }
+  const stats=`<div class="em-stats">
+    <div class="em-stat work"><div class="v">${workCnt}</div><div class="l">工作天</div></div>
+    <div class="em-stat leave"><div class="v">${leaveCnt}</div><div class="l">放假／預假</div></div>
+    <div class="em-stat idle"><div class="v">${idleCnt}</div><div class="l">待命／備崗</div></div>
+  </div>`;
+  body.innerHTML=stats+`<div class="em-list">${rows}</div>`;
+}
+
+
 let mlSel=new Set(),pfSel=new Set();
 function renderDateGrid(cid,year,month,selSet,infoId,toggleFn){
   const days=daysInMonth(year,month),fd=new Date(year,month-1,1).getDay();let h='';
@@ -1793,9 +2006,21 @@ async function deleteNote(id){
 
 // ── 運動登記表 ──
 const SPORTS_PRESET=[['羽毛球','🏸'],['瑜伽','🧘'],['網球','🎾'],['籃球','🏀'],['跑步','🏃'],['游泳','🏊'],['健身','🏋️'],['桌球','🏓'],['足球','⚽'],['騎車','🚴'],['登山','🥾']];
+const SPORTS_TIME_OPTS=(function(){let o='<option value="">--:--</option>';for(let h=5;h<=23;h++){['00','30'].forEach(mm=>{const hh=String(h).padStart(2,'0');o+=`<option value="${hh}:${mm}">${hh}:${mm}</option>`;});}return o;})();
 let sportsPeriod=0; // 0=本月 1=下個月
 function getSportsLog(){try{return JSON.parse(localStorage.getItem('sports_log'))||{};}catch(e){return{};}}
-function setSportsLog(d){localStorage.setItem('sports_log',JSON.stringify(d));}
+function setSportsLog(d){try{localStorage.setItem('sports_log',JSON.stringify(d));}catch(e){toast('儲存失敗（瀏覽器空間不足）','err');}}
+function getSportsDel(){try{return JSON.parse(localStorage.getItem('sports_deleted'))||{};}catch(e){return{};}}
+function setSportsDel(d){try{localStorage.setItem('sports_deleted',JSON.stringify(d));}catch(e){}}
+// 合併兩份運動登記（依 entry id 聯集），避免多人同時登記時互相覆蓋
+function mergeSportsLogs(a,b){
+  const out={},keys=new Set([...Object.keys(a||{}),...Object.keys(b||{})]);
+  keys.forEach(k=>{const seen={},arr=[];[...((a&&a[k])||[]),...((b&&b[k])||[])].forEach(e=>{if(e&&e.id&&!seen[e.id]){seen[e.id]=1;arr.push(e);}});if(arr.length)out[k]=arr;});
+  return out;
+}
+// 套用刪除墓碑：移除已被刪除的 entry
+function applySportsDel(log,del){if(!del||!Object.keys(del).length)return log;const out={};Object.keys(log||{}).forEach(k=>{const arr=(log[k]||[]).filter(e=>!del[e.id]);if(arr.length)out[k]=arr;});return out;}
+function mergeSportsDel(a,b){const out=Object.assign({},a||{});Object.keys(b||{}).forEach(id=>{out[id]=Math.max(out[id]||0,b[id]||0);});return out;}
 function sportsKey(u,y,m){return u+'_'+y+'_'+m;}
 // 自動清除「本月以前」的登記（例如進入7月後，6月以前的登記自動刪除）
 function pruneOldSports(){
@@ -1803,6 +2028,10 @@ function pruneOldSports(){
   const log=getSportsLog();let changed=false;
   Object.keys(log).forEach(k=>{const p=k.split('_');const m=parseInt(p.pop()),y=parseInt(p.pop());if(!isNaN(y)&&!isNaN(m)&&(y*12+m)<cur){delete log[k];changed=true;}});
   if(changed)setSportsLog(log);
+  // 清除 90 天前的刪除墓碑，避免無限增長
+  const del=getSportsDel();let dchg=false;const cutoff=Date.now()-90*864e5;
+  Object.keys(del).forEach(id=>{if((del[id]||0)<cutoff){delete del[id];dchg=true;}});
+  if(dchg)setSportsDel(del);
   return changed;
 }
 function sportsYM(){const now=new Date();let y=now.getFullYear(),m=now.getMonth()+1;if(sportsPeriod===1){m++;if(m>12){m=1;y++;}}return{y,m};}
@@ -1832,6 +2061,10 @@ function renderSports(){
   const dim=new Date(y,m,0).getDate();let dayOpts='<option value="">（不指定）</option>';
   for(let d=1;d<=dim;d++){const dw=new Date(y,m-1,d).getDay();dayOpts+=`<option value="${d}">${m}/${d}（${DOW[dw]}）</option>`;}
   document.getElementById('sports-day').innerHTML=dayOpts;
+  // 時間下拉（開始／結束）— 僅在尚未填入時建立，避免覆蓋使用者選擇
+  const ss=document.getElementById('sports-start'),se=document.getElementById('sports-end');
+  if(ss&&!ss.options.length)ss.innerHTML=SPORTS_TIME_OPTS;
+  if(se&&!se.options.length)se.innerHTML=SPORTS_TIME_OPTS;
   // 表格
   const entries=getSportsLog()[sportsKey(unit,y,m)]||[];
   let h='<thead><tr><th>員工</th><th>運動項目</th><th style="width:120px">日期</th><th>時間／時長</th><th style="width:130px">登記時間</th><th style="width:70px">操作</th></tr></thead><tbody>';
@@ -1847,26 +2080,31 @@ function renderSports(){
   document.getElementById('sports-stats').innerHTML=st;
 }
 function addSportsEntry(){
-  const us=document.getElementById('sports-unit'),unit=us.value;
+  const us=document.getElementById('sports-unit'),unit=us.value||getDepts()[0]||'';
+  if(!unit){toast('請先到任務配置新增部門','err');return;}
   const emp=document.getElementById('sports-emp').value;
   if(!emp){toast('此部門尚無員工，請先到員工設定新增','err');return;}
   let sport=document.getElementById('sports-type').value;
   if(sport==='__custom'){sport=(document.getElementById('sports-custom').value||'').trim();if(!sport){toast('請輸入自訂運動名稱','err');return;}}
   const day=document.getElementById('sports-day').value;
-  const time=document.getElementById('sports-time').value.trim();
-  if(!time){toast('請輸入時間／時長','err');return;}
+  const st=document.getElementById('sports-start').value,et=document.getElementById('sports-end').value;
+  if(!st||!et){toast('請選擇開始與結束時間','err');return;}
+  if(et<=st){toast('結束時間需晚於開始時間','err');return;}
+  const time=st+'-'+et;
   const {y,m}=sportsYM();
   const log=getSportsLog(),k=sportsKey(unit,y,m);if(!log[k])log[k]=[];
   log[k].push({id:'sp'+Date.now()+Math.random().toString(36).slice(2,6),emp,sport,day:day?parseInt(day):'',time,addedAt:new Date().toISOString()});
   setSportsLog(log);
   logOp(`運動登記：${unit} ${emp} ${sport} ${y}/${m}${day?'/'+day:''} ${time}`);
-  document.getElementById('sports-time').value='';
+  document.getElementById('sports-start').value='';
+  document.getElementById('sports-end').value='';
   const cf=document.getElementById('sports-custom');if(cf)cf.value='';
   renderSports();
   toast(`已登記 ${emp} 的 ${sport}`,'ok');
 }
 async function removeSportsEntry(id){
   if(!await uiConfirm('確定刪除此運動登記？',{danger:true,okText:'刪除',title:'刪除登記'}))return;
+  const del=getSportsDel();del[id]=Date.now();setSportsDel(del);
   const unit=document.getElementById('sports-unit').value,{y,m}=sportsYM();
   const log=getSportsLog(),k=sportsKey(unit,y,m);
   if(log[k]){log[k]=log[k].filter(e=>e.id!==id);setSportsLog(log);}
@@ -1897,10 +2135,31 @@ const FIREBASE_CONFIG = {
   measurementId: "G-KH94JFM0SJ"
 };
 
-const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log','calendar_images','saved_schedules','sl_quota','sports_log','work_notes'];
+const SYNC_KEYS=['departments','members','leave_history','pre_leave','task_config','sched_cache','dept_rules','lottery_pool','lottery_records','_lot_mw','op_log','calendar_images','saved_schedules','sl_quota','sports_log','sports_deleted','work_notes','sched_lock'];
 let _db=null;
 const _lastWrite={};
 const SYNC_COOLDOWN=2500;
+
+// 一次性清除指定班別（中／晚）的所有資料（雲端＋本機）；用雲端 _resetVer 記號確保只清一次
+const SHIFT_RESET_VER={zhong:1,wan:1}; // 日後想再清一次，把對應數字 +1 即可
+function _maybeResetShift(){
+  const target=SHIFT_RESET_VER[SHIFT];
+  if(!_db||!target)return Promise.resolve();          // 早班或未連線 → 不清除
+  const root=SHIFTS[SHIFT].fb;
+  return _db.ref(root+'/_resetVer').once('value').then(snap=>{
+    if((snap.val()||0)>=target)return;                 // 已清除過 → 略過
+    setSyncStatus('connecting','正在清除'+SHIFTS[SHIFT].period+'班資料…');
+    return _db.ref(root).remove().then(()=>{
+      SYNC_KEYS.forEach(k=>{try{localStorage.removeItem(k);}catch(e){}}); // 清空本機此班別資料
+      return _db.ref(root+'/_resetVer').set(target);   // 寫入記號（在 remove 之後）
+    }).then(()=>{
+      toast('已清除「'+SHIFTS[SHIFT].name+'（'+SHIFTS[SHIFT].period+'）」的所有資料','ok');
+      const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
+      if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+      refreshUnitDropdowns();
+    });
+  }).catch(e=>{console.warn('reset shift err',e);});
+}
 
 function setSyncStatus(s,detail){
   const el=document.getElementById('sync-status');if(!el)return;
@@ -1913,15 +2172,25 @@ function fbWrite(key,rawVal){
   if(!_db||!SYNC_KEYS.includes(key))return;
   _lastWrite[key]=Date.now();
   try{const v=typeof rawVal==='string'?JSON.parse(rawVal):rawVal;
-    _db.ref('sched/'+key).set(v).catch(e=>{console.warn('fbWrite err',e);setSyncStatus('error','寫入失敗：'+key);});
+    _db.ref(SHIFTS[SHIFT].fb+'/'+key).set(v).catch(e=>{console.warn('fbWrite err',e);setSyncStatus('error','寫入失敗：'+key);});
   }catch(e){}
 }
 
-// 攔截所有 localStorage.setItem，同步寫入 Firebase
-const _rawSet=Storage.prototype.setItem.bind(localStorage);
+// 攔截所有 localStorage 存取：依目前班別自動加上前綴（只針對 App 自己的 KEY）
+// 早班前綴為空 → 完全沿用現有資料；中／晚班使用獨立前綴 → 全新資料
+const _LS_get=Storage.prototype.getItem;
+const _LS_set=Storage.prototype.setItem;
+const _LS_remove=Storage.prototype.removeItem;
+function _phys(k){return (SYNC_KEYS.includes(k)?SHIFTS[SHIFT].key:'')+k;}
+// 直接寫入本機（不觸發 fbWrite），供雲端同步回寫使用
+function _rawSet(k,v){_LS_set.call(localStorage,_phys(k),v);}
 (function(){
-  const _orig=Storage.prototype.setItem;
-  Storage.prototype.setItem=function(k,v){_orig.call(this,k,v);if(this===localStorage)fbWrite(k,v);};
+  Storage.prototype.getItem=function(k){return this===localStorage?_LS_get.call(this,_phys(k)):_LS_get.call(this,k);};
+  Storage.prototype.removeItem=function(k){return this===localStorage?_LS_remove.call(this,_phys(k)):_LS_remove.call(this,k);};
+  Storage.prototype.setItem=function(k,v){
+    if(this===localStorage){_LS_set.call(this,_phys(k),v);fbWrite(k,v);}
+    else{_LS_set.call(this,k,v);}
+  };
 })();
 
 function initFirebaseSync(){
@@ -1948,15 +2217,29 @@ function _fbReady(){
     // ★ 雲端為主：第一次連線先讀雲端，覆蓋本機 ★
     // 對每個 KEY：雲端有資料 → 寫入本機；雲端沒資料 → 把本機推上去（首次部署初始化）
     setSyncStatus('connecting','正在從雲端載入資料…');
-    const tasks=SYNC_KEYS.map(k=>_db.ref('sched/'+k).once('value').then(snap=>{
+    _maybeResetShift().then(()=>{
+    const tasks=SYNC_KEYS.map(k=>_db.ref(SHIFTS[SHIFT].fb+'/'+k).once('value').then(snap=>{
       const cloudVal=snap.val();
+      // 運動登記：雲端與本機「聯集合併」，並套用刪除墓碑，避免任何一方的登記被覆蓋掉
+      if(k==='sports_log'){
+        const merged=applySportsDel(mergeSportsLogs(getSportsLog(),cloudVal||{}),getSportsDel());
+        _rawSet('sports_log',JSON.stringify(merged));
+        if(_db)try{_db.ref(SHIFTS[SHIFT].fb+'/sports_log').set(JSON.parse(JSON.stringify(merged)));}catch(e){}
+        return;
+      }
+      if(k==='sports_deleted'){
+        const merged=mergeSportsDel(getSportsDel(),cloudVal||{});
+        _rawSet('sports_deleted',JSON.stringify(merged));
+        if(_db)try{_db.ref(SHIFTS[SHIFT].fb+'/sports_deleted').set(JSON.parse(JSON.stringify(merged)));}catch(e){}
+        return;
+      }
       if(cloudVal!==null){
         // 雲端有資料 → 直接覆蓋本機（不觸發 fbWrite，避免回寫）
         _rawSet(k,JSON.stringify(cloudVal));
       }else{
         // 雲端沒資料 → 把本機現有的推上雲端（只在首次部署時會發生）
         const localVal=localStorage.getItem(k);
-        if(localVal){try{_db.ref('sched/'+k).set(JSON.parse(localVal));}catch(e){}}
+        if(localVal){try{_db.ref(SHIFTS[SHIFT].fb+'/'+k).set(JSON.parse(localVal));}catch(e){}}
       }
     }));
 
@@ -1969,9 +2252,31 @@ function _fbReady(){
 
       // 載入完成後才掛上即時監聽，避免初始化時誤觸發
       SYNC_KEYS.forEach(k=>{
-        _db.ref('sched/'+k).on('value',snap=>{
+        _db.ref(SHIFTS[SHIFT].fb+'/'+k).on('value',snap=>{
+          const val=snap.val();
+          // 運動登記：永遠合併（聯集 + 刪除墓碑），不受 cooldown 跳過影響，避免多人同時登記時遺漏
+          if(k==='sports_log'){
+            if(val===null)return;
+            const merged=applySportsDel(mergeSportsLogs(getSportsLog(),val),getSportsDel());
+            _rawSet('sports_log',JSON.stringify(merged));
+            if(JSON.stringify(merged)!==JSON.stringify(val)&&_db){_lastWrite[k]=Date.now();try{_db.ref(SHIFTS[SHIFT].fb+'/sports_log').set(JSON.parse(JSON.stringify(merged)));}catch(e){}}
+            const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
+            if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+            return;
+          }
+          if(k==='sports_deleted'){
+            if(val===null)return;
+            const merged=mergeSportsDel(getSportsDel(),val);
+            _rawSet('sports_deleted',JSON.stringify(merged));
+            // 套用最新墓碑到本機登記
+            _rawSet('sports_log',JSON.stringify(applySportsDel(getSportsLog(),merged)));
+            if(JSON.stringify(merged)!==JSON.stringify(val)&&_db){_lastWrite[k]=Date.now();try{_db.ref(SHIFTS[SHIFT].fb+'/sports_deleted').set(JSON.parse(JSON.stringify(merged)));}catch(e){}}
+            const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
+            if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+            return;
+          }
           if(Date.now()-(_lastWrite[k]||0)<SYNC_COOLDOWN)return; // 自己剛寫的，跳過
-          const val=snap.val();if(val===null)return;
+          if(val===null)return;
           _rawSet(k,JSON.stringify(val)); // 直接寫入，不再觸發 fbWrite
           const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
           if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
@@ -1984,7 +2289,7 @@ function _fbReady(){
       console.error('Cloud load error:',e);
       setSyncStatus('error','讀取雲端失敗：'+e.message);
     });
-
+    }); // _maybeResetShift
     // 斷線偵測
     _db.ref('.info/connected').on('value',s=>{
       if(!s.val())setSyncStatus('error','網路斷線，等待重連…');
@@ -1997,7 +2302,7 @@ function _fbReady(){
 }
 
 // ── INIT ──
-(function init(){
+function bootApp(){
   migrateData();cleanOpLog();initDropdowns();initLeaveSelector();
   mlUpdateMembers();renderModalDatePicker();
   renderOverview();renderMembers();renderTaskConfig();renderPreLeave();renderSports();renderNotes();
@@ -2010,7 +2315,21 @@ function _fbReady(){
   const pc=document.getElementById('pool-count');if(pc)pc.textContent=`（${pool.length} 人）`;
   renderLotteryRecords();
   initFirebaseSync();
-})();
+}
+// 開場選班：設定資料命名空間後才啟動 App（早＝沿用現有資料，中／晚＝獨立資料）
+let _booted=false;
+function chooseShift(s){
+  if(!SHIFTS[s]||_booted)return;
+  _booted=true;
+  SHIFT=s;
+  const sh=SHIFTS[s];
+  const brand=document.querySelector('.nav-brand');
+  if(brand)brand.innerHTML=`📅 排假系統<button class="shift-pill ${s}" title="點此重新整理可切換班別" onclick="location.reload()">${sh.icon} ${sh.name}·${sh.period}</button>`;
+  document.title=`排班系統 · ${sh.name}（${sh.period}）`;
+  const L=document.getElementById('shift-launcher');
+  if(L){L.classList.add('hide');setTimeout(()=>{if(L.parentNode)L.parentNode.removeChild(L);},550);}
+  bootApp();
+}
 </script>
 </body>
 </html>
