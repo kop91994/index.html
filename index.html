@@ -230,7 +230,7 @@ table{border-collapse:collapse}
 .oplog th{background:var(--primary);color:#fff;padding:7px 11px;text-align:left;border:1px solid #3D4F5A}
 .oplog td{border:1px solid var(--border);padding:5px 11px}
 .oplog tr:nth-child(even) td{background:#F8FAFC}
-.toast-wrap{position:fixed;bottom:1.3rem;right:1.3rem;z-index:2000;display:flex;flex-direction:column;gap:.35rem;pointer-events:none}
+.toast-wrap{position:fixed;bottom:5.2rem;right:1.3rem;z-index:2000;display:flex;flex-direction:column;gap:.35rem;pointer-events:none}
 .toast{background:#2C3E50;color:#fff;padding:.6rem 1rem;border-radius:8px;font-size:13px;box-shadow:0 4px 16px rgba(0,0,0,.22);animation:tIn .25s ease;max-width:280px;pointer-events:auto}
 .toast.ok{background:var(--success)}.toast.err{background:var(--danger)}
 @keyframes tIn{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
@@ -272,6 +272,50 @@ table{border-collapse:collapse}
 .shift-pill.zao{background:linear-gradient(135deg,#FFC86B,#F0980E)}
 .shift-pill.zhong{background:linear-gradient(135deg,#FF9E80,#EE7BA0)}
 .shift-pill.wan{background:linear-gradient(135deg,#8AA4F0,#9B7BE8)}
+/* ═══ 可愛實時時鐘（選班頁＋進入頁右下角） ═══ */
+.cute-clock{display:inline-flex;align-items:center;gap:.55rem;padding:.5rem .8rem .5rem .65rem;border-radius:20px;background:rgba(255,255,255,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:2px solid #fff;box-shadow:0 8px 22px rgba(140,150,180,.28);user-select:none;font-family:'Noto Sans TC',-apple-system,sans-serif;animation:ccPop .5s cubic-bezier(.2,.9,.3,1.4) both;transition:transform .2s,box-shadow .2s}
+.cute-clock:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 12px 28px rgba(140,150,180,.36)}
+@keyframes ccPop{0%{opacity:0;transform:translateY(14px) scale(.85)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.cc-emoji{font-size:30px;line-height:1;display:inline-block;animation:ccBob 3.2s ease-in-out infinite;filter:drop-shadow(0 3px 5px rgba(120,120,120,.22))}
+@keyframes ccBob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
+.cc-text{display:flex;flex-direction:column;line-height:1.15}
+.cc-greet{font-size:11px;font-weight:800;letter-spacing:.12em;opacity:.85}
+.cc-time{font-size:21px;font-weight:900;letter-spacing:.02em;font-variant-numeric:tabular-nums;color:#3A4A63}
+.cc-sec{font-size:12px;font-weight:800;margin-left:3px;opacity:.55;vertical-align:.5px}
+.cc-date{font-size:10.5px;font-weight:700;color:#9AA7BD;letter-spacing:.06em;margin-top:1px}
+.cute-clock[data-tod="morning"]{background:linear-gradient(150deg,rgba(255,247,228,.92),rgba(255,231,194,.92))}
+.cute-clock[data-tod="morning"] .cc-greet{color:#C2851A}
+.cute-clock[data-tod="noon"]{background:linear-gradient(150deg,rgba(255,236,228,.92),rgba(252,217,228,.92))}
+.cute-clock[data-tod="noon"] .cc-greet{color:#C75A78}
+.cute-clock[data-tod="night"]{background:linear-gradient(150deg,rgba(231,236,255,.92),rgba(234,223,249,.92))}
+.cute-clock[data-tod="night"] .cc-greet{color:#6B62C0}
+.sl-clock{position:absolute;right:1.6rem;bottom:1.4rem;z-index:5}
+#app-clock{position:fixed;right:1.1rem;bottom:1.1rem;z-index:90}
+@media(max-width:560px){.cute-clock{padding:.4rem .65rem .4rem .55rem;gap:.45rem}.cc-emoji{font-size:25px}.cc-time{font-size:18px}.sl-clock{right:1rem;bottom:1rem}#app-clock{right:.7rem;bottom:.7rem}}
+/* ═══ 今天高亮 ═══ */
+.mtx th.today-mark,.sched th.today-mark{background:#1B6CA8!important;color:#fff!important;box-shadow:inset 0 -3px 0 #FFD54F;position:relative}
+.mtx th.today-mark::after,.sched th.today-mark::after{content:"▾";display:block;font-size:9px;line-height:.55;margin-top:1px}
+col.today-col{background:rgba(41,128,185,.12)}
+.sports-tbl tr.today-row td{background:#EAF4FB!important}
+.sports-tbl tr.today-row td:first-child{box-shadow:inset 3px 0 0 #1B6CA8}
+/* ═══ 操作者 pill ═══ */
+.op-pill{display:inline-flex;align-items:center;gap:.25rem;font-size:11px;font-weight:700;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:3px 10px;border-radius:20px;margin-left:.45rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:.15s;font-family:inherit}
+.op-pill:hover{background:rgba(255,255,255,.28)}
+/* ═══ 無障礙：鍵盤聚焦框 ═══ */
+.btn:focus-visible,.nav-tab:focus-visible,.lv-chip:focus-visible,.dc:focus-visible,.op-pill:focus-visible,.cell-editable:focus-visible,.sl-card:focus-visible,button:focus-visible{outline:3px solid #1B6CA8;outline-offset:2px;border-radius:6px}
+/* ═══ 手機緊湊模式（保留首欄凍結，縮小留白但不過小） ═══ */
+@media(max-width:560px){
+  .main{padding:.7rem}
+  .card{padding:.85rem}
+  .mtx,.sched{font-size:12px}
+  .mtx th,.mtx td{padding:4px 2px}
+  .sched th,.sched td{padding:5px 3px}
+  .mtx .c-name,.sched .s-name{min-width:62px;padding:5px 5px;font-size:12px}
+  .sched .task-cell{font-size:11px;min-width:48px;max-width:84px}
+  .sports-tbl th,.sports-tbl td,.pl-entries th,.pl-entries td,.oplog th,.oplog td{padding:5px 6px;font-size:12px}
+  .stat-card{min-width:78px;padding:.5rem .6rem}
+  .stat-val{font-size:17px}
+}
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" defer></script>
 </head>
@@ -311,6 +355,14 @@ table{border-collapse:collapse}
     </div>
     <div class="sl-foot">選定後可隨時重新整理頁面切換班別</div>
   </div>
+  <div class="cute-clock sl-clock" data-tod="morning">
+    <span class="cc-emoji">🌞</span>
+    <div class="cc-text">
+      <div class="cc-greet">早安</div>
+      <div class="cc-time">00:00<span class="cc-sec">00</span></div>
+      <div class="cc-date">--</div>
+    </div>
+  </div>
 </div>
 
 <nav class="nav">
@@ -327,7 +379,17 @@ table{border-collapse:collapse}
     <div class="nav-tab" data-tab="oplog">📋 操作記錄</div>
   </div>
   <span id="sync-status" style="color:rgba(255,255,255,.7);font-size:11px;margin-left:auto;padding:0 .8rem;white-space:nowrap;flex-shrink:0" title=""></span>
+  <span id="op-operator-pill" class="op-pill" title="點此設定／切換操作者" tabindex="0" role="button" onclick="changeOperator()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();changeOperator()}"></span>
 </nav>
+
+<div class="cute-clock" id="app-clock" data-tod="morning">
+  <span class="cc-emoji">🌞</span>
+  <div class="cc-text">
+    <div class="cc-greet">早安</div>
+    <div class="cc-time">00:00<span class="cc-sec">00</span></div>
+    <div class="cc-date">--</div>
+  </div>
+</div>
 
 <div class="main">
 
@@ -818,11 +880,23 @@ function cleanOpLog(){
   if(cleaned.length!==l.length)setOpLog(cleaned);
 }
 function logOp(a){
-  const l=getOpLog();l.unshift({time:new Date().toISOString(),action:a});
+  const l=getOpLog();l.unshift({time:new Date().toISOString(),action:a,by:getOperator()||''});
   const cutoff=new Date();cutoff.setMonth(cutoff.getMonth()-2);
   const cleaned=l.filter(e=>new Date(e.time)>=cutoff);
   if(cleaned.length>500)cleaned.length=500;
   setOpLog(cleaned);
+}
+// ── 操作者署名（每台裝置記住自己是誰，不上傳雲端、不分班別）──
+function getOperator(){try{return localStorage.getItem('op_operator')||'';}catch(e){return'';}}
+function setOperator(n){try{localStorage.setItem('op_operator',n||'');}catch(e){}updateOperatorPill();}
+function updateOperatorPill(){const el=document.getElementById('op-operator-pill');if(!el)return;const op=getOperator();el.innerHTML=op?`👤 ${escapeHtml(op)}`:`👤 <span style="opacity:.75">設定操作者</span>`;}
+async function changeOperator(){
+  const cur=getOperator();
+  const v=await uiPrompt('請輸入您的名字（操作記錄會標示由誰執行）：',{default:cur,placeholder:'例：小依'});
+  if(v===null)return;
+  const name=v.trim();
+  setOperator(name);
+  toast(name?`操作者已設為「${name}」`:'已清除操作者','ok');
 }
 // ── 員工特休配額 ──
 function getSlQuota(){try{return JSON.parse(localStorage.getItem('sl_quota'))||{};}catch(e){return{};}}
@@ -1033,6 +1107,22 @@ document.getElementById('ui-modal').addEventListener('click',e=>{if(e.target===e
 
 // ── NAV ──
 const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,notes:renderNotes,sports:renderSports,oplog:renderOpLog};
+// ── 同步重繪守衛：使用者正在輸入／開著彈窗時，延後重繪避免打斷 ──
+function _userBusy(){
+  if(document.querySelector('.modal-ov.open'))return true;
+  const a=document.activeElement;
+  if(a&&(a.tagName==='INPUT'||a.tagName==='TEXTAREA'||a.tagName==='SELECT'||a.isContentEditable))return true;
+  return false;
+}
+let _refreshPending=false;
+function syncRefreshTab(){
+  if(_userBusy()){_refreshPending=true;return;}
+  const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
+  if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+}
+setInterval(()=>{ // 使用者忙完後，補上先前略過的重繪（資料早已寫入本機，僅延後畫面更新）
+  if(_refreshPending&&!_userBusy()){_refreshPending=false;const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();}
+},1500);
 document.getElementById('navTabs').querySelectorAll('.nav-tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
@@ -1117,9 +1207,11 @@ function renderOverview(){
   let totalPeople=0,totalLeaves=0;const dayOff=new Array(days+1).fill(0);
   const workDays=Array.from({length:days},(_,i)=>i+1).filter(d=>{const dw=new Date(year,month-1,d).getDay();return dw!==0&&dw!==6;}).length;
   const ed=!!selectedLeaveType;
-  let h='<thead><tr>';
+  const _now=new Date(),_isCur=year===_now.getFullYear()&&month===_now.getMonth()+1,_tD=_now.getDate();const tmark=d=>(_isCur&&d===_tD)?' today-mark':'';
+  let cg='<colgroup><col><col>';for(let d=1;d<=days;d++)cg+=`<col${_isCur&&d===_tD?' class="today-col"':''}>`;cg+='<col></colgroup>';
+  let h=cg+'<thead><tr>';
   h+=`<th style="min-width:50px">部門</th><th style="min-width:75px">員工</th>`;
-  for(let d=1;d<=days;d++){const hn=getHolidayName(year,month,d);h+=hn?`<th style="color:#FF6B6B" title="${hn}">${d}</th>`:`<th>${d}</th>`;}
+  for(let d=1;d<=days;d++){const hn=getHolidayName(year,month,d);h+=`<th class="${tmark(d)}"${hn?' style="color:#FF6B6B"':''} title="${(hn||'')+(_isCur&&d===_tD?' ·今天':'')}">${d}</th>`;}
   h+=`<th style="color:#FFCDD2">本月<br>休假次數</th></tr>`;
   h+=`<tr><th style="background:#3D4F5A;font-size:10px"></th><th style="background:#3D4F5A;font-size:10px">星期</th>`;
   for(let d=1;d<=days;d++){const dw=new Date(year,month-1,d).getDay();const hn=getHolidayName(year,month,d);h+=`<th class="${dw===0||dw===6?'wkend':''}" style="font-size:10px${hn?';color:#FF6B6B':''}" title="${hn||''}">${DOW[dw]}</th>`;}
@@ -1267,9 +1359,11 @@ function renderSchedule(){
   _curSched={unit,year,month,days,list:list.slice(),grid:grid.map(r=>r.slice())};
   updateRegenLockUI();
   if(document.getElementById('emp-month-modal')?.classList.contains('open'))renderEmpMonth();
-  let h=`<thead><tr><th colspan="${days+3}" style="background:#1A252F;font-size:14px;padding:11px 16px;text-align:left;letter-spacing:.5px">　${unit}　${year}年${month}月　<span style="font-size:11px;font-weight:400;opacity:.72">休假上限 ${mo}天／人</span></th></tr>`;
+  const _now=new Date(),_isCur=year===_now.getFullYear()&&month===_now.getMonth()+1,_tD=_now.getDate();const tmark=d=>(_isCur&&d===_tD)?' today-mark':'';
+  let _cg='<colgroup><col>';for(let d=1;d<=days;d++)_cg+=`<col${_isCur&&d===_tD?' class="today-col"':''}>`;_cg+='<col></colgroup>';
+  let h=_cg+`<thead><tr><th colspan="${days+3}" style="background:#1A252F;font-size:14px;padding:11px 16px;text-align:left;letter-spacing:.5px">　${unit}　${year}年${month}月　<span style="font-size:11px;font-weight:400;opacity:.72">休假上限 ${mo}天／人</span></th></tr>`;
   h+=`<tr><th class="s-name" style="background:${uc.bg};color:${uc.fg}">員工╲日期</th>`;
-  for(let d=1;d<=days;d++)h+=`<th>${d}</th>`;
+  for(let d=1;d<=days;d++)h+=`<th class="${tmark(d)}">${d}</th>`;
   h+=`<th>已放假</th></tr><tr><th style="background:#3D4F5A;font-size:10px">星期</th>`;
   for(let d=1;d<=days;d++){const dw=new Date(year,month-1,d).getDay();h+=`<th class="${dw===0||dw===6?'wkend':''}" style="font-size:10px">${DOW[dw]}</th>`;}
   h+=`<th></th></tr></thead><tbody>`;
@@ -1863,14 +1957,14 @@ function renderOpLog(){
   cleanOpLog();
   const log=getOpLog();
   const q=(document.getElementById('oplog-search')?.value||'').trim().toLowerCase();
-  const filtered=q?log.filter(e=>e.action.toLowerCase().includes(q)||fmtDt(e.time).includes(q)):log;
+  const filtered=q?log.filter(e=>e.action.toLowerCase().includes(q)||(e.by||'').toLowerCase().includes(q)||fmtDt(e.time).includes(q)):log;
   const total=filtered.length;
   const pages=Math.ceil(total/PAGE_SIZE)||1;
   if(_oplogPage>pages)_oplogPage=pages;
   const page=filtered.slice((_oplogPage-1)*PAGE_SIZE,_oplogPage*PAGE_SIZE);
-  let h=`<thead><tr><th style="width:180px">時間</th><th>操作內容</th></tr></thead><tbody>`;
-  if(!total)h+=`<tr><td colspan="2" style="text-align:center;padding:1.5rem;color:var(--text-light)">${q?'無符合的記錄':'暫無操作記錄'}</td></tr>`;
-  else page.forEach(e=>{h+=`<tr><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.time)}</td><td>${e.action}</td></tr>`;});
+  let h=`<thead><tr><th style="width:165px">時間</th><th style="width:90px">操作者</th><th>操作內容</th></tr></thead><tbody>`;
+  if(!total)h+=`<tr><td colspan="3" style="text-align:center;padding:1.5rem;color:var(--text-light)">${q?'無符合的記錄':'暫無操作記錄'}</td></tr>`;
+  else page.forEach(e=>{h+=`<tr><td style="color:var(--text-light);font-size:12px;white-space:nowrap">${fmtDt(e.time)}</td><td style="font-weight:600;font-size:12px;white-space:nowrap">${e.by?escapeHtml(e.by):'<span style=\"color:#bbb;font-weight:400\">—</span>'}</td><td>${e.action}</td></tr>`;});
   document.getElementById('oplog-table').innerHTML=h+'</tbody>';
   const pgHtml=renderPageBar(total,_oplogPage,'setOplogPage','oplog-pg-bar');
   let pgEl=document.getElementById('oplog-pg-bar');
@@ -2067,9 +2161,10 @@ function renderSports(){
   if(se&&!se.options.length)se.innerHTML=SPORTS_TIME_OPTS;
   // 表格
   const entries=getSportsLog()[sportsKey(unit,y,m)]||[];
+  const _now=new Date(),_isCur=(y===_now.getFullYear()&&m===_now.getMonth()+1),_tD=_now.getDate();
   let h='<thead><tr><th>員工</th><th>運動項目</th><th style="width:120px">日期</th><th>時間／時長</th><th style="width:130px">登記時間</th><th style="width:70px">操作</th></tr></thead><tbody>';
   if(!entries.length)h+='<tr><td colspan="6" style="text-align:center;padding:1.6rem;color:var(--text-light)">尚無登記紀錄，使用上方表單新增運動時間</td></tr>';
-  else entries.forEach(e=>{const dw=e.day?DOW[new Date(y,m-1,e.day).getDay()]:'';h+=`<tr><td style="font-weight:600">${e.emp}</td><td><span class="sport-badge">${emojiForSport(e.sport)} ${e.sport}</span></td><td>${e.day?`${m}/${e.day}（${dw}）`:'—'}</td><td style="font-weight:600">${e.time||'—'}</td><td style="color:var(--text-light);font-size:12px">${fmtDt(e.addedAt)||'—'}</td><td><button class="btn btn-danger btn-sm" type="button" onclick="removeSportsEntry('${e.id}')">刪除</button></td></tr>`;});
+  else entries.forEach(e=>{const dw=e.day?DOW[new Date(y,m-1,e.day).getDay()]:'';h+=`<tr${_isCur&&e.day===_tD?' class="today-row"':''}><td style="font-weight:600">${e.emp}</td><td><span class="sport-badge">${emojiForSport(e.sport)} ${e.sport}</span></td><td>${e.day?`${m}/${e.day}（${dw}）`:'—'}</td><td style="font-weight:600">${e.time||'—'}</td><td style="color:var(--text-light);font-size:12px">${fmtDt(e.addedAt)||'—'}</td><td><button class="btn btn-danger btn-sm" type="button" onclick="removeSportsEntry('${e.id}')">刪除</button></td></tr>`;});
   h+='</tbody>';
   document.getElementById('sports-table').innerHTML=h;
   // 統計
@@ -2260,8 +2355,7 @@ function _fbReady(){
             const merged=applySportsDel(mergeSportsLogs(getSportsLog(),val),getSportsDel());
             _rawSet('sports_log',JSON.stringify(merged));
             if(JSON.stringify(merged)!==JSON.stringify(val)&&_db){_lastWrite[k]=Date.now();try{_db.ref(SHIFTS[SHIFT].fb+'/sports_log').set(JSON.parse(JSON.stringify(merged)));}catch(e){}}
-            const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
-            if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+            syncRefreshTab();
             return;
           }
           if(k==='sports_deleted'){
@@ -2271,15 +2365,13 @@ function _fbReady(){
             // 套用最新墓碑到本機登記
             _rawSet('sports_log',JSON.stringify(applySportsDel(getSportsLog(),merged)));
             if(JSON.stringify(merged)!==JSON.stringify(val)&&_db){_lastWrite[k]=Date.now();try{_db.ref(SHIFTS[SHIFT].fb+'/sports_deleted').set(JSON.parse(JSON.stringify(merged)));}catch(e){}}
-            const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
-            if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+            syncRefreshTab();
             return;
           }
           if(Date.now()-(_lastWrite[k]||0)<SYNC_COOLDOWN)return; // 自己剛寫的，跳過
           if(val===null)return;
           _rawSet(k,JSON.stringify(val)); // 直接寫入，不再觸發 fbWrite
-          const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
-          if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
+          syncRefreshTab();
         });
       });
 
@@ -2314,6 +2406,7 @@ function bootApp(){
   document.getElementById('lottery-pool-list').innerHTML=pool.length?pool.map((p,i)=>`<div class="pool-person"><span style="flex:1;font-size:13px;font-weight:500">${p.name}</span><button class="btn btn-danger btn-sm" onclick="removeFromPool(${i})">×</button></div>`).join(''):'<span class="info" style="padding:.3rem">尚未加入任何人員</span>';
   const pc=document.getElementById('pool-count');if(pc)pc.textContent=`（${pool.length} 人）`;
   renderLotteryRecords();
+  updateOperatorPill();
   initFirebaseSync();
 }
 // 開場選班：設定資料命名空間後才啟動 App（早＝沿用現有資料，中／晚＝獨立資料）
@@ -2329,7 +2422,32 @@ function chooseShift(s){
   const L=document.getElementById('shift-launcher');
   if(L){L.classList.add('hide');setTimeout(()=>{if(L.parentNode)L.parentNode.removeChild(L);},550);}
   bootApp();
+  if(!getOperator())setTimeout(()=>{if(!getOperator())changeOperator();},900);
 }
+
+// ── 可愛實時時鐘（選班頁＋進入頁右下角）──
+function updateCuteClocks(){
+  const now=new Date();
+  const pad=n=>String(n).padStart(2,'0');
+  const h=now.getHours(),m=now.getMinutes(),s=now.getSeconds();
+  let emoji='🌙',greet='晚安囉',tod='night';
+  if(h>=5&&h<11){emoji='🌞';greet='早安呀';tod='morning';}
+  else if(h>=11&&h<17){emoji='🌤️';greet='午安～';tod='noon';}
+  else if(h>=17&&h<22){emoji='🌆';greet='晚安囉';tod='night';}
+  else{emoji='🌙';greet='夜深了～';tod='night';}
+  const wk=['週日','週一','週二','週三','週四','週五','週六'][now.getDay()];
+  const dateStr=`${now.getMonth()+1}/${now.getDate()} ${wk}`;
+  const timeStr=`${pad(h)}:${pad(m)}`;
+  document.querySelectorAll('.cute-clock').forEach(el=>{
+    el.dataset.tod=tod;
+    const e=el.querySelector('.cc-emoji');if(e)e.textContent=emoji;
+    const g=el.querySelector('.cc-greet');if(g)g.textContent=greet;
+    const t=el.querySelector('.cc-time');if(t)t.innerHTML=`${timeStr}<span class="cc-sec">${pad(s)}</span>`;
+    const d=el.querySelector('.cc-date');if(d)d.textContent=dateStr;
+  });
+}
+updateCuteClocks();
+setInterval(updateCuteClocks,1000);
 </script>
 </body>
 </html>
