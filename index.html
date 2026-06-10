@@ -311,6 +311,30 @@ table{border-collapse:collapse}
 col.today-col{background:rgba(41,128,185,.12)}
 .sports-tbl tr.today-row td{background:#EAF4FB!important}
 .sports-tbl tr.today-row td:first-child{box-shadow:inset 3px 0 0 #1B6CA8}
+/* ═══ 運動登記月曆方格 ═══ */
+.sp-cal-wrap{margin-top:.3rem}
+.sp-cal-title{font-size:16px;font-weight:800;color:#3A4A5A;letter-spacing:.04em;margin:.1rem 0 .65rem}
+.sp-cal{width:100%;border-collapse:collapse;table-layout:fixed;border:1px solid #EEF1F5;border-radius:12px;overflow:hidden}
+.sp-cal thead th{font-size:12px;font-weight:700;color:#9AA6B2;padding:7px 4px;text-align:center;background:#FBFCFD;border:1px solid #EEF1F5}
+.sp-cal thead th.sp-wkend-h{color:#C4A9B2}
+.sp-cal td{vertical-align:top;border:1px solid #EEF1F5;height:94px;padding:5px 6px 7px;background:#fff;transition:background .15s}
+.sp-cal td.sp-in{cursor:pointer}
+.sp-cal td.sp-in:hover{background:#F3FBF7}
+.sp-cal td.sp-out{background:#FAFBFC}
+.sp-cal td.sp-out .sp-dnum{color:#CDD4DD}
+.sp-cal td.sp-weekend{background:#FCFCFD}
+.sp-cal td.sp-today{background:#E4F7EF;box-shadow:inset 0 0 0 2px #2DBE8E}
+.sp-dnum{font-size:12px;font-weight:700;color:#5A6B7B;margin-bottom:4px}
+.sp-cal td.sp-today .sp-dnum{color:#1B8F6B}
+.sp-ev{display:flex;align-items:center;gap:3px;background:#EAF3FB;border-radius:6px;padding:2px 5px;margin-bottom:3px;font-size:11px;line-height:1.35;color:#3A4A5A}
+.sp-ev-t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sp-ev b{font-weight:700;color:#1FA8C4}
+.sp-ev-x{flex-shrink:0;border:none;background:transparent;color:#B3BCC7;cursor:pointer;font-size:10px;padding:0 1px;line-height:1}
+.sp-ev-x:hover{color:#E74C3C}
+.sp-undated{margin-top:.85rem;padding:.65rem .85rem;background:#FAFBFC;border:1px dashed #DDE3EA;border-radius:10px}
+.sp-undated-h{font-size:12px;font-weight:700;color:#8A97A6;margin-bottom:.45rem}
+.sp-ev-inline{display:inline-flex;margin:0 .4rem .35rem 0;background:#F0F3F7}
+@media(max-width:560px){.sp-cal td{height:auto;min-height:56px;padding:3px 3px 5px}.sp-cal thead th{padding:5px 2px;font-size:11px}.sp-dnum{font-size:11px}.sp-ev{font-size:10px;padding:1px 3px;gap:2px}}
 /* ═══ 操作者 pill ═══ */
 .op-pill{display:inline-flex;align-items:center;gap:.25rem;font-size:11px;font-weight:700;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:3px 10px;border-radius:20px;margin-left:.45rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:.15s;font-family:inherit}
 .op-pill:hover{background:rgba(255,255,255,.28)}
@@ -601,7 +625,8 @@ col.today-col{background:rgba(41,128,185,.12)}
       </div>
     </div>
     <div class="stats-row" id="sports-stats"></div>
-    <div class="scroll-x"><table class="sports-tbl" id="sports-table"></table></div>
+    <div id="sports-cal" class="sp-cal-wrap"></div>
+    <div id="sports-undated"></div>
   </div>
 </div>
 
@@ -862,7 +887,7 @@ function getHolidayName(y,m,d){return(HOLIDAY_MAP[y]||{})[m+'/'+d]||null;}
 function getDeptColor(u){const d=getDepts();const i=d.indexOf(u);return PALETTE[i>=0?i%PALETTE.length:0];}
 
 // ── STORAGE ──
-function getDepts(){try{const d=JSON.parse(localStorage.getItem('departments'));if(d&&d.length)return d;}catch(e){}return[...DEFAULT_DEPTS];}
+function getDepts(){const raw=localStorage.getItem('departments');if(raw!==null){try{const d=JSON.parse(raw);if(Array.isArray(d))return d;}catch(e){}}return[...DEFAULT_DEPTS];}
 function setDepts(d){localStorage.setItem('departments',JSON.stringify(d));}
 function getMembers(){try{const d=JSON.parse(localStorage.getItem('members'));if(d)return d;}catch(e){}return JSON.parse(JSON.stringify(DEFAULT_MEMBERS));}
 function setMembers(d){localStorage.setItem('members',JSON.stringify(d));}
@@ -901,15 +926,15 @@ function logOp(a){
 function getOperator(){try{return localStorage.getItem('op_operator')||'';}catch(e){return'';}}
 function setOperator(n){try{localStorage.setItem('op_operator',n||'');}catch(e){}updateOperatorPill();}
 function updateOperatorPill(){const el=document.getElementById('op-operator-pill');if(!el)return;const op=getOperator();el.innerHTML=op?`👤 ${escapeHtml(op)}`:`👤 <span style="opacity:.75">設定操作者</span>`;}
-function allEmployees(){const m=getMembers();const out=[];Object.keys(m).forEach(u=>(m[u]||[]).forEach(n=>out.push({name:n,dept:u})));return out;}
+function allEmployees(){const m=getMembers(),depts=getDepts(),out=[];depts.forEach(u=>(m[u]||[]).forEach(n=>out.push({name:n,dept:u})));return out;}
 async function changeOperator(){
   const emps=allEmployees();
-  if(!emps.length){setOperator('游客');toast('尚無員工名單，已以「游客」身分登入','ok');return;}
+  if(!emps.length){setOperator('遊客');toast('尚無部門員工可選，已以「遊客」身分登入','ok');return;}
   const cur=getOperator();
   const byDept={};emps.forEach(e=>{(byDept[e.dept]=byDept[e.dept]||[]).push(e.name);});
   let opts='';Object.keys(byDept).forEach(u=>{opts+=`<optgroup label="${escapeHtml(u)}">`+byDept[u].map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')+'</optgroup>';});
-  opts+='<option value="游客">👤 游客</option>';
-  const def=emps.some(e=>e.name===cur)?cur:(cur==='游客'?'游客':emps[0].name);
+  opts+='<option value="遊客">👤 遊客</option>';
+  const def=emps.some(e=>e.name===cur)?cur:(cur==='遊客'?'遊客':emps[0].name);
   const chosen=await uiSelect('請選擇您的名字（操作記錄會標示由誰執行）：',opts,{title:'設定操作者',default:def});
   if(chosen===null)return;
   setOperator(chosen);
@@ -1631,6 +1656,14 @@ function finishMemberEdit(inp){
     }
     setSchedCache(cache);
   }
+  // sports_log：key=unit_y_m，更新 entry.emp
+  const slog=getSportsLog();let slCh=false;Object.keys(slog).forEach(k=>{if(k.indexOf(unit+'_')===0)(slog[k]||[]).forEach(e=>{if(e.emp===oldName){e.emp=newName;slCh=true;}});});if(slCh)setSportsLog(slog);
+  // work_notes：更新作者署名
+  const notes=getNotes();let nCh=false;notes.forEach(n=>{if(n.dept===unit&&n.author===oldName){n.author=newName;nCh=true;}});if(nCh)setNotes(notes);
+  // lottery_records：更新中獎與待抽名單
+  const lr=getLotteryRecords();let lrCh=false;lr.forEach(r=>{if(Array.isArray(r.winners)){const w=r.winners.map(x=>x===oldName?newName:x);if(w.join()!==r.winners.join()){r.winners=w;lrCh=true;}}if(Array.isArray(r.working)){const g=r.working.map(x=>x===oldName?newName:x);if(g.join()!==r.working.join()){r.working=g;lrCh=true;}}});if(lrCh)setLotteryRecords(lr);
+  // _lot_mw：每月中獎名單
+  const mw=_getLotMW();let mwCh=false;Object.keys(mw).forEach(mm=>{const a=(mw[mm]||[]).map(x=>x===oldName?newName:x);if(a.join()!==(mw[mm]||[]).join()){mw[mm]=a;mwCh=true;}});if(mwCh)_setLotMW(mw);
   logOp(`重新命名員工：${unit} ${oldName} → ${newName}`);toast(`✔ 已更名為 ${newName}`,'ok');renderMembers();
 }
 
@@ -1689,7 +1722,7 @@ function confirmTaskAdd(){
   toast(`已新增 ${items.length} 項任務內容至 ${unit} ${count}人`,'ok');
 }
 async function promptAddDept(){const raw=await uiPrompt('請輸入新部門名稱：',{title:'新增部門',placeholder:'例：行政'});if(raw===null)return;const name=raw.trim();if(!name)return;const depts=getDepts();if(depts.includes(name)){toast(`部門「${name}」已存在`,'err');return;}depts.push(name);setDepts(depts);const mems=getMembers();if(!mems[name])mems[name]=[];setMembers(mems);logOp(`新增部門：${name}`);toast(`已新增部門：${name}`,'ok');syncAll();}
-async function promptDelDept(unit){const mems=getMembers(),count=(mems[unit]||[]).length;if(!await uiConfirm(count>0?`確定刪除部門「${unit}」？\n（共 ${count} 位員工，刪除後無法復原）`:`確定刪除部門「${unit}」？`,{danger:true,okText:'刪除部門',title:'刪除部門'}))return;setDepts(getDepts().filter(d=>d!==unit));setTaskCfg(getTaskCfg().filter(c=>c.unit!==unit));logOp(`刪除部門：${unit}`);toast(`已刪除部門：${unit}`,'ok');syncAll();}
+async function promptDelDept(unit){const mems=getMembers(),count=(mems[unit]||[]).length;if(!await uiConfirm(count>0?`確定刪除部門「${unit}」？\n（共 ${count} 位員工，刪除後無法復原）`:`確定刪除部門「${unit}」？`,{danger:true,okText:'刪除部門',title:'刪除部門'}))return;setDepts(getDepts().filter(d=>d!==unit));setTaskCfg(getTaskCfg().filter(c=>c.unit!==unit));const m2=getMembers();delete m2[unit];setMembers(m2);logOp(`刪除部門：${unit}`);toast(`已刪除部門：${unit}`,'ok');syncAll();}
 function syncAll(){refreshUnitDropdowns();renderOverview();renderSchedule();renderMembers();renderTaskConfig();renderPreLeave();renderPreLeaveRules();}
 
 // ── TAB 6：生死抽籤 ──
@@ -2208,14 +2241,35 @@ function renderSports(){
   const ss=document.getElementById('sports-start'),se=document.getElementById('sports-end');
   if(ss&&!ss.options.length)ss.innerHTML=SPORTS_TIME_OPTS;
   if(se&&!se.options.length)se.innerHTML=SPORTS_TIME_OPTS;
-  // 表格
+  // 月曆方格
   const entries=getSportsLog()[sportsKey(unit,y,m)]||[];
   const _now=new Date(),_isCur=(y===_now.getFullYear()&&m===_now.getMonth()+1),_tD=_now.getDate();
-  let h='<thead><tr><th>員工</th><th>運動項目</th><th style="width:120px">日期</th><th>時間／時長</th><th style="width:130px">登記時間</th><th style="width:70px">操作</th></tr></thead><tbody>';
-  if(!entries.length)h+='<tr><td colspan="6" style="text-align:center;padding:1.6rem;color:var(--text-light)">尚無登記紀錄，使用上方表單新增運動時間</td></tr>';
-  else entries.forEach(e=>{const dw=e.day?DOW[new Date(y,m-1,e.day).getDay()]:'';h+=`<tr${_isCur&&e.day===_tD?' class="today-row"':''}><td style="font-weight:600">${e.emp}</td><td><span class="sport-badge">${emojiForSport(e.sport)} ${e.sport}</span></td><td>${e.day?`${m}/${e.day}（${dw}）`:'—'}</td><td style="font-weight:600">${e.time||'—'}</td><td style="color:var(--text-light);font-size:12px">${fmtDt(e.addedAt)||'—'}</td><td><button class="btn btn-danger btn-sm" type="button" onclick="removeSportsEntry('${e.id}')">刪除</button></td></tr>`;});
-  h+='</tbody>';
-  document.getElementById('sports-table').innerHTML=h;
+  const byDay={},undated=[];
+  entries.forEach(e=>{if(e.day){(byDay[e.day]=byDay[e.day]||[]).push(e);}else undated.push(e);});
+  const evChip=e=>`<div class="sp-ev" title="${escapeHtml(e.emp+' '+e.sport+(e.time?' '+e.time:''))}"><span class="sp-ev-t">${emojiForSport(e.sport)} ${escapeHtml(e.emp)}${e.time?` <b>${escapeHtml(e.time)}</b>`:''}</span><button class="sp-ev-x" type="button" title="刪除" onclick="event.stopPropagation();removeSportsEntry('${e.id}')">✕</button></div>`;
+  const first=new Date(y,m-1,1).getDay(),dim2=new Date(y,m,0).getDate(),prevDim=new Date(y,m-1,0).getDate();
+  let cal=`<div class="sp-cal-title">${y} 年 ${m} 月</div><table class="sp-cal"><thead><tr>`+DOW.map((d,i)=>`<th class="${(i===0||i===6)?'sp-wkend-h':''}">週${d}</th>`).join('')+'</tr></thead><tbody>';
+  let day=1;
+  for(let wk=0;wk<6&&day<=dim2;wk++){
+    cal+='<tr>';
+    for(let col=0;col<7;col++){
+      const ci=wk*7+col;
+      if(ci<first){cal+=`<td class="sp-out"><div class="sp-dnum">${prevDim-first+1+ci}日</div></td>`;}
+      else if(day>dim2){cal+=`<td class="sp-out"><div class="sp-dnum">${ci-first-dim2+1}日</div></td>`;}
+      else{
+        const d=day,isToday=_isCur&&d===_tD,wkend=(col===0||col===6);
+        let cell=`<div class="sp-dnum">${d}日</div>`+(byDay[d]||[]).map(evChip).join('');
+        cal+=`<td class="sp-in ${wkend?'sp-weekend ':''}${isToday?'sp-today':''}" onclick="sportsPickDay(${d})">${cell}</td>`;
+        day++;
+      }
+    }
+    cal+='</tr>';
+  }
+  cal+='</tbody></table>';
+  document.getElementById('sports-cal').innerHTML=cal;
+  // 未指定日期的登記
+  const ud=document.getElementById('sports-undated');
+  ud.innerHTML=undated.length?`<div class="sp-undated"><div class="sp-undated-h">📌 未指定日期（${undated.length}）</div>${undated.map(e=>`<span class="sp-ev sp-ev-inline" title="${escapeHtml(e.emp+' '+e.sport)}">${emojiForSport(e.sport)} ${escapeHtml(e.emp)} ${escapeHtml(e.sport)}${e.time?` <b>${escapeHtml(e.time)}</b>`:''}<button class="sp-ev-x" type="button" title="刪除" onclick="removeSportsEntry('${e.id}')">✕</button></span>`).join('')}</div>`:'';
   // 統計
   const bySport={};entries.forEach(e=>bySport[e.sport]=(bySport[e.sport]||0)+1);
   const top=Object.entries(bySport).sort((a,b)=>b[1]-a[1]);
@@ -2223,6 +2277,7 @@ function renderSports(){
   top.slice(0,3).forEach(([s,c])=>{st+=`<div class="stat-card"><div class="stat-val">${c}</div><div class="stat-lbl">${emojiForSport(s)} ${s}</div></div>`;});
   document.getElementById('sports-stats').innerHTML=st;
 }
+function sportsPickDay(d){const sel=document.getElementById('sports-day');if(sel){sel.value=String(d);}const{m}=sportsYM();document.querySelector('.sports-form')?.scrollIntoView({behavior:'smooth',block:'center'});const emp=document.getElementById('sports-emp');if(emp)setTimeout(()=>emp.focus(),300);toast(`已選 ${m}/${d}，請填寫登記內容`,'ok');}
 function addSportsEntry(){
   const us=document.getElementById('sports-unit'),unit=us.value||getDepts()[0]||'';
   if(!unit){toast('請先到任務配置新增部門','err');return;}
@@ -2297,7 +2352,7 @@ function _maybeResetShift(){
       SYNC_KEYS.forEach(k=>{try{localStorage.removeItem(k);}catch(e){}}); // 清空本機此班別資料
       return _db.ref(root+'/_resetVer').set(target);   // 寫入記號（在 remove 之後）
     }).then(()=>{
-      toast('已清除「'+SHIFTS[SHIFT].name+'（'+SHIFTS[SHIFT].period+'）」的所有資料','ok');
+      toast('已清除「'+SHIFTS[SHIFT].period+'班」的所有資料','ok');
       const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
       if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
       refreshUnitDropdowns();
@@ -2443,8 +2498,17 @@ function _fbReady(){
 }
 
 // ── INIT ──
+function cleanupOrphanMembers(){
+  const raw=localStorage.getItem('departments');
+  if(raw===null)return; // 尚未設定過部門（用預設），不清理以免誤刪
+  let depts;try{depts=JSON.parse(raw);}catch(e){return;}
+  if(!Array.isArray(depts))return;
+  const mems=getMembers();let ch=false;
+  Object.keys(mems).forEach(u=>{if(!depts.includes(u)){delete mems[u];ch=true;}});
+  if(ch)setMembers(mems);
+}
 function bootApp(){
-  migrateData();cleanOpLog();initDropdowns();initLeaveSelector();
+  migrateData();cleanupOrphanMembers();cleanOpLog();initDropdowns();initLeaveSelector();
   mlUpdateMembers();renderModalDatePicker();
   renderOverview();renderMembers();renderTaskConfig();renderPreLeave();renderSports();renderNotes();
   const laU=document.getElementById('lottery-add-unit');
@@ -2466,12 +2530,12 @@ function chooseShift(s){
   SHIFT=s;
   const sh=SHIFTS[s];
   const brand=document.querySelector('.nav-brand');
-  if(brand)brand.innerHTML=`📅 排假系統<button class="shift-pill ${s}" title="點此重新整理可切換班別" onclick="location.reload()">${sh.icon} ${sh.name}·${sh.period}</button>`;
-  document.title=`排班系統 · ${sh.name}（${sh.period}）`;
+  if(brand)brand.innerHTML=`📅 排假系統<button class="shift-pill ${s}" title="點此重新整理可切換班別" onclick="location.reload()">${sh.icon} ${sh.period}班</button>`;
+  document.title=`排班系統 · ${sh.period}班`;
   const L=document.getElementById('shift-launcher');
   if(L){L.classList.add('hide');setTimeout(()=>{if(L.parentNode)L.parentNode.removeChild(L);},550);}
   bootApp();
-  if(!getOperator())setTimeout(()=>{if(!getOperator())changeOperator();},900);
+  if(!getOperator())setTimeout(()=>{if(!getOperator())changeOperator();},900); // 尚未記住操作者時才彈出；選定後記住，下次進入不再跳出（無部門員工則自動以「遊客」記住）
 }
 
 // ── 可愛實時時鐘（選班頁＋進入頁右下角）──
