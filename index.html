@@ -263,11 +263,24 @@ table{border-collapse:collapse}
 .sl-card.zhong .sl-icon{animation-delay:.6s}.sl-card.wan .sl-icon{animation-delay:1.2s}
 @keyframes slFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 .sl-name{font-size:23px;font-weight:800;letter-spacing:.08em;position:relative}
-.sl-period{position:absolute;top:1rem;right:1.15rem;font-size:13px;font-weight:800;background:rgba(255,255,255,.7);width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.sl-period{position:absolute;top:.85rem;right:.95rem;font-size:24px;font-weight:900;background:rgba(255,255,255,.78);width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(120,130,160,.18)}
 .sl-desc{font-size:13px;opacity:.8;margin-top:.3rem;letter-spacing:.12em}
 .sl-go{margin-top:1.25rem;font-size:14px;font-weight:700;background:rgba(255,255,255,.65);padding:.5rem 1.3rem;border-radius:30px;letter-spacing:.05em;transition:background .2s}
 .sl-card:hover .sl-go{background:#fff}
 .sl-foot{margin-top:2.3rem;font-size:12px;color:#A2AFC0;letter-spacing:.05em}
+/* ═══ 選班頁系統公告跑馬燈 ═══ */
+.sl-announce{position:absolute;top:16px;left:50%;transform:translateX(-50%);width:min(680px,90vw);display:flex;align-items:center;gap:.55rem;background:rgba(255,255,255,.72);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1.5px solid #fff;box-shadow:0 6px 18px rgba(140,150,180,.2);border-radius:14px;padding:.5rem .9rem;cursor:pointer;z-index:6;transition:.2s}
+.sl-announce:hover{background:rgba(255,255,255,.94);box-shadow:0 10px 24px rgba(140,150,180,.3)}
+.sl-ann-ico{font-size:17px;flex-shrink:0}
+.sl-ann-body{flex:1;min-width:0;display:flex;align-items:center;gap:.4rem}
+.sl-ann-track{flex:1;overflow:hidden;white-space:nowrap;-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.sl-ann-text{display:inline-block;padding-left:100%;font-size:14px;font-weight:700;color:#5A6B82;letter-spacing:.03em;animation:slMarq 16s linear infinite}
+.sl-announce:hover .sl-ann-text{animation-play-state:paused}
+@keyframes slMarq{from{transform:translateX(0)}to{transform:translateX(-100%)}}
+.sl-ann-placeholder{flex:1;font-size:13px;color:#9AA7BD;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sl-ann-edit{flex-shrink:0;border:none;background:rgba(90,107,130,.12);color:#5A6B82;border-radius:8px;width:26px;height:26px;cursor:pointer;font-size:13px;line-height:1}
+.sl-ann-input{flex:1;min-width:0;border:1.5px solid #7C93D8;border-radius:8px;padding:.35rem .6rem;font-size:14px;font-family:inherit;outline:none}
+@media(max-width:560px){.sl-period{width:42px;height:42px;font-size:20px}.sl-announce{top:10px;padding:.4rem .7rem}}
 .shift-pill{display:inline-flex;align-items:center;gap:.3rem;font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;margin-left:.55rem;vertical-align:middle;color:#fff;cursor:pointer;border:none;font-family:inherit}
 .shift-pill.zao{background:linear-gradient(135deg,#FFC86B,#F0980E)}
 .shift-pill.zhong{background:linear-gradient(135deg,#FF9E80,#EE7BA0)}
@@ -324,6 +337,7 @@ col.today-col{background:rgba(41,128,185,.12)}
 <!-- ═══ 開場選取：班別（早／中／晚） ═══ -->
 <div id="shift-launcher">
   <div class="sl-bg"></div>
+  <div class="sl-announce" id="sl-announce"><span class="sl-ann-ico">📢</span><div class="sl-ann-body" id="sl-ann-body"></div></div>
   <div class="sl-inner">
     <div class="sl-title">排班系統</div>
     <div class="sl-sub">請選擇要進入的班別 · 三套資料各自獨立</div>
@@ -331,25 +345,19 @@ col.today-col{background:rgba(41,128,185,.12)}
       <button class="sl-card zao" onclick="chooseShift('zao')">
         <div class="sl-glow"></div>
         <div class="sl-icon">🌞</div>
-        <div class="sl-name">太陽之子</div>
         <div class="sl-period">早</div>
-        <div class="sl-desc">晨光班別</div>
         <div class="sl-go">進入 →</div>
       </button>
       <button class="sl-card zhong" onclick="chooseShift('zhong')">
         <div class="sl-glow"></div>
         <div class="sl-icon">🌅</div>
-        <div class="sl-name">落日遊俠</div>
         <div class="sl-period">中</div>
-        <div class="sl-desc">午後班別</div>
         <div class="sl-go">進入 →</div>
       </button>
       <button class="sl-card wan" onclick="chooseShift('wan')">
         <div class="sl-glow"></div>
         <div class="sl-icon">🔮</div>
-        <div class="sl-name">月神之子</div>
         <div class="sl-period">晚</div>
-        <div class="sl-desc">夜間班別</div>
         <div class="sl-go">進入 →</div>
       </button>
     </div>
@@ -719,7 +727,10 @@ col.today-col{background:rgba(41,128,185,.12)}
       <button class="task-add-x" type="button" onclick="closeNoteModal()">×</button>
     </div>
     <div style="padding:1.15rem 1.35rem 1.35rem;max-height:74vh;overflow:auto">
-      <div class="note-field"><label class="note-lbl">員工</label><select class="fc" id="note-author"></select></div>
+      <div class="note-field" style="display:flex;gap:.6rem">
+        <div style="flex:1"><label class="note-lbl">部門</label><select class="fc" id="note-dept" onchange="noteDeptChange()"></select></div>
+        <div style="flex:1"><label class="note-lbl">員工</label><select class="fc" id="note-author"></select></div>
+      </div>
       <div class="note-field"><label class="note-lbl">標題（選填）</label><input type="text" class="fc" id="note-title" placeholder="例：交接事項、本週重點…"></div>
       <div class="note-field"><label class="note-lbl">內容（可自由排版，文字與圖片隨處插入）</label>
         <div class="note-toolbar">
@@ -890,13 +901,19 @@ function logOp(a){
 function getOperator(){try{return localStorage.getItem('op_operator')||'';}catch(e){return'';}}
 function setOperator(n){try{localStorage.setItem('op_operator',n||'');}catch(e){}updateOperatorPill();}
 function updateOperatorPill(){const el=document.getElementById('op-operator-pill');if(!el)return;const op=getOperator();el.innerHTML=op?`👤 ${escapeHtml(op)}`:`👤 <span style="opacity:.75">設定操作者</span>`;}
+function allEmployees(){const m=getMembers();const out=[];Object.keys(m).forEach(u=>(m[u]||[]).forEach(n=>out.push({name:n,dept:u})));return out;}
 async function changeOperator(){
+  const emps=allEmployees();
+  if(!emps.length){setOperator('游客');toast('尚無員工名單，已以「游客」身分登入','ok');return;}
   const cur=getOperator();
-  const v=await uiPrompt('請輸入您的名字（操作記錄會標示由誰執行）：',{default:cur,placeholder:'例：小依'});
-  if(v===null)return;
-  const name=v.trim();
-  setOperator(name);
-  toast(name?`操作者已設為「${name}」`:'已清除操作者','ok');
+  const byDept={};emps.forEach(e=>{(byDept[e.dept]=byDept[e.dept]||[]).push(e.name);});
+  let opts='';Object.keys(byDept).forEach(u=>{opts+=`<optgroup label="${escapeHtml(u)}">`+byDept[u].map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')+'</optgroup>';});
+  opts+='<option value="游客">👤 游客</option>';
+  const def=emps.some(e=>e.name===cur)?cur:(cur==='游客'?'游客':emps[0].name);
+  const chosen=await uiSelect('請選擇您的名字（操作記錄會標示由誰執行）：',opts,{title:'設定操作者',default:def});
+  if(chosen===null)return;
+  setOperator(chosen);
+  toast(`操作者已設為「${chosen}」`,'ok');
 }
 // ── 員工特休配額 ──
 function getSlQuota(){try{return JSON.parse(localStorage.getItem('sl_quota'))||{};}catch(e){return{};}}
@@ -1104,6 +1121,30 @@ function uiPrompt(msg,opts={}){
   });
 }
 document.getElementById('ui-modal').addEventListener('click',e=>{if(e.target===e.currentTarget)document.getElementById('ui-modal-cancel').click();});
+// 下拉選擇彈窗（沿用 ui-modal 外殼）
+function uiSelect(msg,optionsHtml,opts={}){
+  return new Promise(resolve=>{
+    const ov=document.getElementById('ui-modal');
+    document.getElementById('ui-modal-title').textContent=opts.title||'請選擇';
+    document.getElementById('ui-modal-msg').textContent=msg;
+    const wrap=document.getElementById('ui-modal-input-wrap');
+    const inp=document.getElementById('ui-modal-input');
+    inp.style.display='none';
+    let sel=document.getElementById('ui-modal-select');
+    if(!sel){sel=document.createElement('select');sel.id='ui-modal-select';sel.className='fc';wrap.appendChild(sel);}
+    sel.style.display='block';sel.innerHTML=optionsHtml;
+    if(opts.default!=null)sel.value=opts.default;
+    wrap.style.display='block';
+    const okBtn=document.getElementById('ui-modal-ok'),cancelBtn=document.getElementById('ui-modal-cancel');
+    okBtn.textContent=opts.okText||'確定';cancelBtn.textContent='取消';cancelBtn.style.display='inline-flex';okBtn.className='btn btn-primary';
+    ov.classList.add('open');
+    setTimeout(()=>sel.focus(),60);
+    const cleanup=()=>{ov.classList.remove('open');okBtn.onclick=null;cancelBtn.onclick=null;sel.onkeydown=null;sel.style.display='none';inp.style.display='';};
+    okBtn.onclick=()=>{const v=sel.value;cleanup();resolve(v);};
+    cancelBtn.onclick=()=>{cleanup();resolve(null);};
+    sel.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();okBtn.onclick();}else if(e.key==='Escape'){cancelBtn.onclick();}};
+  });
+}
 
 // ── NAV ──
 const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,notes:renderNotes,sports:renderSports,oplog:renderOpLog};
@@ -1982,7 +2023,9 @@ let _noteEditId=null,_noteViewId=null;
 function getNotes(){try{return JSON.parse(localStorage.getItem('work_notes'))||[];}catch(e){return[];}}
 function setNotes(d){localStorage.setItem('work_notes',JSON.stringify(d));}
 function noteCompressImage(file,maxW,q){return new Promise((res,rej)=>{const r=new FileReader();r.onload=e=>{const im=new Image();im.onload=()=>{let w=im.width,h=im.height;if(w>maxW){h=Math.round(h*maxW/w);w=maxW;}const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(im,0,0,w,h);res(c.toDataURL('image/jpeg',q));};im.onerror=rej;im.src=e.target.result;};r.onerror=rej;r.readAsDataURL(file);});}
-function noteAuthorOptions(){const m=getMembers();let o='';Object.keys(m).forEach(u=>(m[u]||[]).forEach(n=>{o+=`<option value="${escapeHtml(n)}" data-unit="${escapeHtml(u)}">${escapeHtml(n)}（${escapeHtml(u)}）</option>`;}));return o||'<option value="">（尚無員工，請先到員工設定建立）</option>';}
+function noteDeptOptions(){const ds=getDepts();return ds.length?ds.map(u=>`<option>${escapeHtml(u)}</option>`).join(''):'<option value="">（尚無部門，請先到任務配置新增）</option>';}
+function noteAuthorOptions(unit){const list=getMembers()[unit]||[];return list.length?list.map(n=>`<option>${escapeHtml(n)}</option>`).join(''):'<option value="">（此部門尚無員工）</option>';}
+function noteDeptChange(){const u=document.getElementById('note-dept').value;document.getElementById('note-author').innerHTML=noteAuthorOptions(u);}
 // 富文本編輯：選區保存／指令／插圖
 let _noteSavedRange=null;
 function saveNoteSelection(){const ed=document.getElementById('note-editor');const s=window.getSelection();if(s&&s.rangeCount&&ed&&ed.contains(s.anchorNode))_noteSavedRange=s.getRangeAt(0).cloneRange();}
@@ -2006,8 +2049,9 @@ function sanitizeNoteHtml(html){
 }
 function openNoteModal(editId){
   _noteEditId=editId||null;
+  const deptSel=document.getElementById('note-dept');
   const sel=document.getElementById('note-author');
-  sel.innerHTML=noteAuthorOptions();
+  deptSel.innerHTML=noteDeptOptions();
   const title=document.getElementById('note-modal-title');
   const pwdLbl=document.getElementById('note-pwd-lbl');
   const pwd=document.getElementById('note-pwd'),pwd2=document.getElementById('note-pwd2');
@@ -2015,6 +2059,10 @@ function openNoteModal(editId){
     const n=getNotes().find(x=>x.id===_noteEditId);
     if(!n){_noteEditId=null;return;}
     title.textContent='✏️ 編輯工作筆記';
+    if(n.dept&&getDepts().includes(n.dept))deptSel.value=n.dept;
+    sel.innerHTML=noteAuthorOptions(deptSel.value);
+    // 若原作者已不在此部門名單（被改名／移除），保留為「原紀錄」選項，避免遺失署名
+    if(n.author&&![...sel.options].some(o=>o.value===n.author)){const o=document.createElement('option');o.value=n.author;o.textContent=n.author+'（原紀錄）';sel.insertBefore(o,sel.firstChild);}
     sel.value=n.author;
     document.getElementById('note-title').value=n.title||'';
     document.getElementById('note-editor').innerHTML=(n.html!=null?sanitizeNoteHtml(n.html):escapeHtml(n.content||'').replace(/\n/g,'<br>'));
@@ -2022,6 +2070,7 @@ function openNoteModal(editId){
     pwd.placeholder='留空則不變更';pwd2.placeholder='留空則不變更';
   }else{
     title.textContent='📝 新增工作筆記';
+    sel.innerHTML=noteAuthorOptions(deptSel.value);
     document.getElementById('note-title').value='';
     document.getElementById('note-editor').innerHTML='';
     pwdLbl.textContent='🔒 設定密碼（開啟與刪除時需輸入）';
@@ -2036,7 +2085,7 @@ function closeNoteModal(){document.getElementById('note-modal').classList.remove
 function saveNote(){
   const sel=document.getElementById('note-author'),author=sel.value;
   if(!author){toast('請先選擇員工（需先到員工設定建立）','err');return;}
-  const dept=sel.options[sel.selectedIndex]?sel.options[sel.selectedIndex].dataset.unit||'':'';
+  const dept=document.getElementById('note-dept').value||'';
   const title=document.getElementById('note-title').value.trim();
   const ed=document.getElementById('note-editor');
   const html=sanitizeNoteHtml(ed.innerHTML);
@@ -2448,6 +2497,33 @@ function updateCuteClocks(){
 }
 updateCuteClocks();
 setInterval(updateCuteClocks,1000);
+
+// ── 選班頁系統公告跑馬燈（點選可編輯；存本機，不上傳雲端）──
+function getAnnounce(){try{return localStorage.getItem('launcher_announce')||'';}catch(e){return'';}}
+function setAnnounce(v){try{localStorage.setItem('launcher_announce',v||'');}catch(e){}}
+function renderAnnounceBar(){
+  const bar=document.getElementById('sl-announce'),body=document.getElementById('sl-ann-body');
+  if(!bar||!body)return;
+  const txt=getAnnounce();
+  body.innerHTML=txt
+    ?`<div class="sl-ann-track"><span class="sl-ann-text">${escapeHtml(txt)}</span></div><button class="sl-ann-edit" title="編輯公告">✎</button>`
+    :`<span class="sl-ann-placeholder">點此設定系統公告…</span><button class="sl-ann-edit" title="編輯公告">✎</button>`;
+  bar.onclick=editAnnounce;
+}
+function editAnnounce(){
+  const bar=document.getElementById('sl-announce'),body=document.getElementById('sl-ann-body');
+  if(!bar||!body)return;
+  bar.onclick=null;
+  body.innerHTML=`<input id="sl-ann-input" class="sl-ann-input" maxlength="200" placeholder="輸入系統公告內容（顯示於選班頁頂端跑馬燈）">`;
+  const inp=document.getElementById('sl-ann-input');
+  inp.value=getAnnounce();
+  setTimeout(()=>inp.focus(),30);
+  let done=false;
+  const save=()=>{if(done)return;done=true;setAnnounce(inp.value.trim());renderAnnounceBar();};
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();save();}else if(e.key==='Escape'){done=true;renderAnnounceBar();}};
+  inp.onblur=save;
+}
+renderAnnounceBar();
 </script>
 </body>
 </html>
