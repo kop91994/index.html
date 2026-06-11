@@ -144,6 +144,17 @@ table{border-collapse:collapse}
 .em-cell.wk{background:#F5FAFE}
 .em-cell.today{background:#FFF3D6;border-color:#F0C36D;box-shadow:inset 0 0 0 1.5px #F0C36D}
 .em-cell.today .cd{color:#C77A14}
+/* 員工設定 — 可愛貓咪跑馬燈 */
+.cat-marquee{margin-top:1.1rem;overflow:hidden;background:linear-gradient(135deg,#FFF4F8,#EFF6FF);border:1px solid #F2DCE8;border-radius:14px;padding:.75rem 0;box-shadow:0 2px 10px rgba(180,140,170,.08);-webkit-mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent);mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.cat-track{display:inline-flex;align-items:center;white-space:nowrap;gap:2.1rem;font-size:24px;will-change:transform;animation:catRun 24s linear infinite}
+.cat-marquee:hover .cat-track{animation-play-state:paused}
+.cat-item{display:inline-flex;align-items:center;gap:.5rem}
+.cat-item .msg{font-size:13.5px;font-weight:700;color:#B5749B;letter-spacing:.5px}
+.cat-emo{display:inline-block;animation:catBob 1.05s ease-in-out infinite}
+.cat-emo:nth-child(odd){animation-delay:.3s}
+@keyframes catRun{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes catBob{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-5px) rotate(4deg)}}
+@media(prefers-reduced-motion:reduce){.cat-track{animation:none}.cat-emo{animation:none}}
 .em-cell .cd{font-size:13px;font-weight:800;color:#2C4660;line-height:1}
 .em-cell.wk .cd{color:#C56E6E}
 .em-cell .cp{font-size:11px;font-weight:700;line-height:1.25;border-radius:7px;padding:.22rem .3rem;text-align:center;word-break:break-word}
@@ -530,6 +541,9 @@ col.today-col{background:rgba(41,128,185,.12)}
 <!-- TAB 4：員工設定 -->
 <div class="section" id="tab-members">
   <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem" id="mem-grid"></div>
+  <div class="cat-marquee" aria-hidden="true">
+    <div class="cat-track" id="cat-track"></div>
+  </div>
 </div>
 
 <!-- TAB 5：任務配置 -->
@@ -822,7 +836,7 @@ col.today-col{background:rgba(41,128,185,.12)}
 <div class="modal-ov" id="task-add-modal" onclick="if(event.target===this)closeTaskAddModal()">
   <div class="modal task-add-modal-box" style="max-width:470px;width:min(470px,92vw);padding:0;overflow:hidden">
     <div class="task-add-head">
-      <div class="modal-title" style="color:#fff;font-size:15px">📋 新增任務內容</div>
+      <div class="modal-title" style="color:#fff;font-size:15px">📋 編輯任務內容</div>
       <button class="task-add-x" onclick="closeTaskAddModal()">×</button>
     </div>
     <div style="padding:1.1rem 1.3rem 1.3rem">
@@ -831,7 +845,7 @@ col.today-col{background:rgba(41,128,185,.12)}
       <button class="task-add-more" type="button" onclick="addTaskInputField()">＋ 再加一項</button>
       <div style="display:flex;gap:.55rem;justify-content:flex-end;margin-top:1.2rem">
         <button class="task-add-btn-cancel" type="button" onclick="closeTaskAddModal()">取消</button>
-        <button class="task-add-btn-ok" type="button" onclick="confirmTaskAdd()">確定新增</button>
+        <button class="task-add-btn-ok" type="button" onclick="confirmTaskAdd()">確定儲存</button>
       </div>
     </div>
   </div>
@@ -1704,13 +1718,22 @@ let _taskAddTarget=null;
 const TASK_ADD_MIN=5;
 function openTaskAddModal(unit,count){
   _taskAddTarget={unit,count};
-  document.getElementById('task-add-sub').textContent=`為「${unit}　${count}人」配置新增任務（任務1、任務2…以此類推），確定後會加入到此配置的任務列表。`;
+  document.getElementById('task-add-sub').textContent=`「${unit}　${count}人」配置目前的任務已帶入下方，可直接修改、刪除或新增，確定後會更新整份任務列表。`;
   document.getElementById('task-add-inputs').innerHTML='';
-  for(let i=0;i<TASK_ADD_MIN;i++)addTaskInputField(i===0);
+  const ta=document.querySelector(`#tc-area textarea[data-unit="${unit}"][data-count="${count}"]`);
+  const hit=getTaskCfg().find(c=>c.unit===unit&&parseInt(c.count)===parseInt(count));
+  const base=ta?ta.value:(hit?hit.tasks:'');
+  const existing=base.split(',').map(s=>s.trim()).filter(Boolean);
+  if(existing.length){
+    existing.forEach(t=>addTaskInputField(false,t));
+    addTaskInputField(false);
+  }else{
+    for(let i=0;i<TASK_ADD_MIN;i++)addTaskInputField(i===0);
+  }
   document.getElementById('task-add-modal').classList.add('open');
 }
 function closeTaskAddModal(){document.getElementById('task-add-modal').classList.remove('open');_taskAddTarget=null;}
-function addTaskInputField(focusIt){
+function addTaskInputField(focusIt,val){
   const box=document.getElementById('task-add-inputs');
   const row=document.createElement('div');
   row.className='task-add-row';
@@ -1718,6 +1741,7 @@ function addTaskInputField(focusIt){
   box.appendChild(row);
   renumberTaskInputs();
   const inp=row.querySelector('input');
+  if(val!=null)inp.value=val;
   inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();addTaskInputField(true);}};
   if(focusIt!==false)setTimeout(()=>inp.focus(),40);
 }
@@ -1726,19 +1750,15 @@ function confirmTaskAdd(){
   if(!_taskAddTarget)return;
   const {unit,count}=_taskAddTarget;
   const items=[...document.querySelectorAll('#task-add-inputs .task-add-inp')].map(i=>i.value.trim()).filter(Boolean);
-  if(!items.length){toast('請至少輸入一項任務內容','err');return;}
   const cfg=getTaskCfg();
   let hit=cfg.find(c=>c.unit===unit&&parseInt(c.count)===parseInt(count));
-  const ta=document.querySelector(`#tc-area textarea[data-unit="${unit}"][data-count="${count}"]`);
-  const base=ta?ta.value:(hit?hit.tasks:'');
-  const existing=base.split(',').map(s=>s.trim()).filter(Boolean);
-  const merged=[...existing,...items].join(',');
+  const merged=items.join(',');
   if(hit)hit.tasks=merged;else cfg.push({unit,count:parseInt(count),tasks:merged});
   setTaskCfg(cfg);
-  logOp(`新增任務內容：${unit} ${count}人 +${items.length}項`);
+  logOp(`更新任務內容：${unit} ${count}人 共${items.length}項`);
   closeTaskAddModal();
   renderTaskConfig();
-  toast(`已新增 ${items.length} 項任務內容至 ${unit} ${count}人`,'ok');
+  toast(`已更新 ${unit} ${count}人 的任務（共 ${items.length} 項）`,'ok');
 }
 async function promptAddDept(){const raw=await uiPrompt('請輸入新部門名稱：',{title:'新增部門',placeholder:'例：行政'});if(raw===null)return;const name=raw.trim();if(!name)return;const depts=getDepts();if(depts.includes(name)){toast(`部門「${name}」已存在`,'err');return;}depts.push(name);setDepts(depts);const mems=getMembers();if(!mems[name])mems[name]=[];setMembers(mems);logOp(`新增部門：${name}`);toast(`已新增部門：${name}`,'ok');syncAll();}
 async function promptDelDept(unit){const mems=getMembers(),count=(mems[unit]||[]).length;if(!await uiConfirm(count>0?`確定刪除部門「${unit}」？\n（共 ${count} 位員工，刪除後無法復原）`:`確定刪除部門「${unit}」？`,{danger:true,okText:'刪除部門',title:'刪除部門'}))return;setDepts(getDepts().filter(d=>d!==unit));setTaskCfg(getTaskCfg().filter(c=>c.unit!==unit));const m2=getMembers();delete m2[unit];setMembers(m2);logOp(`刪除部門：${unit}`);toast(`已刪除部門：${unit}`,'ok');syncAll();}
@@ -2607,6 +2627,19 @@ function editAnnounce(){
   inp.onblur=save;
 }
 renderAnnounceBar();
+// ── 員工設定：可愛貓咪跑馬燈 ──
+function buildCatMarquee(){
+  const track=document.getElementById('cat-track');if(!track)return;
+  const cats=['🐱','😺','😸','🐈','🐈‍⬛','😻','🐾'];
+  const msgs=['今天也辛苦了喵～','記得喝水喔','一起加油','排班順利喵','摸摸頭','喵嗚～','下班快樂','元氣滿滿'];
+  const deco=['🐾','🐟','💕','⭐','🧶','🌸','💪','☀️'];
+  let unit='';
+  for(let i=0;i<msgs.length;i++){
+    unit+=`<span class="cat-item"><span class="cat-emo">${cats[i%cats.length]}</span><span class="msg">${msgs[i]}</span><span class="cat-emo">${deco[i%deco.length]}</span></span>`;
+  }
+  track.innerHTML=unit+unit; // 重複一份讓跑馬燈無縫循環
+}
+buildCatMarquee();
 </script>
 </body>
 </html>
