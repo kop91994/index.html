@@ -227,12 +227,32 @@ table{border-collapse:collapse}
 .note-view-content img{max-width:100%;height:auto;border-radius:9px;display:block;margin:.55rem 0}
 .note-edit-btn{background:rgba(255,255,255,.18);border:none;color:#fff;border-radius:7px;padding:.32rem .8rem;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s;white-space:nowrap}
 .note-edit-btn:hover{background:rgba(255,255,255,.32)}
-.mem-list{list-style:none}
-.mem-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .65rem;border-radius:6px;margin-bottom:3px;background:#FAFCFD;border:1px solid var(--border)}
-.mem-idx{font-size:11px;color:var(--text-light);width:20px;text-align:right;flex-shrink:0}
-.mem-name{flex:1;font-size:13px;font-weight:500;cursor:text;padding:3px 7px;border-radius:4px;transition:.15s}
-.mem-name:hover{background:#EBF5FB;outline:1px dashed var(--accent)}
-.mem-edit-input{flex:1;border:1.5px solid var(--accent);border-radius:4px;padding:3px 7px;font-size:13px;font-family:inherit;font-weight:500;outline:none;background:#fff;color:var(--text);box-shadow:0 0 0 3px rgba(41,128,185,.15)}
+/* 員工設定 — 頭像列表（奶茶暖色） */
+.mem-card{padding:1rem 1.05rem}
+.mem-card .card-head{margin-bottom:.6rem;padding-bottom:.6rem;border-bottom:1px solid #EFF2F6}
+.mem-dot{width:9px;height:9px;border-radius:50%;background:var(--uc-fg,var(--accent));flex-shrink:0;margin-right:.15rem}
+.mem-deptname{font-size:13.5px;font-weight:700;color:var(--text)}
+.mem-count{font-size:12px;font-weight:500;color:var(--text-light);margin-left:auto}
+.mem-list{list-style:none;display:flex;flex-direction:column;gap:2px}
+.mem-item{display:flex;align-items:center;gap:.5rem;padding:.4rem .35rem;border-radius:10px;background:transparent;border:1px solid transparent;transition:background .15s,box-shadow .15s}
+.mem-item:hover{background:#F1F4F9}
+.mem-item.dragging{opacity:.4}
+.mem-item.drag-over{box-shadow:inset 0 2px 0 var(--accent)}
+.mem-grip{width:11px;height:17px;flex-shrink:0;cursor:grab;border-radius:3px;background-image:radial-gradient(circle,#C2CAD3 1.1px,transparent 1.3px);background-size:5px 5.5px;background-position:1px 1px;opacity:.7}
+.mem-grip:hover{opacity:1}
+.mem-grip:active{cursor:grabbing}
+.mem-av{width:30px;height:30px;border-radius:50%;font-size:12.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:0}
+.mem-name{flex:1;font-size:13.5px;font-weight:500;color:var(--text);cursor:text;padding:4px 7px;border-radius:6px;transition:.15s;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mem-name:hover{background:#fff;box-shadow:inset 0 0 0 1px rgba(41,128,185,.3)}
+.mem-edit-input{flex:1;border:1.5px solid var(--accent);border-radius:6px;padding:3px 7px;font-size:13.5px;font-family:inherit;font-weight:500;outline:none;background:#fff;color:var(--text);box-shadow:0 0 0 3px rgba(41,128,185,.15);min-width:0}
+.mem-del{width:26px;height:26px;border-radius:8px;border:none;background:transparent;color:#B9C2CC;cursor:pointer;font-size:15px;line-height:1;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;transition:.15s}
+.mem-del:hover{background:#FDECEA;color:#E74C3C}
+.mem-empty{list-style:none;font-size:12.5px;color:var(--text-light);text-align:center;padding:.8rem 0;opacity:.7}
+.mem-add{display:flex;gap:.5rem;align-items:center;margin-top:.7rem}
+.mem-add-input{flex:1;border:1px solid #DDE4EC;border-radius:9px;padding:.5rem .8rem;font-size:13.5px;outline:none;font-family:inherit;background:#FBFDFE;color:var(--text);transition:.15s}
+.mem-add-input:focus{border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(41,128,185,.13)}
+.mem-add-btn{border:1.5px solid var(--accent);background:transparent;color:var(--accent);border-radius:9px;padding:.45rem .9rem;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:.25rem;transition:.15s;font-family:inherit}
+.mem-add-btn:hover{background:rgba(41,128,185,.08)}
 .divider{height:1px;background:var(--border);margin:.75rem 0}
 .pl-entries{font-size:13px;width:100%;border-collapse:collapse}
 .pl-entries th{background:var(--primary);color:#fff;padding:7px 9px;text-align:center;border:1px solid #3D4F5A}
@@ -1672,13 +1692,32 @@ function renderPreLeave(){
 }
 
 // ── TAB 4：MEMBERS ──
+// 員工頭像配色（馬卡龍多彩，依姓名固定）
+const AV_PALETTE=[{bg:'#DDF1EA',fg:'#2E8B73'},{bg:'#FCE7DC',fg:'#C56A3D'},{bg:'#E8E2F5',fg:'#6A52A8'},{bg:'#DCEDFB',fg:'#2F6FB0'},{bg:'#FBF1D5',fg:'#9A7B1E'},{bg:'#FAE0E9',fg:'#B23A66'},{bg:'#E6EEDC',fg:'#5E7A3E'},{bg:'#FCE2DE',fg:'#C85248'},{bg:'#D9EFEF',fg:'#2C7C80'},{bg:'#E4E6F7',fg:'#5560B0'}];
+function avColor(name){let h=2166136261;const s=name||'';for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return AV_PALETTE[(h>>>0)%AV_PALETTE.length];}
+function avInitial(name){const c=Array.from((name||'').trim())[0]||'?';return /[a-z]/.test(c)?c.toUpperCase():c;}
+let _memDrag=null;
+function memDragStart(e,unit,idx){_memDrag={unit,idx};try{e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',String(idx));}catch(_){}
+  const li=e.target.closest('.mem-item');if(li){li.classList.add('dragging');try{e.dataTransfer.setDragImage(li,22,18);}catch(_){}}}
+function memDragOver(e,unit){if(!_memDrag||_memDrag.unit!==unit)return;e.preventDefault();try{e.dataTransfer.dropEffect='move';}catch(_){}e.currentTarget.classList.add('drag-over');}
+function memDragLeave(e){e.currentTarget.classList.remove('drag-over');}
+function memDrop(e,unit,idx){e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  const d=_memDrag;_memDrag=null;if(!d||d.unit!==unit||d.idx===idx)return;
+  const mems=getMembers(),arr=(mems[unit]||[]).slice();
+  if(d.idx<0||d.idx>=arr.length)return;
+  const[moved]=arr.splice(d.idx,1);arr.splice(idx,0,moved);mems[unit]=arr;setMembers(mems);
+  logOp(`調整員工順序：${unit} - ${moved}（第${idx+1}位）`);renderMembers();toast(`已調整 ${moved} 的順序`,'ok');}
+function memDragEnd(){document.querySelectorAll('.mem-item.dragging,.mem-item.drag-over').forEach(el=>el.classList.remove('dragging','drag-over'));_memDrag=null;}
 function renderMembers(){
   const depts=getDepts(),mems=getMembers(),grid=document.getElementById('mem-grid');grid.innerHTML='';
   depts.forEach(u=>{const div=document.createElement('div');div.className='card';div.id='memCard-'+u;grid.appendChild(div);});
   depts.forEach(u=>{const members=mems[u]||[],uc=getDeptColor(u),card=document.getElementById('memCard-'+u);if(!card)return;
-    card.innerHTML=`<div class="card-head"><span class="card-title"><span class="unit-badge" style="background:${uc.bg};color:${uc.fg}">${u}</span></span><span class="info">${members.length} 人</span></div>
-    <ul class="mem-list">${members.map((n,i)=>`<li class="mem-item"><span class="mem-idx">${i+1}.</span><span class="mem-name" onclick="editMember('${u.replace(/'/g,"\\'")}','${n.replace(/'/g,"\\'")}',this)" title="點擊可修改姓名">${n}</span><button class="btn btn-danger btn-sm" onclick="removeMember('${u}','${n.replace(/'/g,"\\'")}')">移除</button></li>`).join('')}</ul>
-    <div class="divider"></div><div style="display:flex;gap:.4rem"><input type="text" id="nm-${u}" placeholder="輸入姓名" class="fc" style="flex:1" onkeydown="if(event.key==='Enter')addMember('${u}')"><button class="btn btn-success" onclick="addMember('${u}')">新增</button></div>`;
+    const uEsc=u.replace(/'/g,"\\'");
+    card.className='card mem-card';
+    card.style.cssText=`--uc-fg:${uc.fg}`;
+    card.innerHTML=`<div class="card-head"><span class="card-title" style="display:flex;align-items:center;gap:.4rem"><span class="mem-dot"></span><span class="mem-deptname">${u}</span></span><span class="mem-count">${members.length} 人</span></div>
+    <ul class="mem-list">${members.length?members.map((n,i)=>{const av=avColor(n),nEsc=n.replace(/'/g,"\\'");return `<li class="mem-item" ondragover="memDragOver(event,'${uEsc}')" ondragleave="memDragLeave(event)" ondrop="memDrop(event,'${uEsc}',${i})"><span class="mem-grip" draggable="true" ondragstart="memDragStart(event,'${uEsc}',${i})" ondragend="memDragEnd()" title="拖曳調整順序" aria-label="拖曳調整順序"></span><span class="mem-av" style="background:${av.bg};color:${av.fg}">${avInitial(n)}</span><span class="mem-name" onclick="editMember('${uEsc}','${nEsc}',this)" title="點擊可修改姓名">${n}</span><button class="mem-del" title="移除" onclick="removeMember('${u}','${nEsc}')">✕</button></li>`;}).join(''):'<li class="mem-empty">尚無員工，於下方新增</li>'}</ul>
+    <div class="mem-add"><input type="text" id="nm-${u}" placeholder="輸入姓名" class="mem-add-input" onkeydown="if(event.key==='Enter')addMember('${u}')"><button class="mem-add-btn" onclick="addMember('${u}')">＋ 新增</button></div>`;
   });
 }
 function addMember(unit){const inp=document.getElementById('nm-'+unit),name=inp.value.trim();if(!name){toast('請輸入姓名','err');return;}const mems=getMembers();if(!mems[unit])mems[unit]=[];if(mems[unit].includes(name)){toast('此員工已存在','err');return;}mems[unit].push(name);setMembers(mems);inp.value='';logOp(`新增員工：${unit} - ${name}`);renderMembers();toast(`已新增 ${name} 至 ${unit}`,'ok');}
