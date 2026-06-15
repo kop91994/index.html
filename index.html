@@ -390,7 +390,6 @@ col.today-col{background:rgba(41,128,185,.12)}
   <div class="sl-announce" id="sl-announce"><span class="sl-ann-ico">📢</span><div class="sl-ann-body" id="sl-ann-body"></div></div>
   <div class="sl-inner">
     <div class="sl-title">排班系統</div>
-    <div class="sl-sub">請選擇要進入的班別 · 三套資料各自獨立</div>
     <div class="sl-cards">
       <button class="sl-card zao" onclick="chooseShift('zao')">
         <div class="sl-glow"></div>
@@ -411,7 +410,6 @@ col.today-col{background:rgba(41,128,185,.12)}
         <div class="sl-go">進入 →</div>
       </button>
     </div>
-    <div class="sl-foot">選定後可隨時重新整理頁面切換班別</div>
   </div>
   <div class="cute-clock sl-clock" data-tod="morning">
     <span class="cc-emoji">🌞</span>
@@ -2607,15 +2605,19 @@ function chooseShift(s){
   if(!SHIFTS[s]||_booted)return;
   _booted=true;
   SHIFT=s;
+  try{localStorage.setItem('op_shift',s);}catch(e){} // 記住班別（裝置本機、不分班別、不上雲端）→ 重新整理不再跳回早班
   const sh=SHIFTS[s];
   const brand=document.querySelector('.nav-brand');
-  if(brand)brand.innerHTML=`📅 排假系統<button class="shift-pill ${s}" title="點此重新整理可切換班別" onclick="location.reload()">${sh.icon} ${sh.period}班</button>`;
+  if(brand)brand.innerHTML=`📅 排假系統<button class="shift-pill ${s}" title="點此切換班別（早／中／晚）" onclick="switchShift()">${sh.icon} ${sh.period}班</button>`;
   document.title=`排班系統 · ${sh.period}班`;
   const L=document.getElementById('shift-launcher');
   if(L){L.classList.add('hide');setTimeout(()=>{if(L.parentNode)L.parentNode.removeChild(L);},550);}
   bootApp();
   if(!getOperator())setTimeout(()=>{if(!getOperator())changeOperator();},900); // 尚未記住操作者時才彈出；選定後記住，下次進入不再跳出（無部門員工則自動以「遊客」記住）
 }
+
+// 點右上角徽章 → 清除記住的班別並回到選班頁（唯一會「跳回選班」的入口）
+function switchShift(){try{localStorage.removeItem('op_shift');}catch(e){}location.reload();}
 
 // ── 可愛實時時鐘（選班頁＋進入頁右下角）──
 function updateCuteClocks(){
@@ -2680,6 +2682,9 @@ function buildCatMarquee(){
   track.innerHTML=unit+unit; // 重複一份讓跑馬燈無縫循環
 }
 buildCatMarquee();
+
+// 重新整理時自動進入上次選的班別（中／晚編輯後不再被打回早班）；要切換請點右上角班別徽章
+(function(){try{const _s=localStorage.getItem('op_shift');if(_s&&SHIFTS[_s])chooseShift(_s);}catch(e){}})();
 </script>
 </body>
 </html>
