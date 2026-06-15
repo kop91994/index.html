@@ -954,7 +954,7 @@ function getOperator(){try{return localStorage.getItem('op_operator')||'';}catch
 function setOperator(n){try{localStorage.setItem('op_operator',n||'');}catch(e){}updateOperatorPill();}
 function updateOperatorPill(){const el=document.getElementById('op-operator-pill');if(!el)return;const op=getOperator();el.innerHTML=op?`👤 ${escapeHtml(op)}`:`👤 <span style="opacity:.75">設定操作者</span>`;}
 function allEmployees(){const m=getMembers(),depts=getDepts(),out=[];depts.forEach(u=>(m[u]||[]).forEach(n=>out.push({name:n,dept:u})));return out;}
-async function changeOperator(){
+async function changeOperator(mandatory=false){
   const emps=allEmployees();
   if(!emps.length){setOperator('遊客');toast('尚無部門員工可選，已以「遊客」身分登入','ok');return;}
   const cur=getOperator();
@@ -962,8 +962,9 @@ async function changeOperator(){
   let opts='';Object.keys(byDept).forEach(u=>{opts+=`<optgroup label="${escapeHtml(u)}">`+byDept[u].map(n=>`<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('')+'</optgroup>';});
   opts+='<option value="遊客">👤 遊客</option>';
   const def=emps.some(e=>e.name===cur)?cur:(cur==='遊客'?'遊客':emps[0].name);
-  const chosen=await uiSelect('請選擇您的名字（操作記錄會標示由誰執行）：',opts,{title:'設定操作者',default:def});
-  if(chosen===null)return;
+  const msg=mandatory?'進入前請先選擇您的名字（必選，操作記錄會標示由誰執行）：':'請選擇您的名字（操作記錄會標示由誰執行）：';
+  const chosen=await uiSelect(msg,opts,{title:'設定操作者',default:def,mandatory});
+  if(chosen===null)return; // 僅非強制模式可能取消
   setOperator(chosen);
   toast(`操作者已設為「${chosen}」`,'ok');
 }
@@ -1188,13 +1189,14 @@ function uiSelect(msg,optionsHtml,opts={}){
     if(opts.default!=null)sel.value=opts.default;
     wrap.style.display='block';
     const okBtn=document.getElementById('ui-modal-ok'),cancelBtn=document.getElementById('ui-modal-cancel');
-    okBtn.textContent=opts.okText||'確定';cancelBtn.textContent='取消';cancelBtn.style.display='inline-flex';okBtn.className='btn btn-primary';
+    okBtn.textContent=opts.okText||'確定';cancelBtn.textContent='取消';cancelBtn.style.display=opts.mandatory?'none':'inline-flex';okBtn.className='btn btn-primary';
     ov.classList.add('open');
     setTimeout(()=>sel.focus(),60);
-    const cleanup=()=>{ov.classList.remove('open');okBtn.onclick=null;cancelBtn.onclick=null;sel.onkeydown=null;sel.style.display='none';inp.style.display='';};
+    const cleanup=()=>{ov.classList.remove('open');okBtn.onclick=null;cancelBtn.onclick=null;sel.onkeydown=null;document.onkeydown=null;sel.style.display='none';inp.style.display='';};
     okBtn.onclick=()=>{const v=sel.value;cleanup();resolve(v);};
-    cancelBtn.onclick=()=>{cleanup();resolve(null);};
-    sel.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();okBtn.onclick();}else if(e.key==='Escape'){cancelBtn.onclick();}};
+    cancelBtn.onclick=opts.mandatory?null:()=>{cleanup();resolve(null);}; // 強制模式：取消鍵停用＋隱藏
+    sel.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();okBtn.onclick();}else if(e.key==='Escape'&&!opts.mandatory){cancelBtn.onclick&&cancelBtn.onclick();}};
+    if(opts.mandatory)document.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();okBtn.onclick();}else if(e.key==='Escape'){e.preventDefault();}}; // 強制模式：Esc 無效
   });
 }
 
@@ -2613,7 +2615,7 @@ function chooseShift(s){
   const L=document.getElementById('shift-launcher');
   if(L){L.classList.add('hide');setTimeout(()=>{if(L.parentNode)L.parentNode.removeChild(L);},550);}
   bootApp();
-  if(!getOperator())setTimeout(()=>{if(!getOperator())changeOperator();},900); // 尚未記住操作者時才彈出；選定後記住，下次進入不再跳出（無部門員工則自動以「遊客」記住）
+  if(!getOperator())setTimeout(()=>{if(!getOperator())changeOperator(true);},700); // 進入班別必須先選操作者，未選不可關閉（強制、不可取消／Esc／點背景關閉）
 }
 
 // 點右上角徽章 → 清除記住的班別並回到選班頁（唯一會「跳回選班」的入口）
