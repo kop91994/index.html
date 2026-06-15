@@ -64,6 +64,8 @@ table{border-collapse:collapse}
 .sched th{background:#2A323D;color:#fff;padding:8px 6px;text-align:center;position:sticky;top:0;border:1px solid #3D4F5A;white-space:nowrap;letter-spacing:.3px}
 .sched td{border:1px solid #E4EAF0;padding:7px 5px;text-align:center;white-space:pre-wrap}
 .sched .s-name{font-weight:700;text-align:left;padding:7px 11px;position:sticky;left:0;z-index:2;min-width:88px;border-right:2px solid #D0D9E3;font-size:14px}
+.c-name.is-me,.s-name.is-me{background:#FFF6D8!important;box-shadow:inset 4px 0 0 #F2A900;font-weight:800}
+.me-tag{font-size:10px;font-weight:800;color:#C77A14;margin-left:3px;white-space:nowrap}
 .sched .task-cell{font-size:12px;font-weight:700;line-height:1.5;min-width:60px;max-width:105px;background:#EBF5FB;color:#1A4A6E;word-break:break-word}
 .sched tr:hover td{filter:brightness(.97)}
 .date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:.35rem}
@@ -1302,6 +1304,7 @@ function renderOverview(){
   let totalPeople=0,totalLeaves=0;const dayOff=new Array(days+1).fill(0);
   const workDays=Array.from({length:days},(_,i)=>i+1).filter(d=>{const dw=new Date(year,month-1,d).getDay();return dw!==0&&dw!==6;}).length;
   const ed=!!selectedLeaveType;
+  const _op=getOperator();const _isMe=n=>_op&&_op!=='遊客'&&n===_op; // 目前操作者→自己姓名加底色
   const _now=new Date(),_isCur=year===_now.getFullYear()&&month===_now.getMonth()+1,_tD=_now.getDate();const tmark=d=>(_isCur&&d===_tD)?' today-mark':'';
   let cg='<colgroup><col><col>';for(let d=1;d<=days;d++)cg+=`<col${_isCur&&d===_tD?' class="today-col"':''}>`;cg+='<col></colgroup>';
   let h=cg+'<thead><tr>';
@@ -1319,7 +1322,8 @@ function renderOverview(){
       const slq=getEmpSlQuota(u,name);
       const slBadge=slq!=null&&slq>0?`<div style="font-size:10px;font-weight:700;color:#0288D1;line-height:1.3;margin-top:2px;letter-spacing:.3px">特${slq}</div>`:'';
       const slTip=slq!=null?`特休剩餘 ${slq} 天，點擊修改`:'點擊輸入特休天數';
-      h+=`<td class="c-name" style="background:${uc.bg};color:${uc.fg};cursor:pointer" onclick="editSlQuota('${eu}','${en}')" title="${slTip}">${name}${slBadge}</td>`;
+      const _me=_isMe(name);
+      h+=`<td class="c-name${_me?' is-me':''}" style="background:${uc.bg};color:${uc.fg};cursor:pointer" onclick="editSlQuota('${eu}','${en}')" title="${slTip}">${name}${_me?'<span class="me-tag">👤</span>':''}${slBadge}</td>`;
       let cnt=0;const cntByType={};
       for(let d=1;d<=days;d++){
         const val=map[u+'_'+name+'_'+d]||'',dw=new Date(year,month-1,d).getDay(),wk=dw===0||dw===6;
@@ -1467,8 +1471,10 @@ function renderSchedule(){
   h+=`<th>已放假</th></tr><tr><th style="background:#3D4F5A;font-size:10px">星期</th>`;
   for(let d=1;d<=days;d++){const dw=new Date(year,month-1,d).getDay();h+=`<th class="${dw===0||dw===6?'wkend':''}" style="font-size:10px">${DOW[dw]}</th>`;}
   h+=`<th></th></tr></thead><tbody>`;
+  const _op=getOperator(),_isMe=n=>_op&&_op!=='遊客'&&n===_op; // 目前操作者→自己姓名加底色
   list.forEach((name,i)=>{
-    h+=`<tr><td class="s-name" style="background:${uc.bg};color:${uc.fg}">${name}</td>`;let lv=0;
+    const _me=_isMe(name);
+    h+=`<tr><td class="s-name${_me?' is-me':''}" style="background:${uc.bg};color:${uc.fg}">${name}${_me?'<span class="me-tag">👤</span>':''}</td>`;let lv=0;
     for(let d=1;d<=days;d++){const val=grid[i][d],dw=new Date(year,month-1,d).getDay(),wk=dw===0||dw===6;if(isLeave(val)){const lc=LCM[val];h+=`<td style="background:${lc.bg};color:${lc.fg};font-weight:700">${val}</td>`;lv++;}else if(val&&val[0]==='~'){const lt=val.slice(1);if(lt&&LCM[lt]){const lc=LCM[lt];h+=`<td style="background:${lc.bg};color:${lc.fg};font-size:12px;font-weight:700;outline:2px dashed ${lc.fg}55;outline-offset:-2px" title="預假 (${LCM[lt].full})">預${lt}</td>`;}else h+=`<td style="background:#F3E5F5;color:#7B1FA2;font-size:12px;font-weight:700" title="預假">預</td>`;lv++;}else if(val)h+=`<td class="task-cell" style="${wk?'background:#EEEEEE;':''}">${val==='待命'?'':val}</td>`;else h+=`<td style="${wk?'background:#F0F0F0;color:#bbb':'color:#ccc'}">─</td>`;}
     h+=`<td style="font-weight:700;color:${lv>mo?'#E74C3C':'#5A6B73'}">${lv}天</td></tr>`;
   });
