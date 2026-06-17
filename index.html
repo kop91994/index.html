@@ -728,13 +728,7 @@ col.today-col{background:rgba(41,128,185,.12)}
       <div class="modal-title">📅 <span id="cal-modal-year"></span>年 行事曆</div>
       <button class="modal-x" onclick="closeCalModal()">×</button>
     </div>
-    <div style="display:flex;gap:.35rem;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap">
-      <button class="btn btn-sm btn-secondary" id="cal-yr-2026" onclick="switchCalYear(2026)">2026年</button>
-      <button class="btn btn-sm btn-secondary" id="cal-yr-2027" onclick="switchCalYear(2027)">2027年</button>
-      <button class="btn btn-sm btn-secondary" id="cal-yr-2028" onclick="switchCalYear(2028)">2028年</button>
-      <button class="btn btn-sm btn-secondary" id="cal-yr-2029" onclick="switchCalYear(2029)">2029年</button>
-      <button class="btn btn-sm btn-secondary" id="cal-yr-2030" onclick="switchCalYear(2030)">2030年</button>
-    </div>
+    <div id="cal-yr-bar" style="display:flex;gap:.35rem;justify-content:center;margin-bottom:.8rem;flex-wrap:wrap"><!-- 年份按鈕：依目前年份動態產生 --></div>
     <div id="cal-img-area" style="min-height:180px;display:flex;align-items:center;justify-content:center;overflow:auto;border-radius:8px"></div>
     <div style="display:flex;gap:.6rem;justify-content:center;margin-top:.9rem;flex-wrap:wrap">
       <label class="btn btn-primary" style="cursor:pointer">
@@ -742,7 +736,7 @@ col.today-col{background:rgba(41,128,185,.12)}
       </label>
       <button class="btn btn-danger" id="cal-del-btn" onclick="deleteCalImg()">🗑 刪除圖片</button>
     </div>
-    <p class="info" style="text-align:center;margin-top:.5rem;font-size:11px">支援 JPG、PNG、WebP · 圖片儲存於瀏覽器 localStorage（建議 8MB 以內）</p>
+    <p class="info" style="text-align:center;margin-top:.5rem;font-size:11px">支援 JPG、PNG、WebP · 上傳後會自動壓縮，節省瀏覽器空間與雲端流量</p>
   </div>
 </div>
 
@@ -889,6 +883,11 @@ const SHIFTS={
   wan:  {key:'m3_', fb:'sched_wan',   name:'月神之子', period:'晚', icon:'🔮'}
 };
 let SHIFT='zao'; // 由開場選取頁面決定
+
+// 年份範圍（動態）：今年與未來數年，避免每年回來改死值。
+// 若要調整顯示範圍，改下面的位移量即可（例如想含去年就把 YEAR_MIN 改成 CUR_YEAR-1）。
+const CUR_YEAR=new Date().getFullYear();
+const YEAR_MIN=CUR_YEAR, YEAR_MAX=CUR_YEAR+4;
 
 const LCM={
   '休':{bg:'#E8F5E9',fg:'#2E7D32',full:'休假'},'事':{bg:'#FFF3E0',fg:'#E65100',full:'事假'},
@@ -1258,7 +1257,7 @@ document.getElementById('navTabs').querySelectorAll('.nav-tab').forEach(tab=>{
 // ── DROPDOWNS ──
 function initDropdowns(){
   const now=new Date(),cy=now.getFullYear(),cm=now.getMonth()+1;
-  ['ov-year','sc-year','pl-year','pf-year','ml-year'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='';for(let y=2026;y<=2030;y++)el.innerHTML+=`<option value="${y}"${y===cy?' selected':''}>${y}年</option>`;});
+  ['ov-year','sc-year','pl-year','pf-year','ml-year'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='';for(let y=YEAR_MIN;y<=YEAR_MAX;y++)el.innerHTML+=`<option value="${y}"${y===cy?' selected':''}>${y}年</option>`;});
   ['ov-month','sc-month','pf-month','ml-month'].forEach(id=>{const el=document.getElementById(id);if(!el)return;el.innerHTML='';for(let m=1;m<=12;m++)el.innerHTML+=`<option value="${m}"${m===cm?' selected':''}>${m}月</option>`;});
   const to=Object.entries(LCM).filter(([k])=>!HIDDEN_LV.has(k)).map(([k,v])=>`<option value="${k}">${v.full}（${k}）</option>`).join('');
   const mlT=document.getElementById('ml-type');if(mlT)mlT.innerHTML=to;
@@ -2018,9 +2017,9 @@ function saveRule(u){
 function getCalImages(){try{return JSON.parse(localStorage.getItem('calendar_images'))||{};}catch(e){return{};}}
 function setCalImages(d){localStorage.setItem('calendar_images',JSON.stringify(d));}
 
-let calCurrentYear='2026';
+let calCurrentYear=String(CUR_YEAR);
 function openCalModal(){
-  calCurrentYear=document.getElementById('ov-year').value||'2026';
+  calCurrentYear=document.getElementById('ov-year').value||String(CUR_YEAR);
   refreshCalModal();
   document.getElementById('modal-cal').classList.add('open');
 }
@@ -2028,7 +2027,8 @@ function closeCalModal(){document.getElementById('modal-cal').classList.remove('
 function switchCalYear(y){calCurrentYear=String(y);refreshCalModal();}
 function refreshCalModal(){
   document.getElementById('cal-modal-year').textContent=calCurrentYear;
-  for(let y=2026;y<=2030;y++){const b=document.getElementById('cal-yr-'+y);if(b)b.className='btn btn-sm '+(String(y)===calCurrentYear?'btn-primary':'btn-secondary');}
+  const bar=document.getElementById('cal-yr-bar');
+  if(bar)bar.innerHTML=Array.from({length:YEAR_MAX-YEAR_MIN+1},(_,i)=>{const y=YEAR_MIN+i;return `<button class="btn btn-sm ${String(y)===calCurrentYear?'btn-primary':'btn-secondary'}" onclick="switchCalYear(${y})">${y}年</button>`;}).join('');
   const imgs=getCalImages(),src=imgs[calCurrentYear],area=document.getElementById('cal-img-area'),delBtn=document.getElementById('cal-del-btn');
   if(src){
     area.innerHTML=`<img src="${src}" style="max-width:100%;max-height:74vh;border-radius:8px;box-shadow:0 4px 20px rgba(0,0,0,.13);display:block">`;
@@ -2038,19 +2038,21 @@ function refreshCalModal(){
     if(delBtn)delBtn.style.display='none';
   }
 }
-function uploadCalImg(e){
+async function uploadCalImg(e){
   const file=e.target.files[0];if(!file)return;
   e.target.value='';
-  if(file.size>10*1024*1024){toast('圖片過大！請使用 10MB 以內的圖片','err');return;}
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    const imgs=getCalImages();imgs[calCurrentYear]=ev.target.result;
-    try{setCalImages(imgs);}catch(ex){toast('儲存失敗（localStorage 空間不足，請先清除其他年份圖片）','err');return;}
-    logOp(`上傳 ${calCurrentYear} 年行事曆圖片`);
-    toast(`${calCurrentYear} 年行事曆已更新`,'ok');
-    refreshCalModal();
-  };
-  reader.readAsDataURL(file);
+  if(file.size>15*1024*1024){toast('原始圖片過大！請使用 15MB 以內的圖片','err');return;}
+  toast('圖片壓縮中…','ok');
+  let dataUrl;
+  try{
+    dataUrl=await noteCompressImage(file,1600,0.82); // 壓縮：寬度上限 1600、JPEG 品質 0.82，大幅縮小體積與流量
+  }catch(ex){toast('圖片讀取失敗，請換一張試試','err');return;}
+  const imgs=getCalImages();imgs[calCurrentYear]=dataUrl;
+  try{setCalImages(imgs);}catch(ex){toast('儲存失敗（localStorage 空間不足，請先清除其他年份圖片）','err');return;}
+  const kb=Math.round((dataUrl.length*3/4)/1024); // base64 長度 → 約略位元組
+  logOp(`上傳 ${calCurrentYear} 年行事曆圖片（壓縮後約 ${kb} KB）`);
+  toast(`${calCurrentYear} 年行事曆已更新（約 ${kb} KB）`,'ok');
+  refreshCalModal();
 }
 async function deleteCalImg(){
   if(!await uiConfirm(`確定刪除 ${calCurrentYear} 年行事曆圖片？`,{danger:true,okText:'刪除',title:'刪除圖片'}))return;
