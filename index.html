@@ -7,6 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<!-- 預先建立與 Firebase SDK / 資料庫的連線，加速雲端載入 -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://joe1688-83f8a-default-rtdb.asia-southeast1.firebasedatabase.app" crossorigin>
+<link rel="dns-prefetch" href="https://www.gstatic.com">
+<link rel="dns-prefetch" href="https://joe1688-83f8a-default-rtdb.asia-southeast1.firebasedatabase.app">
 <style>
 :root{--primary:#2C3E50;--accent:#2980B9;--success:#27AE60;--warning:#E67E22;--danger:#E74C3C;--bg:#EEF2F7;--border:#D5DDE8;--text:#2C3E50;--text-light:#6B7A8A}
 *{box-sizing:border-box;margin:0;padding:0}
@@ -2450,6 +2455,9 @@ let _db=null;
 const _lastWrite={};
 let _leaveCloudSnap={}; // leave_history 目前雲端狀態（供逐筆差異寫入用）
 const SYNC_COOLDOWN=2500;
+let _syncStart=0;          // 開始載入雲端的時間點（用來判斷哪些是「載入期間使用者剛改的資料」）
+const _localTouch={};      // 各 KEY 最後一次被本機修改的時間（不受 Firebase 是否就緒影響）
+let _cloudLoaded=false;    // 雲端首次載入是否已完成
 
 // 一次性清除指定班別（中／晚）的所有資料（雲端＋本機）；用雲端 _resetVer 記號確保只清一次
 const SHIFT_RESET_VER={zhong:1,wan:1}; // 日後想再清一次，把對應數字 +1 即可
@@ -2509,79 +2517,114 @@ function _rawSet(k,v){_LS_set.call(localStorage,_phys(k),v);}
   Storage.prototype.getItem=function(k){return this===localStorage?_LS_get.call(this,_phys(k)):_LS_get.call(this,k);};
   Storage.prototype.removeItem=function(k){return this===localStorage?_LS_remove.call(this,_phys(k)):_LS_remove.call(this,k);};
   Storage.prototype.setItem=function(k,v){
-    if(this===localStorage){_LS_set.call(this,_phys(k),v);fbWrite(k,v);}
+    if(this===localStorage){
+      _LS_set.call(this,_phys(k),v);
+      if(SYNC_KEYS.includes(k))_localTouch[k]=Date.now(); // 記錄本機修改時間（即使 Firebase 尚未就緒也記）
+      fbWrite(k,v);
+    }
     else{_LS_set.call(this,k,v);}
   };
 })();
 
+// 預先下載 Firebase SDK：在使用者還在選班別、或頁面還在初始化算繪時就開始下載，
+// 等到真正要同步時 SDK 多半已就緒，省去等待時間。只下載一次。
+let _sdkPromise=null;
+function _preloadFirebaseSDK(){
+  if(_sdkPromise)return _sdkPromise;
+  if(!FIREBASE_CONFIG){_sdkPromise=Promise.reject(new Error('no-config'));return _sdkPromise;}
+  _sdkPromise=new Promise((resolve,reject)=>{
+    const urls=[
+      'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+      'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js'
+    ];
+    let loaded=0,failed=false;
+    urls.forEach(src=>{
+      const s=document.createElement('script');s.src=src;s.async=false; // async=false → 並行下載但「依加入順序」執行，確保 app 先於 database
+      s.onerror=()=>{if(!failed){failed=true;reject(new Error('SDK 載入失敗'));}};
+      s.onload=()=>{if(++loaded===urls.length)resolve();};
+      document.head.appendChild(s);
+    });
+  });
+  return _sdkPromise;
+}
+// 立刻啟動下載（與選班、頁面初始化並行）
+_preloadFirebaseSDK().catch(()=>{});
+
 function initFirebaseSync(){
   if(!FIREBASE_CONFIG){setSyncStatus('offline');return;}
   setSyncStatus('connecting');
-  let loaded=0;
-  const urls=[
-    'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
-    'https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js'
-  ];
-  urls.forEach(src=>{
-    const s=document.createElement('script');s.src=src;
-    s.onerror=()=>setSyncStatus('error','載入 Firebase SDK 失敗');
-    s.onload=()=>{if(++loaded===urls.length)_fbReady();};
-    document.head.appendChild(s);
-  });
+  _preloadFirebaseSDK().then(_fbReady).catch(()=>setSyncStatus('error','載入 Firebase SDK 失敗'));
+}
+
+// 將「雲端某 KEY 的值」套用到本機（僅供首次載入使用）
+// 關鍵：若該 KEY 在開始載入之後被使用者改過，一律以本機為準並推回雲端，
+//       絕不以雲端舊值覆蓋，避免「修改後又跳回原本設定」。
+function _applyCloudKey(root,k,cloudVal){
+  // 運動登記：雲端與本機聯集合併 + 套用刪除墓碑
+  if(k==='sports_log'){
+    const merged=applySportsDel(mergeSportsLogs(getSportsLog(),cloudVal||{}),getSportsDel());
+    _rawSet('sports_log',JSON.stringify(merged));
+    if(_db)try{_db.ref(root+'/sports_log').set(JSON.parse(JSON.stringify(merged)));}catch(e){}
+    return;
+  }
+  if(k==='sports_deleted'){
+    const merged=mergeSportsDel(getSportsDel(),cloudVal||{});
+    _rawSet('sports_deleted',JSON.stringify(merged));
+    if(_db)try{_db.ref(root+'/sports_deleted').set(JSON.parse(JSON.stringify(merged)));}catch(e){}
+    return;
+  }
+  const editedDuringLoad=(_localTouch[k]||0)>=_syncStart; // 載入期間使用者剛改的資料
+  if(editedDuringLoad){
+    // 本機為準 → 推回雲端，不被雲端舊值覆蓋
+    const lv=localStorage.getItem(k);
+    if(lv!=null){try{const pv=JSON.parse(lv);if(_db){_lastWrite[k]=Date.now();_db.ref(root+'/'+k).set(pv);}if(k==='leave_history')_leaveCloudSnap=JSON.parse(JSON.stringify(pv));}catch(e){}}
+    return;
+  }
+  if(cloudVal!==null){
+    _rawSet(k,JSON.stringify(cloudVal)); // 雲端有資料且本機此次未改 → 採用雲端
+    if(k==='leave_history')_leaveCloudSnap=JSON.parse(JSON.stringify(cloudVal));
+  }else{
+    // 雲端沒資料 → 把本機現有的推上雲端（首次部署初始化）
+    const localVal=localStorage.getItem(k);
+    if(localVal){try{const lv=JSON.parse(localVal);if(_db)_db.ref(root+'/'+k).set(lv);if(k==='leave_history')_leaveCloudSnap=JSON.parse(JSON.stringify(lv));}catch(e){}}
+  }
 }
 
 function _fbReady(){
   try{
     if(!window.firebase?.apps?.length)firebase.initializeApp(FIREBASE_CONFIG);
     _db=firebase.database();
+    const root=SHIFTS[SHIFT].fb;         // 班別資料根節點（整場不變）
+    _syncStart=Date.now();               // 自此刻起的本機修改 = 載入期間新編輯，需保護
 
-    // ★ 雲端為主：第一次連線先讀雲端，覆蓋本機 ★
-    // 對每個 KEY：雲端有資料 → 寫入本機；雲端沒資料 → 把本機推上去（首次部署初始化）
     setSyncStatus('connecting','正在從雲端載入資料…');
     _maybeResetShift().then(()=>{
-    const tasks=SYNC_KEYS.map(k=>_db.ref(SHIFTS[SHIFT].fb+'/'+k).once('value').then(snap=>{
-      const cloudVal=snap.val();
-      // 運動登記：雲端與本機「聯集合併」，並套用刪除墓碑，避免任何一方的登記被覆蓋掉
-      if(k==='sports_log'){
-        const merged=applySportsDel(mergeSportsLogs(getSportsLog(),cloudVal||{}),getSportsDel());
-        _rawSet('sports_log',JSON.stringify(merged));
-        if(_db)try{_db.ref(SHIFTS[SHIFT].fb+'/sports_log').set(JSON.parse(JSON.stringify(merged)));}catch(e){}
-        return;
-      }
-      if(k==='sports_deleted'){
-        const merged=mergeSportsDel(getSportsDel(),cloudVal||{});
-        _rawSet('sports_deleted',JSON.stringify(merged));
-        if(_db)try{_db.ref(SHIFTS[SHIFT].fb+'/sports_deleted').set(JSON.parse(JSON.stringify(merged)));}catch(e){}
-        return;
-      }
-      if(cloudVal!==null){
-        // 雲端有資料 → 直接覆蓋本機（不觸發 fbWrite，避免回寫）
-        _rawSet(k,JSON.stringify(cloudVal));
-        if(k==='leave_history')_leaveCloudSnap=JSON.parse(JSON.stringify(cloudVal));
-      }else{
-        // 雲端沒資料 → 把本機現有的推上雲端（只在首次部署時會發生）
-        const localVal=localStorage.getItem(k);
-        if(localVal){try{const lv=JSON.parse(localVal);_db.ref(SHIFTS[SHIFT].fb+'/'+k).set(lv);if(k==='leave_history')_leaveCloudSnap=JSON.parse(JSON.stringify(lv));}catch(e){}}
-      }
-    }));
+      // ★ 效能關鍵：一次讀取整個班別節點（單次往返），
+      //   取代原本逐一讀取 18 個 KEY（18 次往返），大幅縮短雲端載入時間。
+      return _db.ref(root).once('value');
+    }).then(rootSnap=>{
+      const all=(rootSnap&&rootSnap.val())||{};
+      SYNC_KEYS.forEach(k=>{
+        const cloudVal=(all[k]!==undefined&&all[k]!==null)?all[k]:null;
+        _applyCloudKey(root,k,cloudVal);
+      });
+      _cloudLoaded=true;
 
-    Promise.all(tasks).then(()=>{
-      // 雲端資料已載入本機 → 重繪目前分頁
+      // 雲端資料已載入本機 → 重繪目前分頁與下拉選單
       const tab=document.querySelector('.nav-tab.active')?.dataset?.tab;
       if(tab&&TAB_REFRESH[tab])TAB_REFRESH[tab]();
-      // 重新整理下拉選單（部門可能變）
       refreshUnitDropdowns();
 
       // 載入完成後才掛上即時監聽，避免初始化時誤觸發
       SYNC_KEYS.forEach(k=>{
-        _db.ref(SHIFTS[SHIFT].fb+'/'+k).on('value',snap=>{
+        _db.ref(root+'/'+k).on('value',snap=>{
           const val=snap.val();
-          // 運動登記：永遠合併（聯集 + 刪除墓碑），不受 cooldown 跳過影響，避免多人同時登記時遺漏
+          // 運動登記：永遠合併（聯集 + 刪除墓碑），不受 cooldown 影響，避免多人同時登記時遺漏
           if(k==='sports_log'){
             if(val===null)return;
             const merged=applySportsDel(mergeSportsLogs(getSportsLog(),val),getSportsDel());
             _rawSet('sports_log',JSON.stringify(merged));
-            if(JSON.stringify(merged)!==JSON.stringify(val)&&_db){_lastWrite[k]=Date.now();try{_db.ref(SHIFTS[SHIFT].fb+'/sports_log').set(JSON.parse(JSON.stringify(merged)));}catch(e){}}
+            if(JSON.stringify(merged)!==JSON.stringify(val)&&_db){_lastWrite[k]=Date.now();try{_db.ref(root+'/sports_log').set(JSON.parse(JSON.stringify(merged)));}catch(e){}}
             syncRefreshTab();
             return;
           }
@@ -2589,14 +2632,13 @@ function _fbReady(){
             if(val===null)return;
             const merged=mergeSportsDel(getSportsDel(),val);
             _rawSet('sports_deleted',JSON.stringify(merged));
-            // 套用最新墓碑到本機登記
             _rawSet('sports_log',JSON.stringify(applySportsDel(getSportsLog(),merged)));
-            if(JSON.stringify(merged)!==JSON.stringify(val)&&_db){_lastWrite[k]=Date.now();try{_db.ref(SHIFTS[SHIFT].fb+'/sports_deleted').set(JSON.parse(JSON.stringify(merged)));}catch(e){}}
+            if(JSON.stringify(merged)!==JSON.stringify(val)&&_db){_lastWrite[k]=Date.now();try{_db.ref(root+'/sports_deleted').set(JSON.parse(JSON.stringify(merged)));}catch(e){}}
             syncRefreshTab();
             return;
           }
-          if(k==='leave_history')_leaveCloudSnap=(val&&typeof val==='object')?JSON.parse(JSON.stringify(val)):{}; // 追蹤雲端最新狀態（含他人逐筆寫入），供差異寫入用
-          if(Date.now()-(_lastWrite[k]||0)<SYNC_COOLDOWN)return; // 自己剛寫的，跳過
+          if(k==='leave_history')_leaveCloudSnap=(val&&typeof val==='object')?JSON.parse(JSON.stringify(val)):{}; // 追蹤雲端最新狀態，供差異寫入用
+          if(Date.now()-(_lastWrite[k]||0)<SYNC_COOLDOWN)return; // 自己剛寫的，跳過（避免回退）
           if(val===null)return;
           _rawSet(k,JSON.stringify(val)); // 直接寫入，不再觸發 fbWrite
           syncRefreshTab();
@@ -2607,13 +2649,12 @@ function _fbReady(){
       toast('☁️ 已從雲端載入最新資料','ok');
     }).catch(e=>{
       console.error('Cloud load error:',e);
-      setSyncStatus('error','讀取雲端失敗：'+e.message);
+      setSyncStatus('error','讀取雲端失敗：'+(e&&e.message||e));
     });
-    }); // _maybeResetShift
     // 斷線偵測
     _db.ref('.info/connected').on('value',s=>{
       if(!s.val())setSyncStatus('error','網路斷線，等待重連…');
-      else if(_db)setSyncStatus('connected');
+      else if(_db&&_cloudLoaded)setSyncStatus('connected');
     });
   }catch(e){
     console.error('Firebase init error:',e);
