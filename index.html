@@ -1778,16 +1778,36 @@ function finishMemberEdit(inp){
 
 // ── TAB 5：TASK CONFIG ──
 function renderTaskConfig(){
+  if(_taskCfgDirty)taskTaFlush(); // 重繪前先把尚未存檔的輸入落地，避免被雲端同步或切分頁重繪清掉
   const cfg=getTaskCfg(),depts=getDepts();let h='';
   depts.forEach(u=>{const uc=getDeptColor(u),rows=cfg.filter(c=>c.unit===u).sort((a,b)=>b.count-a.count);
     h+=`<div class="unit-section"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem"><div class="unit-badge" style="background:${uc.bg};color:${uc.fg};font-size:13px;padding:4px 13px">${u}</div><button class="btn btn-danger btn-sm" onclick="promptDelDept('${u}')">刪除此部門</button></div>
     <table class="tct" style="margin-bottom:.5rem"><thead><tr><th style="width:75px">出勤人數</th><th>任務列表（逗號分隔）</th><th style="width:120px;text-align:center">操作</th></tr></thead><tbody>
-    ${rows.map(c=>`<tr><td style="text-align:center;font-weight:700">${c.count}人</td><td><textarea rows="2" data-unit="${u}" data-count="${c.count}">${c.tasks}</textarea></td><td style="text-align:center;white-space:nowrap"><button class="btn btn-success btn-sm" onclick="openTaskAddModal('${u}',${c.count})">新增</button> <button class="btn btn-danger btn-sm" onclick="delTaskRow('${u}',${c.count})">刪除</button></td></tr>`).join('')}
+    ${rows.map(c=>`<tr><td style="text-align:center;font-weight:700">${c.count}人</td><td><textarea rows="2" data-unit="${u}" data-count="${c.count}" oninput="taskTaDirty()" onblur="taskTaFlush()">${c.tasks}</textarea></td><td style="text-align:center;white-space:nowrap"><button class="btn btn-success btn-sm" onclick="openTaskAddModal('${u}',${c.count})">新增</button> <button class="btn btn-danger btn-sm" onclick="delTaskRow('${u}',${c.count})">刪除</button></td></tr>`).join('')}
     </tbody></table><div style="display:flex;gap:.4rem;align-items:center"><span class="info">新增出勤人數：</span><input type="number" id="nc-${u}" min="1" max="30" value="${(rows[0]?.count||3)+1}" style="width:60px"><button class="btn btn-outline btn-sm" onclick="addTaskRow('${u}')">+ 新增</button></div></div>`;
   });
   document.getElementById('tc-area').innerHTML=h;
 }
-function saveTaskCfg(){const cfg=getTaskCfg();document.querySelectorAll('#tc-area textarea[data-unit]').forEach(ta=>{const hit=cfg.find(c=>c.unit===ta.dataset.unit&&parseInt(c.count)===parseInt(ta.dataset.count));if(hit)hit.tasks=ta.value;});setTaskCfg(cfg);logOp('儲存任務配置');toast('任務配置已儲存','ok');}
+// 任務配置即時寫入：textarea 一改就（防抖）存檔並同步雲端，避免「改了沒按儲存→被重繪打回原狀」
+let _taskCfgDirty=false,_taskCfgTimer=null;
+function _persistTaskCfgFromInputs(){
+  const cfg=getTaskCfg();
+  document.querySelectorAll('#tc-area textarea[data-unit]').forEach(ta=>{
+    const hit=cfg.find(c=>c.unit===ta.dataset.unit&&parseInt(c.count)===parseInt(ta.dataset.count));
+    if(hit)hit.tasks=ta.value;
+  });
+  setTaskCfg(cfg); // 寫入本機 + 觸發 fbWrite 同步雲端
+}
+function taskTaDirty(){
+  _taskCfgDirty=true;
+  if(_taskCfgTimer)clearTimeout(_taskCfgTimer);
+  _taskCfgTimer=setTimeout(()=>{if(_taskCfgDirty){_persistTaskCfgFromInputs();_taskCfgDirty=false;}_taskCfgTimer=null;},700);
+}
+function taskTaFlush(){ // 失焦或重繪前立即落地，關掉「已輸入但尚未防抖寫入」的空窗
+  if(_taskCfgTimer){clearTimeout(_taskCfgTimer);_taskCfgTimer=null;}
+  if(_taskCfgDirty){_persistTaskCfgFromInputs();_taskCfgDirty=false;}
+}
+function saveTaskCfg(){taskTaFlush();_persistTaskCfgFromInputs();logOp('儲存任務配置');toast('任務配置已儲存','ok');}
 async function delTaskRow(unit,count){if(!await uiConfirm(`確定刪除 ${unit} ${count}人的配置？`,{danger:true,okText:'刪除',title:'刪除配置'}))return;setTaskCfg(getTaskCfg().filter(c=>!(c.unit===unit&&parseInt(c.count)===count)));renderTaskConfig();toast('已刪除','ok');}
 function addTaskRow(unit){const count=parseInt(document.getElementById('nc-'+unit).value);if(!count||count<1){toast('請輸入有效人數','err');return;}const cfg=getTaskCfg();if(cfg.find(c=>c.unit===unit&&parseInt(c.count)===count)){toast(`${unit} ${count}人配置已存在`,'err');return;}cfg.push({unit,count,tasks:''});setTaskCfg(cfg);renderTaskConfig();}
 let _taskAddTarget=null;
