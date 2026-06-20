@@ -2477,6 +2477,10 @@ let _db=null;
 const _lastWrite={};
 let _leaveCloudSnap={}; // leave_history 目前雲端狀態（供逐筆差異寫入用）
 const SYNC_COOLDOWN=2500;
+// 本機編輯後的「保護視窗」(ms)：在此期間內，若雲端回傳的值與本機不同，
+// 一律以本機為準並推回雲端，避免「改了過沒多久又被舊回音／別台舊值打回原設定」。
+// 想更積極保護就調大、想更快接受別台變更就調小。
+const LOCAL_EDIT_GUARD=10000;
 let _syncStart=0;          // 開始載入雲端的時間點（用來判斷哪些是「載入期間使用者剛改的資料」）
 const _localTouch={};      // 各 KEY 最後一次被本機修改的時間（不受 Firebase 是否就緒影響）
 let _cloudLoaded=false;    // 雲端首次載入是否已完成
@@ -2660,9 +2664,15 @@ function _fbReady(){
             return;
           }
           if(k==='leave_history')_leaveCloudSnap=(val&&typeof val==='object')?JSON.parse(JSON.stringify(val)):{}; // 追蹤雲端最新狀態，供差異寫入用
-          if(Date.now()-(_lastWrite[k]||0)<SYNC_COOLDOWN)return; // 自己剛寫的，跳過（避免回退）
           if(val===null)return;
-          _rawSet(k,JSON.stringify(val)); // 直接寫入，不再觸發 fbWrite
+          // ── 防回退守衛（取代原本純 2.5 秒時間冷卻；那段時間太短，延遲回音或同班別另一台的舊值仍會把剛改的設定打回原狀）──
+          // 1) 雲端值與本機完全相同 → 不論時間一律略過（含自己剛寫的回音，畫面不會跳動）
+          // 2) 本機在保護視窗內剛改過、雲端卻不同 → 視為延遲/別台的「舊回音」，保住本機並推回雲端，絕不被舊值覆蓋
+          // 3) 本機這段時間沒在編輯 → 才採用雲端（正常接收別台的新變更）
+          const _incoming=JSON.stringify(val), _localNow=_LS_get.call(localStorage,_phys(k));
+          if(_incoming===_localNow)return;                                                  // 與本機相同 → 略過
+          if(_localNow!=null&&(_localTouch[k]||0)>Date.now()-LOCAL_EDIT_GUARD){fbWrite(k,_localNow);return;} // 剛改過 → 保住本機並推回
+          _rawSet(k,JSON.stringify(val)); // 本機閒置 → 採用雲端（不再觸發 fbWrite）
           syncRefreshTab();
         });
       });
