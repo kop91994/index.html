@@ -392,6 +392,60 @@ col.today-col{background:rgba(41,128,185,.12)}
 .op-pill{display:inline-flex;align-items:center;gap:.25rem;font-size:11px;font-weight:700;color:#fff;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);padding:3px 10px;border-radius:20px;margin-left:.45rem;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:.15s;font-family:inherit}
 .op-pill:hover{background:rgba(255,255,255,.28)}
 /* ═══ 無障礙：鍵盤聚焦框 ═══ */
+/* ── 2048 小遊戲 ── */
+.g2048-score{background:var(--primary);color:#fff;border-radius:8px;padding:.3rem .7rem;text-align:center;min-width:64px;line-height:1.15}
+.g2048-score-lbl{display:block;font-size:10px;color:rgba(255,255,255,.65);font-weight:600;letter-spacing:.5px}
+.g2048-score span:last-child,.g2048-score>span{font-size:18px;font-weight:800}
+.g2048-wrap{display:flex;flex-direction:column;align-items:center;padding:.5rem 0 .2rem}
+.g2048-board{position:relative;width:min(420px,90vw);aspect-ratio:1/1;background:#BDC9D6;border-radius:12px;padding:10px;box-sizing:border-box;touch-action:none;user-select:none}
+.g2048-grid{position:absolute;inset:10px;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:10px}
+.g2048-grid .cell{background:rgba(255,255,255,.45);border-radius:8px}
+.g2048-tiles{position:absolute;inset:10px}
+.g2048-tile{position:absolute;display:flex;align-items:center;justify-content:center;border-radius:8px;font-weight:800;box-sizing:border-box;transition:left .12s ease,top .12s ease;font-family:-apple-system,'Microsoft JhengHei',sans-serif}
+.g2048-tile.pop{animation:g2048pop .16s ease}
+.g2048-tile.spawn{animation:g2048spawn .16s ease}
+@keyframes g2048pop{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
+@keyframes g2048spawn{0%{transform:scale(.1);opacity:0}100%{transform:scale(1);opacity:1}}
+.t2{background:#E9EEF4;color:#5A6B7B}.t4{background:#DCE6F0;color:#5A6B7B}
+.t8{background:#5DADE2;color:#fff}.t16{background:#3498DB;color:#fff}
+.t32{background:#2980B9;color:#fff}.t64{background:#1F6699;color:#fff}
+.t128{background:#27AE60;color:#fff}.t256{background:#22A35A;color:#fff}
+.t512{background:#E67E22;color:#fff}.t1024{background:#E2620E;color:#fff}
+.t2048{background:#E74C3C;color:#fff;box-shadow:0 0 16px rgba(231,76,60,.55)}
+.tbig{background:#2C3E50;color:#fff}
+.g2048-overlay{position:absolute;inset:0;background:rgba(238,242,247,.88);border-radius:12px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:1rem;z-index:5}
+.g2048-overlay.show{display:flex}
+.g2048-ov-msg{font-size:26px;font-weight:900;color:var(--primary)}
+.g2048-hint{font-size:12px;color:var(--text-light);margin:.7rem .5rem 0;text-align:center;line-height:1.6;max-width:440px}
+/* 遊戲選單與面板 */
+.game-picker{display:flex;gap:.4rem;margin-left:auto;flex-wrap:wrap}
+.gp-btn{border:1.5px solid var(--border);background:#fff;color:var(--text-light);font-weight:700;font-size:12px;padding:.35rem .7rem;border-radius:8px;cursor:pointer;transition:.15s}
+.gp-btn:hover{border-color:var(--accent);color:var(--accent)}
+.gp-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.game-panel{display:none}
+.game-panel.active{display:block}
+.game-bar{display:flex;gap:.5rem;align-items:center;justify-content:center;flex-wrap:wrap;margin:.3rem 0 .8rem}
+/* 俄羅斯方塊 */
+.tt-wrap{display:flex;gap:1rem;justify-content:center;align-items:flex-start;flex-wrap:wrap}
+.tt-board{position:relative;background:#BDC9D6;border-radius:12px;padding:8px;box-sizing:border-box}
+#tt-canvas{display:block;border-radius:6px;background:#E9EEF4;touch-action:none}
+.tt-side{display:flex;flex-direction:column;align-items:center;gap:.5rem;min-width:96px}
+.tt-next-lbl{font-size:11px;font-weight:700;color:var(--text-light)}
+.tt-next{background:#E9EEF4;border-radius:8px;border:1.5px solid var(--border)}
+.tt-mobile-ctrl{display:flex;flex-direction:column;gap:.4rem;align-items:center;margin-top:.5rem}
+.ttc{width:46px;height:46px;border:1.5px solid var(--border);background:#fff;border-radius:10px;font-size:20px;font-weight:800;color:var(--primary);cursor:pointer;display:flex;align-items:center;justify-content:center}
+.ttc:active{background:var(--accent);color:#fff}
+.ttc-wide{width:100%;height:40px;font-size:14px}
+/* 翻牌記憶 */
+.mm-wrap{display:flex;flex-direction:column;align-items:center}
+.mm-board{display:grid;gap:8px;width:min(440px,92vw);margin:0 auto}
+.mm-card{aspect-ratio:1/1;border-radius:10px;cursor:pointer;position:relative;transform-style:preserve-3d;transition:transform .3s}
+.mm-card.flip{transform:rotateY(180deg)}
+.mm-card.matched{cursor:default}
+.mm-face{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;border-radius:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden;font-weight:800}
+.mm-back{background:var(--primary);color:rgba(255,255,255,.5)}
+.mm-front{background:#fff;border:2px solid var(--accent);transform:rotateY(180deg)}
+.mm-card.matched .mm-front{border-color:var(--success);background:#EAF7EF;animation:g2048pop .25s ease}
 .btn:focus-visible,.nav-tab:focus-visible,.lv-chip:focus-visible,.dc:focus-visible,.op-pill:focus-visible,.cell-editable:focus-visible,.sl-card:focus-visible,button:focus-visible{outline:3px solid #1B6CA8;outline-offset:2px;border-radius:6px}
 /* ═══ 手機緊湊模式（保留首欄凍結，縮小留白但不過小） ═══ */
 @media(max-width:560px){
@@ -460,6 +514,7 @@ col.today-col{background:rgba(41,128,185,.12)}
     <div class="nav-tab" data-tab="notes">📝 工作筆記</div>
     <div class="nav-tab" data-tab="sports">💪 運動登記表</div>
     <div class="nav-tab" data-tab="oplog">📋 操作記錄</div>
+    <div class="nav-tab" data-tab="game">🎮 小遊戲</div>
   </div>
   <span id="sync-status" style="color:rgba(255,255,255,.7);font-size:11px;margin-left:auto;padding:0 .8rem;white-space:nowrap;flex-shrink:0" title=""></span>
   <span id="op-operator-pill" class="op-pill" title="點此設定／切換操作者" tabindex="0" role="button" onclick="changeOperator()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();changeOperator()}"></span>
@@ -485,9 +540,11 @@ col.today-col{background:rgba(41,128,185,.12)}
         <label>部門</label><select id="ov-unit" onchange="renderOverview()"><option value="all">（全部）</option></select>
         <label>年份</label><select id="ov-year" onchange="renderOverview()"></select>
         <label>月份</label><select id="ov-month" onchange="renderOverview()"></select>
-        <button class="btn btn-secondary btn-sm" onclick="clearMonthLeave()">清空本月</button>
         <button class="btn btn-outline btn-sm" onclick="openCalModal()" style="margin-left:auto">📅 行事曆</button>
       </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:.6rem">
+      <button class="btn btn-secondary btn-sm" onclick="clearMonthLeave()">🧹 清空本月</button>
     </div>
     <div style="margin-bottom:.6rem">
       <div style="font-size:11px;color:#E74C3C;margin-bottom:.4rem">※ 點選員工姓名後，可輸入該員工的特休天數</div>
@@ -693,6 +750,96 @@ col.today-col{background:rgba(41,128,185,.12)}
       <span class="info" style="font-size:11px">保存 2 個月，自動清除</span>
     </div>
     <div class="scroll-x"><table class="oplog" id="oplog-table"></table></div>
+  </div>
+</div>
+
+<!-- TAB 8：小遊戲 2048 -->
+<div class="section" id="tab-game">
+  <div class="card">
+    <div class="card-head" style="flex-wrap:wrap;gap:.6rem">
+      <span class="card-title">🎮 小遊戲 <span style="font-size:11px;font-weight:500;color:var(--text-light)">上班空檔放鬆一下</span></span>
+      <div class="game-picker" id="game-picker">
+        <button class="gp-btn active" data-g="g2048" onclick="selectGame('g2048')">🔢 2048</button>
+        <button class="gp-btn" data-g="tetris" onclick="selectGame('tetris')">🧱 俄羅斯方塊</button>
+        <button class="gp-btn" data-g="memory" onclick="selectGame('memory')">🃏 翻牌記憶</button>
+      </div>
+    </div>
+
+    <!-- 面板：2048 -->
+    <div class="game-panel active" id="panel-g2048">
+      <div class="game-bar">
+        <div class="g2048-score"><span class="g2048-score-lbl">分數</span><span id="g2048-score">0</span></div>
+        <div class="g2048-score"><span class="g2048-score-lbl">最高</span><span id="g2048-best">0</span></div>
+        <button class="btn btn-primary" onclick="g2048.newGame()">↻ 新遊戲</button>
+      </div>
+      <div class="g2048-wrap">
+        <div class="g2048-board" id="g2048-board">
+          <div class="g2048-grid" id="g2048-grid"></div>
+          <div class="g2048-tiles" id="g2048-tiles"></div>
+          <div class="g2048-overlay" id="g2048-overlay">
+            <div class="g2048-ov-msg" id="g2048-ov-msg"></div>
+            <button class="btn btn-primary" onclick="g2048.newGame()">再玩一次</button>
+          </div>
+        </div>
+        <p class="g2048-hint">電腦：方向鍵 ← ↑ → ↓（或 W A S D）｜手機：在方塊上滑動。相同數字相撞會合併，湊出 <b>2048</b> 就贏！</p>
+      </div>
+    </div>
+
+    <!-- 面板：俄羅斯方塊 -->
+    <div class="game-panel" id="panel-tetris">
+      <div class="game-bar">
+        <div class="g2048-score"><span class="g2048-score-lbl">分數</span><span id="tt-score">0</span></div>
+        <div class="g2048-score"><span class="g2048-score-lbl">行數</span><span id="tt-lines">0</span></div>
+        <div class="g2048-score"><span class="g2048-score-lbl">最高</span><span id="tt-best">0</span></div>
+        <button class="btn btn-outline" id="tt-pause" onclick="tetris.togglePause()">⏸ 暫停</button>
+        <button class="btn btn-primary" onclick="tetris.start()">↻ 新遊戲</button>
+      </div>
+      <div class="tt-wrap">
+        <div class="tt-board" id="tt-board">
+          <canvas id="tt-canvas"></canvas>
+          <div class="g2048-overlay" id="tt-overlay">
+            <div class="g2048-ov-msg" id="tt-ov-msg"></div>
+            <button class="btn btn-primary" onclick="tetris.start()">再玩一次</button>
+          </div>
+        </div>
+        <div class="tt-side">
+          <div class="tt-next-lbl">下一個</div>
+          <canvas id="tt-next" class="tt-next"></canvas>
+          <div class="tt-mobile-ctrl">
+            <button class="ttc" onclick="tetris.rotate()">⟳</button>
+            <div style="display:flex;gap:.4rem">
+              <button class="ttc" onclick="tetris.move(-1)">←</button>
+              <button class="ttc" onclick="tetris.softDrop()">↓</button>
+              <button class="ttc" onclick="tetris.move(1)">→</button>
+            </div>
+            <button class="ttc ttc-wide" onclick="tetris.hardDrop()">⤓ 落下</button>
+          </div>
+        </div>
+      </div>
+      <p class="g2048-hint">電腦：← → 移動、↑ 旋轉、↓ 加速、空白鍵直接落下、P 暫停｜手機：用下方按鈕操作。</p>
+    </div>
+
+    <!-- 面板：翻牌記憶 -->
+    <div class="game-panel" id="panel-memory">
+      <div class="game-bar">
+        <div class="g2048-score"><span class="g2048-score-lbl">步數</span><span id="mm-moves">0</span></div>
+        <div class="g2048-score"><span class="g2048-score-lbl">時間</span><span id="mm-time">0s</span></div>
+        <div class="g2048-score"><span class="g2048-score-lbl">最佳步數</span><span id="mm-best">—</span></div>
+        <select class="fc" id="mm-level" style="width:auto;font-size:12px" onchange="memory.start()">
+          <option value="4">4×4（簡單）</option>
+          <option value="6" selected>6×6（普通）</option>
+          <option value="8">6×8（困難）</option>
+        </select>
+        <button class="btn btn-primary" onclick="memory.start()">↻ 新遊戲</button>
+      </div>
+      <div class="mm-wrap">
+        <div class="mm-board" id="mm-board"></div>
+        <div class="g2048-overlay" id="mm-overlay" style="position:relative;inset:auto;margin-top:.8rem;background:none">
+          <div class="g2048-ov-msg" id="mm-ov-msg" style="font-size:18px"></div>
+        </div>
+      </div>
+      <p class="g2048-hint">點開兩張牌，相同就消除；用最少步數、最快時間把全部配對清光！</p>
+    </div>
   </div>
 </div>
 
@@ -1227,7 +1374,7 @@ function uiSelect(msg,optionsHtml,opts={}){
 }
 
 // ── NAV ──
-const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,notes:renderNotes,sports:renderSports,oplog:renderOpLog};
+const TAB_REFRESH={overview:renderOverview,schedule:renderSchedule,preleave:renderPreLeave,members:renderMembers,tasks:renderTaskConfig,lottery:renderLottery,notes:renderNotes,sports:renderSports,oplog:renderOpLog,game:_initGameTab};
 // ── 同步重繪守衛：使用者正在輸入／開著彈窗時，延後重繪避免打斷 ──
 function _userBusy(){
   if(document.querySelector('.modal-ov.open'))return true;
@@ -2803,7 +2950,182 @@ function buildCatMarquee(){
 }
 buildCatMarquee();
 
-// 重新整理時自動進入上次選的班別（中／晚編輯後不再被打回早班）；要切換請點右上角班別徽章
+// ── 2048 小遊戲 ──
+const g2048=(function(){
+  const N=4, KEY='g2048_best';
+  let grid=[], score=0, best=0, over=false, won=false;
+  const $b=()=>document.getElementById('g2048-board');
+  const $tiles=()=>document.getElementById('g2048-tiles');
+  function loadBest(){try{best=parseInt(localStorage.getItem(KEY)||'0',10)||0;}catch(e){best=0;}}
+  function saveBest(){try{localStorage.setItem(KEY,String(best));}catch(e){}}
+  function empty(){const a=[];for(let r=0;r<N;r++)for(let c=0;c<N;c++)if(!grid[r][c])a.push([r,c]);return a;}
+  function addTile(){const e=empty();if(!e.length)return;const[r,c]=e[Math.floor(Math.random()*e.length)];grid[r][c]={v:Math.random()<0.9?2:4,_new:true};}
+  function newGame(){grid=[];for(let r=0;r<N;r++){grid[r]=[];for(let c=0;c<N;c++)grid[r][c]=null;}score=0;over=false;won=false;document.getElementById('g2048-overlay').classList.remove('show');addTile();addTile();render();}
+  function tilePos(i){return `calc(${i} * (100% - ${(N-1)*10}px)/${N} + ${i*10}px)`;}
+  function tileSize(){return `calc((100% - ${(N-1)*10}px)/${N})`;}
+  function render(){
+    const grow=document.getElementById('g2048-grid');
+    if(grow&&!grow.children.length){for(let i=0;i<N*N;i++){const d=document.createElement('div');d.className='cell';grow.appendChild(d);}}
+    const wrap=$tiles();wrap.innerHTML='';
+    const sz=tileSize();
+    for(let r=0;r<N;r++)for(let c=0;c<N;c++){const t=grid[r][c];if(!t)continue;
+      const d=document.createElement('div');
+      const cls=t.v>2048?'tbig':'t'+t.v;
+      d.className='g2048-tile '+cls+(t._merged?' pop':'')+(t._new?' spawn':'');
+      d.style.width=sz;d.style.height=sz;d.style.left=tilePos(c);d.style.top=tilePos(r);
+      d.style.fontSize=t.v>=1024?'min(6.5vw,30px)':t.v>=128?'min(7.5vw,34px)':'min(9vw,40px)';
+      d.textContent=t.v;wrap.appendChild(d);
+      t._merged=false;t._new=false;
+    }
+    document.getElementById('g2048-score').textContent=score;
+    if(score>best){best=score;saveBest();}
+    document.getElementById('g2048-best').textContent=best;
+  }
+  function slide(row){
+    let arr=row.filter(x=>x);
+    for(let i=0;i<arr.length-1;i++){if(arr[i]&&arr[i+1]&&arr[i].v===arr[i+1].v){arr[i]={v:arr[i].v*2,_merged:true};score+=arr[i].v;if(arr[i].v===2048)won=true;arr[i+1]=null;}}
+    arr=arr.filter(x=>x);
+    while(arr.length<N)arr.push(null);
+    return arr;
+  }
+  function rowsEqual(a,b){for(let i=0;i<N;i++){const x=a[i]?a[i].v:0,y=b[i]?b[i].v:0;if(x!==y)return false;}return true;}
+  function move(dir){
+    if(over)return;
+    const before=JSON.stringify(grid.map(r=>r.map(c=>c?c.v:0)));
+    if(dir==='left'){for(let r=0;r<N;r++)grid[r]=slide(grid[r]);}
+    else if(dir==='right'){for(let r=0;r<N;r++)grid[r]=slide(grid[r].slice().reverse()).reverse();}
+    else if(dir==='up'){for(let c=0;c<N;c++){let col=slide([grid[0][c],grid[1][c],grid[2][c],grid[3][c]]);for(let r=0;r<N;r++)grid[r][c]=col[r];}}
+    else if(dir==='down'){for(let c=0;c<N;c++){let col=slide([grid[0][c],grid[1][c],grid[2][c],grid[3][c]].reverse()).reverse();for(let r=0;r<N;r++)grid[r][c]=col[r];}}
+    const after=JSON.stringify(grid.map(r=>r.map(c=>c?c.v:0)));
+    if(before!==after){addTile();render();checkEnd();}
+  }
+  function canMove(){if(empty().length)return true;for(let r=0;r<N;r++)for(let c=0;c<N;c++){const v=grid[r][c].v;if(c<N-1&&grid[r][c+1]&&grid[r][c+1].v===v)return true;if(r<N-1&&grid[r+1][c]&&grid[r+1][c].v===v)return true;}return false;}
+  function checkEnd(){
+    const ov=document.getElementById('g2048-overlay'),msg=document.getElementById('g2048-ov-msg');
+    if(won){over=true;msg.textContent='🎉 達成 2048！';ov.classList.add('show');return;}
+    if(!canMove()){over=true;msg.textContent='遊戲結束';ov.classList.add('show');}
+  }
+  // 鍵盤（只在小遊戲分頁時作用，不干擾其他頁面）
+  document.addEventListener('keydown',e=>{
+    if(!document.getElementById('tab-game')?.classList.contains('active'))return;
+    if(window._curGame!=='g2048')return;
+    const m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down',a:'left',d:'right',w:'up',s:'down',A:'left',D:'right',W:'up',S:'down'};
+    if(m[e.key]){e.preventDefault();move(m[e.key]);}
+  });
+  // 觸控滑動
+  let sx=0,sy=0;
+  document.addEventListener('touchstart',e=>{const b=$b();if(!b||!b.contains(e.target))return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+  document.addEventListener('touchend',e=>{const b=$b();if(!b||!b.contains(e.target))return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;if(Math.max(Math.abs(dx),Math.abs(dy))<24)return;if(Math.abs(dx)>Math.abs(dy))move(dx>0?'right':'left');else move(dy>0?'down':'up');},{passive:true});
+  loadBest();
+  return {newGame};
+})();
+// ── 俄羅斯方塊 ──
+const tetris=(function(){
+  const COLS=10,ROWS=20,KEY='tetris_best';
+  const COLORS={I:'#5DADE2',O:'#E67E22',T:'#9B59B6',S:'#27AE60',Z:'#E74C3C',J:'#2980B9',L:'#E2620E'};
+  const SHAPES={I:[[1,1,1,1]],O:[[1,1],[1,1]],T:[[0,1,0],[1,1,1]],S:[[0,1,1],[1,1,0]],Z:[[1,1,0],[0,1,1]],J:[[1,0,0],[1,1,1]],L:[[0,0,1],[1,1,1]]};
+  let cv,ctx,nv,nctx,cell=24,board=[],cur,next,px,py,score=0,lines=0,best=0,timer=null,dropMs=700,over=false,paused=false,started=false;
+  function loadBest(){try{best=parseInt(localStorage.getItem(KEY)||'0',10)||0;}catch(e){best=0;}}
+  function saveBest(){try{localStorage.setItem(KEY,String(best));}catch(e){}}
+  function newBoard(){board=[];for(let r=0;r<ROWS;r++)board.push(new Array(COLS).fill(''));}
+  function rndPiece(){const ks=Object.keys(SHAPES),k=ks[Math.floor(Math.random()*ks.length)];return {k,m:SHAPES[k].map(r=>r.slice())};}
+  function spawn(){cur=next||rndPiece();next=rndPiece();px=Math.floor((COLS-cur.m[0].length)/2);py=0;if(collide(px,py,cur.m)){gameOver();}drawNext();}
+  function collide(x,y,m){for(let r=0;r<m.length;r++)for(let c=0;c<m[r].length;c++){if(!m[r][c])continue;const nx=x+c,ny=y+r;if(nx<0||nx>=COLS||ny>=ROWS)return true;if(ny>=0&&board[ny][nx])return true;}return false;}
+  function merge(){for(let r=0;r<cur.m.length;r++)for(let c=0;c<cur.m[r].length;c++){if(cur.m[r][c]&&py+r>=0)board[py+r][px+c]=cur.k;}}
+  function clearLines(){let n=0;for(let r=ROWS-1;r>=0;r--){if(board[r].every(v=>v)){board.splice(r,1);board.unshift(new Array(COLS).fill(''));n++;r++;}}if(n){lines+=n;score+=[0,100,300,500,800][n]||n*250;dropMs=Math.max(120,700-Math.floor(lines/10)*60);if(score>best){best=score;saveBest();}}}
+  function rotateM(m){const R=m.length,C=m[0].length,out=[];for(let c=0;c<C;c++){out.push([]);for(let r=R-1;r>=0;r--)out[c].push(m[r][c]);}return out;}
+  function rotate(){if(over||paused||!cur)return;const rm=rotateM(cur.m);for(const dx of [0,-1,1,-2,2]){if(!collide(px+dx,py,rm)){cur.m=rm;px+=dx;draw();return;}}}
+  function move(dir){if(over||paused||!cur)return;if(!collide(px+dir,py,cur.m)){px+=dir;draw();}}
+  function step(){if(over||paused)return;if(!collide(px,py+1,cur.m)){py++;}else{merge();clearLines();spawn();}draw();updateHud();}
+  function softDrop(){if(over||paused||!cur)return;if(!collide(px,py+1,cur.m)){py++;draw();}}
+  function hardDrop(){if(over||paused||!cur)return;while(!collide(px,py+1,cur.m))py++;merge();clearLines();spawn();draw();updateHud();}
+  function loop(){if(timer)clearInterval(timer);timer=setInterval(step,dropMs);}
+  function updateHud(){document.getElementById('tt-score').textContent=score;document.getElementById('tt-lines').textContent=lines;document.getElementById('tt-best').textContent=best;
+    if(timer){clearInterval(timer);timer=setInterval(step,dropMs);}}
+  function sizeCanvas(){const maxW=Math.min(280,window.innerWidth-150);cell=Math.max(14,Math.floor(maxW/COLS));cv.width=COLS*cell;cv.height=ROWS*cell;nv.width=4*cell*0.7;nv.height=4*cell*0.7;}
+  function draw(){if(!ctx)return;ctx.clearRect(0,0,cv.width,cv.height);
+    ctx.strokeStyle='rgba(189,201,214,.45)';for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){ctx.strokeRect(c*cell,r*cell,cell,cell);}
+    for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){if(board[r][c])block(ctx,c,r,COLORS[board[r][c]],cell);}
+    if(cur){for(let r=0;r<cur.m.length;r++)for(let c=0;c<cur.m[r].length;c++){if(cur.m[r][c]&&py+r>=0)block(ctx,px+c,py+r,COLORS[cur.k],cell);}}}
+  function block(g,c,r,col,sz){g.fillStyle=col;g.fillRect(c*sz+1,r*sz+1,sz-2,sz-2);g.fillStyle='rgba(255,255,255,.25)';g.fillRect(c*sz+1,r*sz+1,sz-2,Math.max(2,sz*0.18));}
+  function drawNext(){if(!nctx)return;nctx.clearRect(0,0,nv.width,nv.height);const sz=nv.width/4.2,m=next.m,ox=(nv.width-m[0].length*sz)/2,oy=(nv.height-m.length*sz)/2;for(let r=0;r<m.length;r++)for(let c=0;c<m[r].length;c++){if(m[r][c]){nctx.fillStyle=COLORS[next.k];nctx.fillRect(ox+c*sz+1,oy+r*sz+1,sz-2,sz-2);}}}
+  function gameOver(){over=true;if(timer){clearInterval(timer);timer=null;}document.getElementById('tt-ov-msg').textContent='遊戲結束';document.getElementById('tt-overlay').classList.add('show');}
+  function start(){if(!cv){cv=document.getElementById('tt-canvas');ctx=cv.getContext('2d');nv=document.getElementById('tt-next');nctx=nv.getContext('2d');}
+    sizeCanvas();newBoard();score=0;lines=0;dropMs=700;over=false;paused=false;started=true;next=null;document.getElementById('tt-overlay').classList.remove('show');document.getElementById('tt-pause').textContent='⏸ 暫停';spawn();draw();updateHud();loop();}
+  function show(){if(!cv){start();return;}if(started&&!over){draw();drawNext();updateHud();if(!paused)loop();}else{start();}}
+  function stop(){if(timer){clearInterval(timer);timer=null;}}
+  function togglePause(){if(over)return;paused=!paused;document.getElementById('tt-pause').textContent=paused?'▶ 繼續':'⏸ 暫停';if(paused)stop();else loop();}
+  // 鍵盤
+  document.addEventListener('keydown',e=>{
+    if(!document.getElementById('tab-game')?.classList.contains('active')||window._curGame!=='tetris')return;
+    const k=e.key;
+    if(k==='ArrowLeft'||k==='a'||k==='A'){e.preventDefault();move(-1);}
+    else if(k==='ArrowRight'||k==='d'||k==='D'){e.preventDefault();move(1);}
+    else if(k==='ArrowUp'||k==='w'||k==='W'){e.preventDefault();rotate();}
+    else if(k==='ArrowDown'||k==='s'||k==='S'){e.preventDefault();softDrop();}
+    else if(k===' '){e.preventDefault();hardDrop();}
+    else if(k==='p'||k==='P'){e.preventDefault();togglePause();}
+  });
+  loadBest();
+  return {start,show,stop,move,rotate,softDrop,hardDrop,togglePause};
+})();
+
+// ── 翻牌記憶 ──
+const memory=(function(){
+  const EMOJIS=['🐟','🎣','🐱','🦈','🐙','🍱','☕','🎸','🚀','⚽','🌸','🍉','🐧','🦊','🐳','🍩','🎮','🧩','🦀','🐢','🌵','🍔','🎲','🪼'];
+  let board=[],first=null,lock=false,moves=0,matched=0,total=0,timer=null,sec=0,bestKey='',started=false,done=false;
+  function fmt(s){return s<60?s+'s':Math.floor(s/60)+'m'+(s%60)+'s';}
+  function startTimer(){stopTimer();sec=0;document.getElementById('mm-time').textContent='0s';timer=setInterval(()=>{sec++;document.getElementById('mm-time').textContent=fmt(sec);},1000);}
+  function stopTimer(){if(timer){clearInterval(timer);timer=null;}}
+  function loadBest(){let b='—';try{b=localStorage.getItem(bestKey)||'—';}catch(e){}document.getElementById('mm-best').textContent=b;}
+  function start(){
+    stopTimer();const lv=parseInt(document.getElementById('mm-level').value,10);
+    let rows,cols;if(lv===4){rows=4;cols=4;}else if(lv===6){rows=6;cols=6;}else{rows=8;cols=6;}
+    const pairs=rows*cols/2;bestKey='mm_best_'+rows+'x'+cols;
+    const pool=EMOJIS.slice(0,pairs);let cards=[...pool,...pool];
+    for(let i=cards.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cards[i],cards[j]]=[cards[j],cards[i]];}
+    board=cards;first=null;lock=false;moves=0;matched=0;total=pairs;started=true;done=false;
+    document.getElementById('mm-moves').textContent='0';document.getElementById('mm-time').textContent='0s';
+    document.getElementById('mm-ov-msg').textContent='';loadBest();
+    const wrap=document.getElementById('mm-board');wrap.style.gridTemplateColumns=`repeat(${cols},1fr)`;
+    const fs=cols>=6?'min(7vw,30px)':'min(9vw,40px)';
+    wrap.innerHTML=cards.map((e,i)=>`<div class="mm-card" data-i="${i}" onclick="memory.flip(${i})"><div class="mm-face mm-back" style="font-size:${fs}">?</div><div class="mm-face mm-front" style="font-size:${fs}">${e}</div></div>`).join('');
+    startTimer();
+  }
+  function flip(i){
+    if(lock)return;const el=document.querySelector(`.mm-card[data-i="${i}"]`);if(!el||el.classList.contains('flip')||el.classList.contains('matched'))return;
+    el.classList.add('flip');
+    if(first===null){first=i;return;}
+    moves++;document.getElementById('mm-moves').textContent=moves;
+    const fe=document.querySelector(`.mm-card[data-i="${first}"]`);
+    if(board[i]===board[first]){el.classList.add('matched');fe.classList.add('matched');first=null;matched++;if(matched===total)win();}
+    else{lock=true;setTimeout(()=>{el.classList.remove('flip');fe.classList.remove('flip');first=null;lock=false;},700);}
+  }
+  function win(){done=true;stopTimer();const msg=document.getElementById('mm-ov-msg');msg.textContent=`🎉 完成！${moves} 步、用時 ${fmt(sec)}`;
+    try{const prev=parseInt(localStorage.getItem(bestKey),10);if(!prev||moves<prev){localStorage.setItem(bestKey,String(moves));document.getElementById('mm-best').textContent=moves;}}catch(e){}}
+  function show(){if(started&&!done&&document.getElementById('mm-board').children.length){if(!timer)timer=setInterval(()=>{sec++;document.getElementById('mm-time').textContent=fmt(sec);},1000);}else{start();}}
+  function stop(){stopTimer();}
+  return {start,flip,show,stop};
+})();
+
+// ── 遊戲切換控制器 ──
+window._curGame='g2048';
+function selectGame(name){
+  window._curGame=name;
+  document.querySelectorAll('#game-picker .gp-btn').forEach(b=>b.classList.toggle('active',b.dataset.g===name));
+  document.querySelectorAll('#tab-game .game-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+name));
+  // 停掉沒在玩的遊戲計時器
+  if(name!=='tetris')tetris.stop(); if(name!=='memory')memory.stop();
+  if(name==='g2048'){if(!document.getElementById('g2048-tiles')?.children.length)g2048.newGame();}
+  else if(name==='tetris'){tetris.show();}
+  else if(name==='memory'){memory.show();}
+}
+// 首次切到小遊戲分頁時，開啟目前選的遊戲
+function _initGameTab(){selectGame(window._curGame||'g2048');}
+// 離開小遊戲分頁時，暫停會跑迴圈／計時的遊戲
+document.getElementById('navTabs').addEventListener('click',()=>{setTimeout(()=>{if(!document.getElementById('tab-game')?.classList.contains('active')){tetris.stop();memory.stop();}},0);});
+
+
 (function(){try{const _s=localStorage.getItem('op_shift');if(_s&&SHIFTS[_s])chooseShift(_s);}catch(e){}})();
 </script>
 </body>
