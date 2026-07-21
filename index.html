@@ -1269,8 +1269,20 @@ function distributeTasks(g,days,count,u){
     return sps.filter(s=>s>1).length*1000+sps.reduce((a,b)=>a+b,0);
   }
 
-  // 有快取時只補空格，不多跑
-  if(hasCached){runOnce(g);equalize(g,false);return;}
+  // 有快取時只補空格：仍做 best-of 挑最均衡的一次，確保改假後工作次數差距 ≤1
+  if(hasCached){
+    let bG=null,bS=Infinity;
+    for(let a=0;a<10;a++){
+      const gT=orig.map(r=>[...r]);
+      runOnce(gT);equalize(gT,false);              // 先嚴格
+      if(calcScore(gT)>=1000)equalize(gT,true);    // 單次仍有差距>1 才放寬
+      const s=calcScore(gT);
+      if(s<bS){bS=s;bG=gT;}
+      if(bS<1000)break;                            // 全部差距 ≤1 即停
+    }
+    for(let i=0;i<g.length;i++)g[i]=bG[i];
+    return;
+  }
 
   // Phase 1：25 次嚴格模式，達到「所有差距 ≤1」即提早結束
   let bestG=null,bestScore=Infinity;
@@ -1623,9 +1635,10 @@ function renderSchedule(){
   const mems=getMembers(),list=mems[unit]||[],count=list.length,map=loadMonthLeave(year,month),mo=maxRestOff(month),uc={bg:'#EAF0F6',fg:'#2A3A42'};
   const scPreMap=loadMonthPreLeave(year,month);
   const grid=list.map(name=>{const r=[name];for(let d=1;d<=days;d++){const v=map[unit+'_'+name+'_'+d]||'';if(isLeave(v))r.push(v);else{const pr=scPreMap[unit+'_'+name+'_'+d];r.push(pr?'~'+(pr.leaveType||''):'');}}r.push('');return r;});
-  // Restore from cache: apply saved task assignments to present (empty) slots
+  // Restore from cache（逐日比對）：僅在「當天上班人員」與快取一致時才沿用快取；
+  // 若有人請/銷假導致當天人員異動 → 該天不套快取，讓 distributeTasks 依正確人數整天重排，避免出現空白格
   const _cached=loadSchedUnit(unit,year,month);
-  if(_cached){list.forEach((name,i)=>{const cd=_cached[name];if(!cd)return;for(let d=1;d<=days;d++){if(grid[i][d]===''&&cd[d])grid[i][d]=cd[d];}});}
+  if(_cached){for(let d=1;d<=days;d++){const nowW=[],cacW=[];for(let i=0;i<list.length;i++){if(grid[i][d]==='')nowW.push(list[i]);const cd=_cached[list[i]];if(cd&&cd[d])cacW.push(list[i]);}const same=nowW.length===cacW.length&&nowW.every(n=>cacW.includes(n));if(!same)continue;for(let i=0;i<list.length;i++){const cd=_cached[list[i]];if(cd&&cd[d]&&grid[i][d]==='')grid[i][d]=cd[d];}}}
   distributeTasks(grid,days,count,unit);
   // Persist: save final assignments back to cache
   const _save={};list.forEach((name,i)=>{_save[name]={};for(let d=1;d<=days;d++){const v=grid[i][d];if(v&&!isLeave(v)&&!(v&&v[0]==='~'))_save[name][d]=v;}});
