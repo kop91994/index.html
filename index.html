@@ -1188,6 +1188,17 @@ function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random
 function tasksForCount(u,n){const h=getTaskCfg().find(c=>c.unit===u&&parseInt(c.count)===n);if(h){const a=h.tasks.split(',').map(s=>s.trim()).filter(Boolean);while(a.length<n)a.push('備崗');return a.slice(0,n);}return Array.from({length:n},()=>'待命');}
 function distributeTasks(g,days,count,u){
   const _EQ_SKIP=new Set(['待命','備崗']);
+  // 把任務字串拆成單一代號（以 + / 空白 分隔）；待命/備崗/請假/預假 視為無代號
+  const _CODE_RE=/[+\/\s]+/;
+  function taskCodes(v){if(!v||isLeave(v)||v[0]==='~'||_EQ_SKIP.has(v))return null;return v.split(_CODE_RE).map(s=>s.trim()).filter(Boolean);}
+  function shareCode(x,y){if(!x||!y)return false;const S=new Set(y);return x.some(c=>S.has(c));}
+  function shareCount(x,y){if(!x||!y)return 0;const S=new Set(y);return x.reduce((n,c)=>n+(S.has(c)?1:0),0);}
+  // 群組關鍵字：某些部門的特定類別任務彼此也算「連續」（BBP 的外部：主審／異常等都算外部，不要連兩天）
+  const GROUP_KW = u==='BBP' ? ['外部'] : [];
+  function groupTag(v){if(!v)return null;for(const kw of GROUP_KW)if(v.includes(kw))return kw;return null;}
+  // 兩任務字串的「連續衝突量」：共用代號數；若無共用代號但屬同群組則記 1
+  function conflictCount(x,y){const n=shareCount(taskCodes(x),taskCodes(y));if(n>0)return n;const gx=groupTag(x);return (gx!==null&&gx===groupTag(y))?1:0;}
+  function conflict(x,y){return conflictCount(x,y)>0;}
   const orig=g.map(r=>[...r]);
   // 偵測是否已有快取的任務指派（部分格已填）
   let hasCached=false;
@@ -1208,15 +1219,14 @@ function distributeTasks(g,days,count,u){
         for(let ti=0;ti<pending.length;ti++){
           const t=pending[ti],cnts=avail.map(i=>st[i][t]||0);
           const spread=Math.max(...cnts)-Math.min(...cnts);
-          const mrv=avail.filter(i=>lastWork(i,d)!==t).length||avail.length;
+          const mrv=avail.filter(i=>!conflict(lastWork(i,d),t)).length||avail.length;
           if(spread>bSpread||(spread===bSpread&&mrv<bMrv)){bSpread=spread;bMrv=mrv;bTi=ti;}
         }
         const task=pending.splice(bTi,1)[0];
         let pool=[...avail];
         const mn=Math.min(...pool.map(i=>st[i][task]||0));
         pool=pool.filter(i=>(st[i][task]||0)===mn);
-        const notLast=pool.filter(i=>lastWork(i,d)!==task);if(notLast.length)pool=notLast;
-        if(u==='BBP'&&task.includes('外部')){const nE=pool.filter(i=>{const lt=lastWork(i,d);return!lt||!lt.includes('外部');});if(nE.length)pool=nE;}
+        const notLast=pool.filter(i=>!conflict(lastWork(i,d),task));if(notLast.length)pool=notLast;
         const mnT=Math.min(...pool.map(tot));pool=pool.filter(i=>tot(i)===mnT);
         const best=pool[Math.floor(Math.random()*pool.length)];
         gw[best][d]=task;st[best][task]=(st[best][task]||0)+1;
@@ -1269,6 +1279,29 @@ function distributeTasks(g,days,count,u){
     return sps.filter(s=>s>1).length*1000+sps.reduce((a,b)=>a+b,0);
   }
 
+  // ── 消連續（平均優先）：只做「不讓平均變差」且「能減少同代號連續」的同日換位 ──
+  function _prevWork(gw,i,d){for(let dd=d-1;dd>=1;dd--){const v=gw[i][dd];if(v&&!isLeave(v)&&v[0]!=='~')return v;}return null;}
+  function _nextWork(gw,i,d){for(let dd=d+1;dd<=days;dd++){const v=gw[i][dd];if(v&&!isLeave(v)&&v[0]!=='~')return v;}return null;}
+  function consScore(gw){let s=0;for(let i=0;i<count;i++){let pv=null;for(let d=1;d<=days;d++){const v=gw[i][d];if(!v||isLeave(v)||v[0]==='~')continue;const isTask=taskCodes(v)!==null;if(pv&&isTask)s+=conflictCount(pv,v);pv=isTask?v:null;}}return s;}
+  function isConsAt(gw,i,d){if(taskCodes(gw[i][d])===null)return false;const v=gw[i][d];return conflictCount(v,_prevWork(gw,i,d))>0||conflictCount(v,_nextWork(gw,i,d))>0;}
+  function deConsecutive(gw){
+    for(let pass=0;pass<400;pass++){
+      const curBal=calcScore(gw),curCons=consScore(gw);
+      if(curCons===0)break;
+      let did=false;
+      for(let d=1;d<=days&&!did;d++)for(let i=0;i<count&&!did;i++){
+        if(!isConsAt(gw,i,d))continue;const a=gw[i][d];
+        for(let j=0;j<count;j++){
+          if(j===i)continue;const b=gw[j][d];if(b===a||!taskCodes(b))continue;
+          gw[i][d]=b;gw[j][d]=a;                              // 試換
+          if(calcScore(gw)<=curBal&&consScore(gw)<curCons){did=true;break;} // 平均不變差且連續變少 → 採用
+          gw[i][d]=a;gw[j][d]=b;                              // 否則還原
+        }
+      }
+      if(!did)break;
+    }
+  }
+
   // 有快取時只補空格：仍做 best-of 挑最均衡的一次，確保改假後工作次數差距 ≤1
   if(hasCached){
     let bG=null,bS=Infinity;
@@ -1281,6 +1314,7 @@ function distributeTasks(g,days,count,u){
       if(bS<1000)break;                            // 全部差距 ≤1 即停
     }
     for(let i=0;i<g.length;i++)g[i]=bG[i];
+    deConsecutive(g);
     return;
   }
 
@@ -1306,6 +1340,7 @@ function distributeTasks(g,days,count,u){
     }
   }
   for(let i=0;i<g.length;i++)g[i]=bestG[i];
+  deConsecutive(g);
 }
 function isLeave(v){return v&&LCM[v];}
 function fmtDt(iso){if(!iso)return'';const d=new Date(iso);return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;}
