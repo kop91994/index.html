@@ -1127,6 +1127,15 @@ function getOperator(){try{return localStorage.getItem('op_operator')||'';}catch
 function setOperator(n){try{localStorage.setItem('op_operator',n||'');}catch(e){}updateOperatorPill();}
 function updateOperatorPill(){const el=document.getElementById('op-operator-pill');if(!el)return;const op=getOperator();el.innerHTML=op?`👤 ${escapeHtml(op)}`:`👤 <span style="opacity:.75">設定操作者</span>`;}
 function allEmployees(){const m=getMembers(),depts=getDepts(),out=[];depts.forEach(u=>(m[u]||[]).forEach(n=>out.push({name:n,dept:u})));return out;}
+// 只在首次載入／切換操作者時套用「預設自己部門」，之後尊重使用者手動切換的選擇
+let _deptDefaultApplied=false;
+// ── 依操作者判斷所屬部門（遊客／查無此人 → 回傳 ''＝不預設，維持原本行為）──
+function getOperatorDept(){
+  const op=getOperator();if(!op||op==='遊客')return'';
+  const m=getMembers();
+  for(const u of getDepts()){if((m[u]||[]).includes(op))return u;}
+  return'';
+}
 async function changeOperator(mandatory=false){
   const emps=allEmployees();
   if(!emps.length){setOperator('遊客');toast('尚無部門員工可選，已以「遊客」身分登入','ok');return;}
@@ -1139,7 +1148,11 @@ async function changeOperator(mandatory=false){
   const chosen=await uiSelect(msg,opts,{title:'設定操作者',default:def,mandatory});
   if(chosen===null)return; // 僅非強制模式可能取消
   setOperator(chosen);
-  toast(`操作者已設為「${chosen}」`,'ok');
+  // 切換操作者 → 重新套用「預設自己部門」並刷新假表／班表
+  _deptDefaultApplied=false;
+  try{refreshUnitDropdowns();renderOverview();renderSchedule();}catch(e){}
+  const _d=getOperatorDept();
+  toast(_d?`操作者已設為「${chosen}」（${_d}）\n假表／班表已切到 ${_d}`:`操作者已設為「${chosen}」`,'ok');
 }
 // ── 員工特休配額 ──
 function getSlQuota(){try{return JSON.parse(localStorage.getItem('sl_quota'))||{};}catch(e){return{};}}
@@ -1460,7 +1473,18 @@ function initDropdowns(){
 function refreshUnitDropdowns(){
   const depts=getDepts(),all='<option value="all">（全部）</option>'+depts.map(u=>`<option value="${u}">${u}</option>`).join(''),only=depts.map(u=>`<option value="${u}">${u}</option>`).join('');
   function pres(el,opts,fb){if(!el)return;const v=el.value;el.innerHTML=opts;if(depts.includes(v))el.value=v;else if(fb!==undefined)el.value=fb;}
-  pres(document.getElementById('ov-unit'),all,'all');pres(document.getElementById('sc-unit'),only,null);pres(document.getElementById('pl-unit'),all,'all');
+  // 預設自己部門：操作者屬於某部門時，假表／班表一進來先顯示該部門（不鎖，仍可自行切到其他部門）
+  const myDept=getOperatorDept();
+  function presMine(el,fallbackOpts,fallbackVal){
+    if(!el)return;
+    el.disabled=false;el.title='';el.style.background='';el.style.cursor='';
+    if(myDept&&!_deptDefaultApplied){el.innerHTML=fallbackOpts;el.value=myDept;}
+    else pres(el,fallbackOpts,fallbackVal);
+  }
+  presMine(document.getElementById('ov-unit'),all,'all');
+  presMine(document.getElementById('sc-unit'),only,null);
+  if(myDept)_deptDefaultApplied=true;
+  pres(document.getElementById('pl-unit'),all,'all');
   const pfU=document.getElementById('pf-unit');if(pfU){pres(pfU,only,null);pfUpdateMembers();}
   const mlU=document.getElementById('ml-unit');if(mlU){pres(mlU,only,null);mlUpdateMembers();}
   const laU=document.getElementById('lottery-add-unit');if(laU){pres(laU,only,null);}
